@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<DatabaseSeeder>();
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
