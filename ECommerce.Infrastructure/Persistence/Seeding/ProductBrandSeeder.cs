@@ -7,17 +7,19 @@ namespace ECommerce.Infrastructure.Persistence.Seeding;
 
 public class ProductBrandSeeder : IDataSeeder
 {
-    private readonly StoreDbContext _context;
+    private readonly StoreDbContext _dbContext;
 
-    public ProductBrandSeeder(StoreDbContext context)
+    public ProductBrandSeeder(StoreDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
+
+    public int Order => 1;
 
     public async Task SeedAsync(CancellationToken ct = default)
     {
         await JsonSeeder.SeedIfEmptyAsync<ProductBrand, ProductBrandSeedModel>(
-            _context.Set<ProductBrand>(),
+            _dbContext.ProductBrands,
             "brands.json",
             model => ProductBrand.Create(model.Name, model.Id),
             ct);
