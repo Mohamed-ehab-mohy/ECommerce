@@ -1,0 +1,7 @@
+[
+  { "Id": "f6a7b8c9-d0e1-2345-fabc-456789012345", "Name": "Electronics" },
+  { "Id": "a7b8c9d0-e1f2-3456-abcd-567890123456", "Name": "Clothing" },
+  { "Id": "b8c9d0e1-f2a3-4567-bcde-678901234567", "Name": "Shoes" },
+  { "Id": "c9d0e1f2-a3b4-5678-cdef-789012345678", "Name": "Sports" },
+  { "Id": "d0e1f2a3-b4c5-6789-defa-890123456789", "Name": "Accessories" }
+]
