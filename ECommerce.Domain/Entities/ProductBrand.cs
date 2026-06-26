@@ -7,19 +7,23 @@ public class ProductBrand : BaseEntity
 
     private ProductBrand() { Name = null!; }
 
-    public ProductBrand(string name)
+    private ProductBrand(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Brand name cannot be empty", nameof(name));
+        Id = Guid.NewGuid();
+        Name = name.Trim();
+    }
 
-        Name = name;
+    public static ProductBrand Create(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        return new ProductBrand(name.Trim());
     }
 
     public void Rename(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Brand name cannot be empty", nameof(newName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
 
-        Name = newName;
+        Name = newName.Trim();
     }
 }

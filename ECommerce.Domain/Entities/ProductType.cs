@@ -7,19 +7,23 @@ public class ProductType : BaseEntity
 
     private ProductType() { Name = null!; }
 
-    public ProductType(string name)
+    private ProductType(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Type name cannot be empty", nameof(name));
+        Id = Guid.NewGuid();
+        Name = name.Trim();
+    }
 
-        Name = name;
+    public static ProductType Create(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        return new ProductType(name.Trim());
     }
 
     public void Rename(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Type name cannot be empty", nameof(newName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
 
-        Name = newName;
+        Name = newName.Trim();
     }
 }
