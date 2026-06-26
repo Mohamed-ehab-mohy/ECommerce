@@ -1,4 +1,5 @@
 ﻿using ECommerce.Infrastructure.Data.DbContexts;
+using ECommerce.Infrastructure.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,10 @@ public static class DependencyInjection
     {
         services.AddDbContext<StoreDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("Default")));
+
+        services.AddScoped<IDataSeeder, ProductBrandSeeder>();
+        services.AddScoped<IDataSeeder, ProductTypeSeeder>();
+        services.AddScoped<DatabaseSeeder>();
 
         return services;
     }
