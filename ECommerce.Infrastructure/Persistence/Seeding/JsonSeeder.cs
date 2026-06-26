@@ -1,36 +1,39 @@
-using System.Reflection;
 using System.Text.Json;
-using ECommerce.Infrastructure.Data.DbContexts;
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Persistence.Seeding;
 
 public static class JsonSeeder
 {
-    public static async Task SeedFromJsonAsync<TEntity>(StoreDbContext context, string jsonFileName) where TEntity : class
+    private static readonly JsonSerializerOptions Options = new()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = $"ECommerce.Infrastructure.Persistence.Seeding.Data.{jsonFileName}";
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
 
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-
-        if (stream is null)
+    public static async Task SeedIfEmptyAsync<TEntity, TModel>(
+        DbSet<TEntity> dbSet,
+        string fileName,
+        Func<TModel, TEntity> map,
+        CancellationToken ct = default) where TEntity : BaseEntity
+    {
+        if (await dbSet.AnyAsync(ct))
             return;
 
-        using var reader = new StreamReader(stream);
-        var json = await reader.ReadToEndAsync();
+        var filePath = Path.Combine(AppContext.BaseDirectory, "Persistence", "Seeding", "Data", fileName);
 
-        var entities = JsonSerializer.Deserialize<List<TEntity>>(json);
-
-        if (entities is null || entities.Count == 0)
+        if (!File.Exists(filePath))
             return;
 
-        var dbSet = context.Set<TEntity>();
+        using var stream = File.OpenRead(filePath);
+        var models = await JsonSerializer.DeserializeAsync<List<TModel>>(stream, Options, ct);
 
-        if (await dbSet.AnyAsync())
+        if (models is null || models.Count == 0)
             return;
 
-        await dbSet.AddRangeAsync(entities);
-        await context.SaveChangesAsync();
+        var entities = models.Select(map);
+
+        await dbSet.AddRangeAsync(entities, ct);
     }
 }
