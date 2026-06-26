@@ -19,7 +19,18 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IRepository<T> Repository<T>() where T : BaseEntity
     {
-        return (IRepository<T>)_repos.GetOrAdd(typeof(T), _ => new Repository<T>(_dbContext));
+        var type = typeof(T);
+
+        if (_repos.TryGetValue(type, out var repo))
+        {
+            return (IRepository<T>)repo;
+        }
+
+        var newRepo = new Repository<T>(_dbContext);
+
+        _repos.TryAdd(type, newRepo);
+
+        return newRepo;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
