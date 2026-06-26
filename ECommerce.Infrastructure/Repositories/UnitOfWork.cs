@@ -9,7 +9,7 @@ namespace ECommerce.Infrastructure.Repositories;
 public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly StoreDbContext _dbContext;
-    private readonly ConcurrentDictionary<string, object> _repositories = new();
+    private readonly ConcurrentDictionary<Type, object> _repos = new();
     private IDbContextTransaction? _transaction;
 
     public UnitOfWork(StoreDbContext dbContext)
@@ -19,9 +19,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IRepository<T> Repository<T>() where T : BaseEntity
     {
-        var typeName = typeof(T).Name;
-
-        return (IRepository<T>)_repositories.GetOrAdd(typeName, _ => new Repository<T>(_dbContext));
+        return (IRepository<T>)_repos.GetOrAdd(typeof(T), _ => new Repository<T>(_dbContext));
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
