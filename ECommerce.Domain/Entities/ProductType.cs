@@ -13,11 +13,16 @@ public class ProductType : BaseEntity
         Name = name.Trim();
     }
 
-    public static ProductType Create(string name)
+    public static ProductType Create(string name, Guid? id = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        return new ProductType(name.Trim());
+        var type = new ProductType(name.Trim());
+
+        if (id.HasValue)
+            type.Id = id.Value;
+
+        return type;
     }
 
     public void Rename(string newName)

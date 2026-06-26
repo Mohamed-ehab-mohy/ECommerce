@@ -13,11 +13,16 @@ public class ProductBrand : BaseEntity
         Name = name.Trim();
     }
 
-    public static ProductBrand Create(string name)
+    public static ProductBrand Create(string name, Guid? id = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        return new ProductBrand(name.Trim());
+        var brand = new ProductBrand(name.Trim());
+
+        if (id.HasValue)
+            brand.Id = id.Value;
+
+        return brand;
     }
 
     public void Rename(string newName)
