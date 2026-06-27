@@ -35,6 +35,8 @@ namespace ECommerce.API
 
             app.UseHttpsRedirection();
             app.UseAuthorization();
+            app.MapGet("/test-error", () => { throw new InvalidOperationException("Test error"); });
+
             app.MapControllers();
 
             await app.RunAsync();
