@@ -21,6 +21,8 @@ namespace ECommerce.API
 
             var app = builder.Build();
 
+            app.UseExceptionHandler();
+
             if (app.Environment.IsDevelopment())
             {
                 using var scope = app.Services.CreateScope();
