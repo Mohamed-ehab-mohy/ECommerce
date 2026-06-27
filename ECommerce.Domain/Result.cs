@@ -16,3 +16,22 @@ public class Result
 
     public static Result Failure(Error error) => new(false, error);
 }
+
+public class Result<T> : Result
+{
+    public T? Data { get; }
+
+    private Result(T data) : base(true, null)
+    {
+        Data = data;
+    }
+
+    private Result(Error error) : base(false, error)
+    {
+        Data = default;
+    }
+
+    public static Result<T> Success(T data) => new(data);
+
+    public static new Result<T> Failure(Error error) => new(error);
+}

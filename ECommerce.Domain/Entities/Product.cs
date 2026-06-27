@@ -18,59 +18,67 @@ public class Product : BaseEntity
 
     private Product(string name, string description, string pictureUrl, decimal price, Guid productBrandId, Guid productTypeId)
     {
-        SetName(name);
-        SetDescription(description);
+        Name = name;
+        Description = description;
         PictureUrl = pictureUrl;
-        SetPrice(price);
+        Price = price;
         ProductBrandId = productBrandId;
         ProductTypeId = productTypeId;
         Id = Guid.NewGuid();
     }
 
-    public static Product Create(string name, string description, string pictureUrl, decimal price, Guid productBrandId, Guid productTypeId)
+    public static Result<Product> Create(string name, string description, string pictureUrl, decimal price, Guid productBrandId, Guid productTypeId)
     {
-        return new Product(name, description, pictureUrl, price, productBrandId, productTypeId);
+        if (string.IsNullOrWhiteSpace(name))
+            return Result<Product>.Failure(ProductErrors.InvalidName);
+
+        if (name.Trim().Length > MaxNameLength)
+            return Result<Product>.Failure(ProductErrors.InvalidName);
+
+        if (string.IsNullOrWhiteSpace(description))
+            return Result<Product>.Failure(ProductErrors.InvalidDescription);
+
+        if (description.Trim().Length > MaxDescriptionLength)
+            return Result<Product>.Failure(ProductErrors.InvalidDescription);
+
+        if (price < 0)
+            return Result<Product>.Failure(ProductErrors.InvalidPrice);
+
+        return Result<Product>.Success(new Product(
+            name.Trim(),
+            description.Trim(),
+            pictureUrl,
+            price,
+            productBrandId,
+            productTypeId));
     }
 
-    public void UpdateDetails(string name, string description, decimal price)
+    public Result UpdateDetails(string name, string description, decimal price)
     {
-        SetName(name);
-        SetDescription(description);
-        SetPrice(price);
+        if (string.IsNullOrWhiteSpace(name))
+            return Result.Failure(ProductErrors.InvalidName);
+
+        if (name.Trim().Length > MaxNameLength)
+            return Result.Failure(ProductErrors.InvalidName);
+
+        if (string.IsNullOrWhiteSpace(description))
+            return Result.Failure(ProductErrors.InvalidDescription);
+
+        if (description.Trim().Length > MaxDescriptionLength)
+            return Result.Failure(ProductErrors.InvalidDescription);
+
+        if (price < 0)
+            return Result.Failure(ProductErrors.InvalidPrice);
+
+        Name = name.Trim();
+        Description = description.Trim();
+        Price = price;
+
+        return Result.Success();
     }
 
     public void UpdatePicture(string pictureUrl)
     {
         PictureUrl = pictureUrl;
-    }
-
-    private void SetName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new InvalidOperationException("Product name cannot be empty.");
-
-        if (name.Trim().Length > MaxNameLength)
-            throw new InvalidOperationException($"Product name cannot exceed {MaxNameLength} characters.");
-
-        Name = name.Trim();
-    }
-
-    private void SetDescription(string description)
-    {
-        if (string.IsNullOrWhiteSpace(description))
-            throw new InvalidOperationException("Product description cannot be empty.");
-
-        if (description.Trim().Length > MaxDescriptionLength)
-            throw new InvalidOperationException($"Product description cannot exceed {MaxDescriptionLength} characters.");
-
-        Description = description.Trim();
-    }
-
-    private void SetPrice(decimal price)
-    {
-        if (price < 0)
-            throw new InvalidOperationException("Product price cannot be negative.");
-
-        Price = price;
     }
 }
