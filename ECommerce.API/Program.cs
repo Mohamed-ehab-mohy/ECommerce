@@ -1,3 +1,4 @@
+using ECommerce.API;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Data.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -15,6 +16,7 @@ namespace ECommerce.API
             builder.Services.AddControllers();
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
+            builder.Services.AddPresentation();
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
