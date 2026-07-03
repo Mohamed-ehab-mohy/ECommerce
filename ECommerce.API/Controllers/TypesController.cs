@@ -1,3 +1,4 @@
+using ECommerce.API.Models;
 using ECommerce.UseCases.Products;
 using ECommerce.UseCases.Products.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,10 @@ public class TypesController : ApiControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<GetAllTypesResponse>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<GetAllTypesResponse>>> GetAll(CancellationToken ct = default)
+    [ProducesResponseType<ApiResponse<IReadOnlyList<GetAllTypesResponse>>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(CancellationToken ct = default)
     {
         var types = await _queryService.GetAllAsync(ct);
-        return Ok(types);
+        return Success(types);
     }
 }
