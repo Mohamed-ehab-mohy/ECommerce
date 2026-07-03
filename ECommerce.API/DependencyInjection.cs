@@ -8,6 +8,7 @@ public static class DependencyInjection
     {
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionMiddleware>();
+        services.AddSwaggerGen();
 
         return services;
     }

@@ -14,6 +14,7 @@ public class ProductsController : ApiControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<IReadOnlyList<GetAllProductsResponse>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<GetAllProductsResponse>>> GetAll(CancellationToken ct = default)
     {
         var products = await _queryService.GetAllProductsAsync(ct);
@@ -21,6 +22,8 @@ public class ProductsController : ApiControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [ProducesResponseType<GetByIdProductResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GetByIdProductResponse>> GetById(Guid id, CancellationToken ct = default)
     {
         var product = await _queryService.GetByIdAsync(id, ct);

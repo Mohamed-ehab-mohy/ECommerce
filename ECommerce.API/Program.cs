@@ -32,6 +32,9 @@ namespace ECommerce.API
 
                 var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
                 await seeder.SeedAllAsync();
+
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();

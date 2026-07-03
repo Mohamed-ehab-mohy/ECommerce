@@ -14,6 +14,7 @@ public class TypesController : ApiControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<IReadOnlyList<GetAllTypesResponse>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<GetAllTypesResponse>>> GetAll(CancellationToken ct = default)
     {
         var types = await _queryService.GetAllAsync(ct);
