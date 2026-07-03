@@ -1,0 +1,21 @@
+@host = http://localhost:5248/api
+
+### Get All Products
+GET {{host}}/products/
+Accept: application/json
+
+### Get Product By Id
+GET {{host}}/products/11111111-1111-1111-1111-111111111111
+Accept: application/json
+
+### Get Product Not Found
+GET {{host}}/products/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+Accept: application/json
+
+### Get All Brands
+GET {{host}}/brands/
+Accept: application/json
+
+### Get All Types
+GET {{host}}/types/
+Accept: application/json
