@@ -15,5 +15,8 @@ public sealed class MappingConfig : IRegister
         config.NewConfig<Product, GetByIdProductResponse>()
             .Map(dest => dest.ProductType, src => src.ProductType.Name)
             .Map(dest => dest.ProductBrand, src => src.ProductBrand.Name);
+
+        config.NewConfig<ProductBrand, GetAllBrandsResponse>();
+        config.NewConfig<ProductType, GetAllTypesResponse>();
     }
 }
