@@ -15,6 +15,9 @@ public class Result
     public static Result Success() => new(true, null);
 
     public static Result Failure(Error error) => new(false, error);
+
+    public override string ToString() =>
+        IsSuccess ? "Success" : $"Failure: {Error}";
 }
 
 public class Result<T> : Result
@@ -38,4 +41,7 @@ public class Result<T> : Result
     public static implicit operator Result<T>(T data) => new(data);
 
     public static implicit operator Result<T>(Error error) => new(error);
+
+    public override string ToString() =>
+        IsSuccess ? $"Success: {Data}" : $"Failure: {Error}";
 }
