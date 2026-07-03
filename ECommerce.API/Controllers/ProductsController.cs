@@ -1,0 +1,33 @@
+using ECommerce.UseCases.Products;
+using ECommerce.UseCases.Products.DTOs;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ECommerce.API.Controllers;
+
+public class ProductsController : ApiControllerBase
+{
+    private readonly IProductQueryService _queryService;
+
+    public ProductsController(IProductQueryService queryService)
+    {
+        _queryService = queryService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<GetAllProductsResponse>>> GetAll(CancellationToken ct = default)
+    {
+        var products = await _queryService.GetAllProductsAsync(ct);
+        return Ok(products);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<GetByIdProductResponse>> GetById(Guid id, CancellationToken ct = default)
+    {
+        var product = await _queryService.GetByIdAsync(id, ct);
+
+        if (product is null)
+            return NotFound();
+
+        return Ok(product);
+    }
+}

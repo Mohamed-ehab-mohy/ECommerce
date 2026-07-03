@@ -39,7 +39,7 @@ namespace ECommerce.API
             // app.MapGet("/test-error", () => { throw new InvalidOperationException("Test error"); });
 
             app.MapControllers();
-            app.MapProductEndpoints();
+            // app.MapProductEndpoints();
 
             await app.RunAsync();
         }
