@@ -1,6 +1,7 @@
 using ECommerce.Infrastructure.Data.DbContexts;
 using ECommerce.UseCases.Products;
 using ECommerce.UseCases.Products.DTOs;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Queries;
@@ -18,14 +19,15 @@ public sealed class ProductQueryService : IProductQueryService
     {
         return await _dbContext.Products
             .Where(p => !p.IsDeleted)
-            .Select(p => new GetAllProductsResponse(
-                p.Id,
-                p.Name,
-                p.Description,
-                p.PictureUrl,
-                p.Price,
-                p.ProductType.Name,
-                p.ProductBrand.Name))
+            .ProjectToType<GetAllProductsResponse>()
             .ToListAsync(ct);
+    }
+
+    public async Task<GetByIdProductResponse?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _dbContext.Products
+            .Where(p => !p.IsDeleted && p.Id == id)
+            .ProjectToType<GetByIdProductResponse>()
+            .FirstOrDefaultAsync(ct);
     }
 }
