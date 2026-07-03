@@ -34,4 +34,8 @@ public class Result<T> : Result
     public static Result<T> Success(T data) => new(data);
 
     public static new Result<T> Failure(Error error) => new(error);
+
+    public static implicit operator Result<T>(T data) => new(data);
+
+    public static implicit operator Result<T>(Error error) => new(error);
 }
