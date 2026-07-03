@@ -1,4 +1,5 @@
 using ECommerce.API;
+using ECommerce.API.Endpoints;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Data.DbContexts;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -38,6 +39,7 @@ namespace ECommerce.API
             app.MapGet("/test-error", () => { throw new InvalidOperationException("Test error"); });
 
             app.MapControllers();
+            app.MapProductEndpoints();
 
             await app.RunAsync();
         }
