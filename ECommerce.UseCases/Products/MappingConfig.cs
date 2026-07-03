@@ -4,7 +4,7 @@ using Mapster;
 
 namespace ECommerce.UseCases.Products;
 
-public sealed class ProductMappingConfig : IRegister
+public sealed class MappingConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
