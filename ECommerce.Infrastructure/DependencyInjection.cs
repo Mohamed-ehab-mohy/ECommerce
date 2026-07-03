@@ -1,5 +1,6 @@
 ﻿using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data.DbContexts;
+using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IDataSeeder, ProductTypeSeeder>();
         services.AddScoped<DatabaseSeeder>();
 
+        services.AddScoped<SoftDeleteInterceptor>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
 using ECommerce.Infrastructure.Data.DbContexts;
+using ECommerce.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ECommerce.Infrastructure.Repositories;
@@ -9,12 +10,14 @@ namespace ECommerce.Infrastructure.Repositories;
 public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly StoreDbContext _dbContext;
+    private readonly SoftDeleteInterceptor _softDeleteInterceptor;
     private readonly ConcurrentDictionary<Type, object> _repos = new();
     private IDbContextTransaction? _transaction;
 
-    public UnitOfWork(StoreDbContext dbContext)
+    public UnitOfWork(StoreDbContext dbContext, SoftDeleteInterceptor softDeleteInterceptor)
     {
         _dbContext = dbContext;
+        _softDeleteInterceptor = softDeleteInterceptor;
     }
 
     public IRepository<T> Repository<T>() where T : BaseEntity
@@ -35,6 +38,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
+        _softDeleteInterceptor.ApplySoftDelete(_dbContext);
         return await _dbContext.SaveChangesAsync(ct);
     }
 

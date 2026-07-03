@@ -38,6 +38,6 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
 
     public void Delete(T entity)
     {
-        entity.MarkAsDeleted();
+        _dbSet.Remove(entity);
     }
 }

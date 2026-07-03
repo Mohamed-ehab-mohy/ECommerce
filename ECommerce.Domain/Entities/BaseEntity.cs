@@ -10,5 +10,6 @@ public abstract class BaseEntity
     public void MarkAsDeleted()
     {
         IsDeleted = true;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }
