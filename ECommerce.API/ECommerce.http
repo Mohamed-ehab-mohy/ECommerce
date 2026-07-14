@@ -1,7 +1,7 @@
-@host = http://localhost:5248/api
+@host = http://localhost:5248/api/v1
 
 ### Get All Products
-GET {{host}}/products/
+GET {{host}}/products
 Accept: application/json
 
 ### Get Product By Id
@@ -13,9 +13,9 @@ GET {{host}}/products/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 Accept: application/json
 
 ### Get All Brands
-GET {{host}}/brands/
+GET {{host}}/brands
 Accept: application/json
 
 ### Get All Types
-GET {{host}}/types/
+GET {{host}}/types
 Accept: application/json
