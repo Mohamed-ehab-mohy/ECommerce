@@ -17,6 +17,7 @@ public class Product : BaseEntity
     private Product() { }
 
     private Product(string name, string description, string pictureUrl, decimal price, Guid productBrandId, Guid productTypeId)
+        : base()
     {
         Name = name;
         Description = description;
@@ -24,55 +25,55 @@ public class Product : BaseEntity
         Price = price;
         ProductBrandId = productBrandId;
         ProductTypeId = productTypeId;
-        Id = Guid.NewGuid();
     }
 
     public static Result<Product> Create(string name, string description, string pictureUrl, decimal price, Guid productBrandId, Guid productTypeId)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return Result<Product>.Failure(ProductErrors.InvalidName);
+            return ProductErrors.InvalidName;
 
         if (name.Trim().Length > MaxNameLength)
-            return Result<Product>.Failure(ProductErrors.InvalidName);
+            return ProductErrors.InvalidName;
 
         if (string.IsNullOrWhiteSpace(description))
-            return Result<Product>.Failure(ProductErrors.InvalidDescription);
+            return ProductErrors.InvalidDescription;
 
         if (description.Trim().Length > MaxDescriptionLength)
-            return Result<Product>.Failure(ProductErrors.InvalidDescription);
+            return ProductErrors.InvalidDescription;
 
         if (price < 0)
-            return Result<Product>.Failure(ProductErrors.InvalidPrice);
+            return ProductErrors.InvalidPrice;
 
-        return Result<Product>.Success(new Product(
+        return new Product(
             name.Trim(),
             description.Trim(),
             pictureUrl,
             price,
             productBrandId,
-            productTypeId));
+            productTypeId);
     }
 
     public Result UpdateDetails(string name, string description, decimal price)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return Result.Failure(ProductErrors.InvalidName);
+            return ProductErrors.InvalidName;
 
         if (name.Trim().Length > MaxNameLength)
-            return Result.Failure(ProductErrors.InvalidName);
+            return ProductErrors.InvalidName;
 
         if (string.IsNullOrWhiteSpace(description))
-            return Result.Failure(ProductErrors.InvalidDescription);
+            return ProductErrors.InvalidDescription;
 
         if (description.Trim().Length > MaxDescriptionLength)
-            return Result.Failure(ProductErrors.InvalidDescription);
+            return ProductErrors.InvalidDescription;
 
         if (price < 0)
-            return Result.Failure(ProductErrors.InvalidPrice);
+            return ProductErrors.InvalidPrice;
 
         Name = name.Trim();
         Description = description.Trim();
         Price = price;
+        UpdatedAt = DateTimeOffset.UtcNow;
 
         return Result.Success();
     }
@@ -80,5 +81,6 @@ public class Product : BaseEntity
     public void UpdatePicture(string pictureUrl)
     {
         PictureUrl = pictureUrl;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

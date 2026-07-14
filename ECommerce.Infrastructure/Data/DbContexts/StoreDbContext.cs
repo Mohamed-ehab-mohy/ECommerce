@@ -14,5 +14,9 @@ public class StoreDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreDbContext).Assembly);
+
+        modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+        modelBuilder.Entity<ProductBrand>().HasQueryFilter(b => !b.IsDeleted);
+        modelBuilder.Entity<ProductType>().HasQueryFilter(t => !t.IsDeleted);
     }
 }

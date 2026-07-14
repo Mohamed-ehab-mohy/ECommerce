@@ -1,5 +1,6 @@
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,26 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
         return await _dbSet.AsNoTracking().ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec, CancellationToken ct = default)
+    {
+        return await ApplySpecification(spec).AsNoTracking().ToListAsync(ct);
+    }
+
+    public async Task<T?> GetOneAsync(ISpecification<T> spec, CancellationToken ct = default)
+    {
+        return await ApplySpecification(spec).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<int> CountAsync(ISpecification<T> spec, CancellationToken ct = default)
+    {
+        return await ApplySpecification(spec).CountAsync(ct);
+    }
+
+    public async Task<bool> AnyAsync(ISpecification<T> spec, CancellationToken ct = default)
+    {
+        return await ApplySpecification(spec).AnyAsync(ct);
+    }
+
     public void Add(T entity)
     {
         _dbSet.Add(entity);
@@ -39,5 +60,10 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
+    }
+
+    private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+    {
+        return SpecificationEvaluator.GetQuery(_dbSet.AsQueryable(), spec);
     }
 }

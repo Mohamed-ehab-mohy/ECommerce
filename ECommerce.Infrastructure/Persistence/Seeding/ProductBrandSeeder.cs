@@ -21,7 +21,7 @@ public class ProductBrandSeeder : IDataSeeder
         await JsonSeeder.SeedIfEmptyAsync<ProductBrand, ProductBrandSeedModel>(
             _dbContext.ProductBrands,
             "brands.json",
-            model => ProductBrand.Create(model.Name, model.Id),
+            model => ProductBrand.Create(model.Name, model.Id).Data!,
             ct);
     }
 }

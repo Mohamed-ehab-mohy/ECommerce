@@ -2,20 +2,25 @@ namespace ECommerce.Domain.Entities;
 
 public class ProductType : BaseEntity
 {
-    public string Name { get; private set; }
+    public const int MaxNameLength = 100;
+
+    public string Name { get; private set; } = null!;
     public ICollection<Product> Products { get; set; } = [];
 
-    private ProductType() { Name = null!; }
+    private ProductType() { }
 
-    private ProductType(string name)
+    private ProductType(string name) : base()
     {
-        Id = Guid.NewGuid();
         Name = name.Trim();
     }
 
-    public static ProductType Create(string name, Guid? id = null)
+    public static Result<ProductType> Create(string name, Guid? id = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (string.IsNullOrWhiteSpace(name))
+            return TypeErrors.InvalidName;
+
+        if (name.Trim().Length > MaxNameLength)
+            return TypeErrors.NameTooLong;
 
         var type = new ProductType(name.Trim());
 
@@ -25,10 +30,17 @@ public class ProductType : BaseEntity
         return type;
     }
 
-    public void Rename(string newName)
+    public Result Rename(string newName)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
+        if (string.IsNullOrWhiteSpace(newName))
+            return Result.Failure(TypeErrors.InvalidName);
+
+        if (newName.Trim().Length > MaxNameLength)
+            return Result.Failure(TypeErrors.NameTooLong);
 
         Name = newName.Trim();
+        UpdatedAt = DateTimeOffset.UtcNow;
+
+        return Result.Success();
     }
 }
