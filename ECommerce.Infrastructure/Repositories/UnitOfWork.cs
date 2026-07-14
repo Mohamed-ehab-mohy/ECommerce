@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Data.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -11,13 +12,15 @@ public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly StoreDbContext _dbContext;
     private readonly SoftDeleteInterceptor _softDeleteInterceptor;
+    private readonly ISpecificationEvaluator _evaluator;
     private readonly ConcurrentDictionary<Type, object> _repos = new();
     private IDbContextTransaction? _transaction;
 
-    public UnitOfWork(StoreDbContext dbContext, SoftDeleteInterceptor softDeleteInterceptor)
+    public UnitOfWork(StoreDbContext dbContext, SoftDeleteInterceptor softDeleteInterceptor, ISpecificationEvaluator evaluator)
     {
         _dbContext = dbContext;
         _softDeleteInterceptor = softDeleteInterceptor;
+        _evaluator = evaluator;
     }
 
     public IRepository<T> Repository<T>() where T : BaseEntity
@@ -29,7 +32,7 @@ public sealed class UnitOfWork : IUnitOfWork
             return (IRepository<T>)repo;
         }
 
-        var newRepo = new Repository<T>(_dbContext);
+        var newRepo = new Repository<T>(_dbContext, _evaluator);
 
         _repos.TryAdd(type, newRepo);
 

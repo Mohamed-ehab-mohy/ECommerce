@@ -2,6 +2,23 @@ using System.Linq.Expressions;
 
 namespace ECommerce.Domain.Specifications;
 
+public static class Specification
+{
+    public static Specification<T> Create<T>(Expression<Func<T, bool>>? predicate = null) where T : class
+    {
+        return new InlineSpecification<T>(predicate);
+    }
+}
+
+internal sealed class InlineSpecification<T> : Specification<T> where T : class
+{
+    public InlineSpecification(Expression<Func<T, bool>>? predicate)
+    {
+        if (predicate is not null)
+            Where(predicate);
+    }
+}
+
 public static class SpecificationExtensions
 {
     public static Specification<T> And<T>(this Specification<T> left, Specification<T> right) where T : class
@@ -28,95 +45,68 @@ internal enum CompositeType
 
 internal sealed class CompositeSpecification<T> : Specification<T> where T : class
 {
-    private readonly Specification<T> _left;
-    private readonly Specification<T> _right;
-    private readonly CompositeType _type;
-
     public CompositeSpecification(Specification<T> left, Specification<T> right, CompositeType type)
     {
-        _left = left;
-        _right = right;
-        _type = type;
-
         if (left.Criteria is not null && right.Criteria is not null)
         {
-            var combined = _type == CompositeType.And
-                ? left.Criteria.And(right.Criteria)
-                : left.Criteria.Or(right.Criteria);
+            var parameter = Expression.Parameter(typeof(T));
+            var combined = type == CompositeType.And
+                ? Expression.AndAlso(
+                    Expression.Invoke(left.Criteria, parameter),
+                    Expression.Invoke(right.Criteria, parameter))
+                : Expression.OrElse(
+                    Expression.Invoke(left.Criteria, parameter),
+                    Expression.Invoke(right.Criteria, parameter));
 
-            ApplyCriteria(combined);
+            Where(Expression.Lambda<Func<T, bool>>(combined, parameter));
         }
         else if (left.Criteria is not null)
         {
-            ApplyCriteria(left.Criteria);
+            Where(left.Criteria);
         }
         else if (right.Criteria is not null)
         {
-            ApplyCriteria(right.Criteria);
+            Where(right.Criteria);
         }
 
         foreach (var include in left.Includes)
-            ApplyInclude(include);
-
+            Include(include);
         foreach (var include in right.Includes)
-            ApplyInclude(include);
+            Include(include);
 
-        if (left.OrderBy is not null)
-            ApplyOrderBy(left.OrderBy);
+        foreach (var order in left.OrderExpressions)
+        {
+            if (order.Descending)
+                OrderByDescending(order.KeySelector);
+            else
+                OrderBy(order.KeySelector);
+        }
 
-        if (left.OrderByDescending is not null)
-            ApplyOrderByDescending(left.OrderByDescending);
+        foreach (var order in right.OrderExpressions)
+        {
+            if (order.Descending)
+                OrderByDescending(order.KeySelector);
+            else
+                OrderBy(order.KeySelector);
+        }
 
         if (left.IsPagingEnabled)
-            ApplyPaging(left.Skip!.Value, left.Take!.Value);
+        {
+            ApplySkip(left.Skip ?? 0);
+            ApplyTake(left.Take ?? 0);
+        }
     }
 }
 
 internal sealed class NotSpecification<T> : Specification<T> where T : class
 {
-    private readonly Specification<T> _specification;
-
-    public NotSpecification(Specification<T> specification)
+    public NotSpecification(Specification<T> spec)
     {
-        _specification = specification;
-
-        if (specification.Criteria is not null)
+        if (spec.Criteria is not null)
         {
-            ApplyCriteria(specification.Criteria.Not());
+            var parameter = Expression.Parameter(typeof(T));
+            var body = Expression.Not(Expression.Invoke(spec.Criteria, parameter));
+            Where(Expression.Lambda<Func<T, bool>>(body, parameter));
         }
-    }
-}
-
-internal static class ExpressionExtensions
-{
-    public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
-    {
-        var parameter = Expression.Parameter(typeof(T));
-
-        var combined = Expression.AndAlso(
-            Expression.Invoke(left, parameter),
-            Expression.Invoke(right, parameter));
-
-        return Expression.Lambda<Func<T, bool>>(combined, parameter);
-    }
-
-    public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
-    {
-        var parameter = Expression.Parameter(typeof(T));
-
-        var combined = Expression.OrElse(
-            Expression.Invoke(left, parameter),
-            Expression.Invoke(right, parameter));
-
-        return Expression.Lambda<Func<T, bool>>(combined, parameter);
-    }
-
-    public static Expression<Func<T, bool>> Not<T>(this Expression<Func<T, bool>> expression)
-    {
-        var parameter = Expression.Parameter(typeof(T));
-
-        var body = Expression.Not(Expression.Invoke(expression, parameter));
-
-        return Expression.Lambda<Func<T, bool>>(body, parameter);
     }
 }

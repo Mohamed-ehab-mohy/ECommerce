@@ -1,4 +1,5 @@
 ﻿using ECommerce.Domain.Repositories;
+using ECommerce.Domain.Specifications;
 using ECommerce.Infrastructure.Data.DbContexts;
 using ECommerce.Infrastructure.Persistence.Interceptors;
 using ECommerce.Infrastructure.Persistence.Seeding;
@@ -25,9 +26,12 @@ public static class DependencyInjection
         services.AddScoped<SoftDeleteInterceptor>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IProductQueryService, ProductQueryService>();
-        services.AddScoped<IBrandQueryService, BrandQueryService>();
-        services.AddScoped<ITypeQueryService, TypeQueryService>();
+
+        services.AddScoped<ISpecificationEvaluator, LambdaSpecificationEvaluator>();
+        services.AddScoped<StringSpecificationEvaluator>();
+        services.AddScoped<ProductQueryService>();
+        services.AddScoped<BrandQueryService>();
+        services.AddScoped<TypeQueryService>();
 
         return services;
     }

@@ -10,11 +10,13 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
 {
     private readonly StoreDbContext _dbContext;
     private readonly DbSet<T> _dbSet;
+    private readonly ISpecificationEvaluator _evaluator;
 
-    public Repository(StoreDbContext dbContext)
+    public Repository(StoreDbContext dbContext, ISpecificationEvaluator evaluator)
     {
         _dbContext = dbContext;
         _dbSet = dbContext.Set<T>();
+        _evaluator = evaluator;
     }
 
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -29,22 +31,22 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
 
     public async Task<IReadOnlyList<T>> GetAllAsync(ISpecification<T> spec, CancellationToken ct = default)
     {
-        return await ApplySpecification(spec).AsNoTracking().ToListAsync(ct);
+        return await _evaluator.GetQuery(_dbSet.AsQueryable(), spec).ToListAsync(ct);
     }
 
     public async Task<T?> GetOneAsync(ISpecification<T> spec, CancellationToken ct = default)
     {
-        return await ApplySpecification(spec).FirstOrDefaultAsync(ct);
+        return await _evaluator.GetQuery(_dbSet.AsQueryable(), spec).FirstOrDefaultAsync(ct);
     }
 
     public async Task<int> CountAsync(ISpecification<T> spec, CancellationToken ct = default)
     {
-        return await ApplySpecification(spec).CountAsync(ct);
+        return await _evaluator.GetQuery(_dbSet.AsQueryable(), spec).CountAsync(ct);
     }
 
     public async Task<bool> AnyAsync(ISpecification<T> spec, CancellationToken ct = default)
     {
-        return await ApplySpecification(spec).AnyAsync(ct);
+        return await _evaluator.GetQuery(_dbSet.AsQueryable(), spec).AnyAsync(ct);
     }
 
     public void Add(T entity)
@@ -60,10 +62,5 @@ public sealed class Repository<T> : IRepository<T> where T : BaseEntity
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
-    }
-
-    private IQueryable<T> ApplySpecification(ISpecification<T> spec)
-    {
-        return SpecificationEvaluator.GetQuery(_dbSet.AsQueryable(), spec);
     }
 }
