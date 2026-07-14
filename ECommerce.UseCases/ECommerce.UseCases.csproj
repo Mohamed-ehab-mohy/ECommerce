@@ -16,4 +16,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ECommerce.UnitTests" />
+  </ItemGroup>
+
 </Project>
