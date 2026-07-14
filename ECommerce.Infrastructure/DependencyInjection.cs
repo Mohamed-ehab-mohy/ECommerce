@@ -16,14 +16,21 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<StoreDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("Default")));
+        services.AddScoped<AuditInterceptor>();
+        services.AddScoped<SoftDeleteInterceptor>();
+
+        services.AddDbContext<StoreDbContext>((sp, options) =>
+        {
+            options.UseSqlServer(configuration.GetConnectionString("Default"));
+            options.AddInterceptors(
+                sp.GetRequiredService<AuditInterceptor>(),
+                sp.GetRequiredService<SoftDeleteInterceptor>());
+        });
 
         services.AddScoped<IDataSeeder, ProductBrandSeeder>();
         services.AddScoped<IDataSeeder, ProductTypeSeeder>();
         services.AddScoped<DatabaseSeeder>();
 
-        services.AddScoped<SoftDeleteInterceptor>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
