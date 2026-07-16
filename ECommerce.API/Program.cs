@@ -1,10 +1,10 @@
 using ECommerce.API;
-using ECommerce.API.HealthChecks;
+using ECommerce.API.Extensions;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Data.DbContexts;
+using ECommerce.Infrastructure.Extensions;
 using ECommerce.Infrastructure.Persistence.Seeding;
 using ECommerce.UseCases;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
 
@@ -19,6 +19,7 @@ public class Program
         builder.Services.AddPresentation();
         builder.Services.AddInfrastructure(builder.Configuration);
         builder.Services.AddApplication();
+        builder.Services.AddHealthCheckInfrastructure(builder.Configuration);
         builder.Services.AddAuthorization();
 
         var app = builder.Build();
@@ -65,23 +66,7 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
-
-        app.MapHealthChecks("/health", new HealthCheckOptions
-        {
-            Predicate = _ => true,
-            ResponseWriter = HealthCheckResponseWriter.WriteResponse
-        });
-
-        app.MapHealthChecks("/health/ready", new HealthCheckOptions
-        {
-            Predicate = check => check.Tags.Contains("ready"),
-            ResponseWriter = HealthCheckResponseWriter.WriteResponse
-        });
-
-        app.MapHealthChecks("/health/live", new HealthCheckOptions
-        {
-            Predicate = _ => false
-        });
+        app.MapHealthCheckEndpoints();
 
         await app.RunAsync();
     }

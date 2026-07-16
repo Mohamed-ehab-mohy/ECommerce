@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
-using ECommerce.API.HealthChecks;
 using ECommerce.API.Middlewares;
 using Microsoft.OpenApi;
 
@@ -47,16 +46,6 @@ public static class DependencyInjection
             if (File.Exists(xmlPath))
                 options.IncludeXmlComments(xmlPath);
         });
-
-        services.AddHealthChecks()
-            .AddCheck<DatabaseHealthCheck>(
-                name: "database",
-                failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
-                tags: ["db", "ready"])
-            .AddCheck<MemoryHealthCheck>(
-                name: "memory",
-                failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded,
-                tags: ["memory", "ready"]);
 
         return services;
     }
