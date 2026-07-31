@@ -57,7 +57,7 @@ jobs:
           cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Format
-        run: dotnet format --verify-no-changes --no-restore
+        run: dotnet format --verify-no-changes
 
   secret-scan:
     name: Secret scan
@@ -76,6 +76,7 @@ jobs:
     name: Dependabot
     runs-on: ubuntu-latest
     needs: build
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
