@@ -23,6 +23,7 @@
 | Phase 1 | S2–S7 | MVP (v1.0) | v1.0 after S7 |
 | Phase 2 | S8–S13 | GA (v1.1) | v1.1 after S13 |
 | Phase 3 | S14–S16 | Enterprise & Hardening (v1.2) | v1.2 after S16 |
+| Phase 3.5 (optional) | S17–S18 | Market-Ready Additions | v1.3 candidate |
 
 ---
 
@@ -46,6 +47,8 @@
 | S14 | `tasks/sprint-14-analytics-and-webhooks.md` | [ ] |
 | S15 | `tasks/sprint-15-hardening-load-and-security.md` | [ ] |
 | S16 | `tasks/sprint-16-v1-2-features-docs-and-release.md` | [ ] |
+| S17 | `tasks/sprint-17-grpc-polly-dapper.md` | [ ] |
+| S18 | `tasks/sprint-18-oauth-gateway-sqlserver.md` | [ ] |
 
 ---
 

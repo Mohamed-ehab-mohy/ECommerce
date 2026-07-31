@@ -485,6 +485,12 @@ All documents live under `docs/` in the repository, are versioned, and are linke
 | 35 | Security Review & Pen-Test Report | Security | D |
 | 36 | Developer Onboarding Guide | Reference | D |
 | 37 | Coding Standards & Conventions | Reference | Baseline — `docs/37-coding-standards.md` |
+| 38 | gRPC Services Design (Internal/B2B) | Engineering | P |
+| 39 | Resilience & Circuit Breakers (Polly) | Engineering | P |
+| 40 | Dapper Read Models (CQRS Read Path) | Engineering | P |
+| 41 | OAuth2/OIDC & Social Login | Security | P |
+| 42 | API Gateway / BFF (YARP) | Engineering | P |
+| 43 | SQL Server Provider (EF + Dapper) | Engineering | P |
 
 ---
 
