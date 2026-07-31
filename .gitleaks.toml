@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Local dev-only Seq bootstrap admin-password hash"
+regexTarget = "match"
+regexes = [
+  '''SEQ_ADMINPASSWORDHASH\s*[:=]\s*[A-Za-z0-9+/=]+''',
+]
