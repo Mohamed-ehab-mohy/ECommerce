@@ -21,7 +21,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecommerce_dev_pw}
       POSTGRES_DB: ${POSTGRES_DB:-ecommerce}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -75,7 +75,7 @@ services:
     restart: unless-stopped
     environment:
       ACCEPT_EULA: Y
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_PASSWORD:-ecommerce_dev_pw}
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: ${SEQ_ADMINPASSWORDHASH:-QAvMPf1b2wWdGwQ1+vFmEqPjoGOmGGu04D9rvcctYZf82HRlf3vkyyWk5pRPprKkmDgO1AHbGuhw6bFyyNv9LYi96dqRcr2l32K/DtUQAvcz}
     ports:
       - "5341:80"
     volumes:
