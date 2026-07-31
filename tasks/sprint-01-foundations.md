@@ -12,13 +12,13 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| T-FND-001 | Solution skeleton + Clean Architecture layering + DI | 5 | [ ] |
-| T-FND-002 | docker-compose stack (PostgreSQL, Redis, RabbitMQ, Seq, Prometheus, Grafana) | 5 | [ ] |
-| T-FND-003 | CI pipeline (build + static analysis + secret scan) | 3 | [ ] |
-| T-OBS-001 | Serilog + OpenTelemetry + health checks baseline | 3 | [ ] |
-| T-FND-004 | EF Core + first migration + Testcontainers harness | 4 | [ ] |
-| T-FND-005 | Domain skeleton (BaseEntity, Result, errors) | 2 | [ ] |
-| T-OPS-001 | README + onboarding runbook | 1 | [ ] |
+| T-FND-001 | Solution skeleton + Clean Architecture layering + DI | 5 | [x] |
+| T-FND-002 | docker-compose stack (PostgreSQL, Redis, RabbitMQ, Seq, Prometheus, Grafana) | 5 | [x] |
+| T-FND-003 | CI pipeline (build + static analysis + secret scan) | 3 | [x] |
+| T-OBS-001 | Serilog + OpenTelemetry + health checks baseline | 3 | [x] |
+| T-FND-004 | EF Core + first migration + Testcontainers harness | 4 | [x] |
+| T-FND-005 | Domain skeleton (BaseEntity, Result, errors) | 2 | [x] |
+| T-OPS-001 | README + onboarding runbook | 1 | [x] |
 
 ---
 
