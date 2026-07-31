@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: nuget
+          cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Restore
         run: dotnet restore
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: nuget
+          cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Test
         run: dotnet test --no-restore
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache: nuget
+          cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Format
         run: dotnet format --verify-no-changes --no-restore
