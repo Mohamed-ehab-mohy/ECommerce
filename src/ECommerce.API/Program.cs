@@ -13,7 +13,7 @@ builder.Host.UseSerilog((context, _, configuration) => configuration
     .WriteTo.Console()
     .WriteTo.Seq(context.Configuration["SeqUrl"] ?? "http://localhost:5341"));
 
-builder.Services.AddApi();
+builder.Services.AddApi(builder.Configuration);
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
