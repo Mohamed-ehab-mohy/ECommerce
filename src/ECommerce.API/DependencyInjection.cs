@@ -1,6 +1,12 @@
 using ECommerce.Infrastructure;
+using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases;
+using ECommerce.UseCases.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ECommerce.API;
 
@@ -13,6 +19,32 @@ public static class DependencyInjection
 
         services.AddControllers();
         services.AddProblemDetails();
+
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+        var authSettings = configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();
+        var keyProvider = new JwtRsaKeyProvider(jwtOptions);
+
+        services.AddSingleton(jwtOptions);
+        services.AddSingleton(authSettings);
+        services.AddSingleton(keyProvider);
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new RsaSecurityKey(keyProvider.Key),
+                    ClockSkew = TimeSpan.FromSeconds(30)
+                };
+            });
+
+        services.AddDataProtection().SetApplicationName("ECommerce");
 
         return services;
     }

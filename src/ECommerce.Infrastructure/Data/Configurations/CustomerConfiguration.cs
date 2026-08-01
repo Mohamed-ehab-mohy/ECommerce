@@ -54,6 +54,12 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(customer => customer.VerificationTokenExpiresAt)
             .HasColumnName("verification_token_expires_at");
 
+        builder.Property(customer => customer.FailedLoginCount)
+            .HasColumnName("failed_login_count");
+
+        builder.Property(customer => customer.LockoutEndAtUtc)
+            .HasColumnName("lockout_end");
+
         builder.Property(customer => customer.CreatedAt).HasColumnName("created_at");
         builder.Property(customer => customer.UpdatedAt).HasColumnName("updated_at");
         builder.Property(customer => customer.IsDeleted).HasColumnName("is_deleted");

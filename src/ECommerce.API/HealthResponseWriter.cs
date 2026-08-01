@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ECommerce.API;

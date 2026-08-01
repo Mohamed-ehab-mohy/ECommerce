@@ -35,6 +35,10 @@ public sealed class Customer : BaseEntity<Guid>
 
     public DateTime? VerificationTokenExpiresAt { get; private set; }
 
+    public int FailedLoginCount { get; private set; }
+
+    public DateTime? LockoutEndAtUtc { get; private set; }
+
     public static Customer Register(
         string email,
         string displayName,
@@ -52,7 +56,8 @@ public sealed class Customer : BaseEntity<Guid>
             DisplayName = displayName,
             Locale = locale,
             Currency = currency,
-            PasswordHash = passwordHash
+            PasswordHash = passwordHash,
+            FailedLoginCount = 0
         };
 
         customer.IssueVerificationToken(verificationTokenHash, verificationTokenExpiresAtUtc);
@@ -107,4 +112,29 @@ public sealed class Customer : BaseEntity<Guid>
         CryptographicOperations.FixedTimeEquals(
             System.Text.Encoding.UTF8.GetBytes(storedHash),
             System.Text.Encoding.UTF8.GetBytes(providedHash));
+
+    public bool IsLockedOut(DateTime utcNow) => LockoutEndAtUtc is { } end && end > utcNow;
+
+    public TimeSpan RemainingLockout(DateTime utcNow) =>
+        LockoutEndAtUtc is { } end && end > utcNow ? end - utcNow : TimeSpan.Zero;
+
+    public void RecordFailedLogin(int maxAttempts, TimeSpan lockoutDuration, DateTime utcNow)
+    {
+        FailedLoginCount++;
+
+        if (FailedLoginCount >= maxAttempts)
+        {
+            LockoutEndAtUtc = utcNow.Add(lockoutDuration);
+            FailedLoginCount = 0;
+        }
+
+        UpdatedAt = utcNow;
+    }
+
+    public void RecordSuccessfulLogin(DateTime utcNow)
+    {
+        FailedLoginCount = 0;
+        LockoutEndAtUtc = null;
+        UpdatedAt = utcNow;
+    }
 }

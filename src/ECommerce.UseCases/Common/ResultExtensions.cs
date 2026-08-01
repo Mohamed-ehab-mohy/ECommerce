@@ -22,6 +22,8 @@ public static class ResultExtensions
             ErrorType.NotFound => (404, "problems/not-found"),
             ErrorType.Unauthorized => (401, "problems/unauthorized"),
             ErrorType.Forbidden => (403, "problems/forbidden"),
+            ErrorType.Locked => (423, "problems/locked"),
+            ErrorType.TooManyRequests => (429, "problems/rate-limited"),
             _ => (500, "problems/internal")
         };
 

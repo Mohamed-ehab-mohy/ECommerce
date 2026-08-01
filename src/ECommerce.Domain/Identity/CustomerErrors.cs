@@ -33,4 +33,9 @@ public static class CustomerErrors
         "Customer.AlreadyVerified",
         "The email address is already verified.",
         ErrorType.Validation);
+
+    public static readonly Error EmailNotVerified = new(
+        "Customer.EmailNotVerified",
+        "Email not verified; verify your email address before signing in.",
+        ErrorType.Forbidden);
 }

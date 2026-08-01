@@ -18,8 +18,10 @@ public static class DependencyInjection
             .AddInterceptors(new DomainEventsInterceptor()));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IEmailSender, LogEmailSender>();
+        services.AddScoped<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
 
