@@ -1,5 +1,7 @@
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
@@ -13,7 +15,8 @@ public sealed class AddAddressCommandHandler(
     IAddressRepository addresses,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    IValidator<AddAddressCommand> validator) : IRequestHandler<AddAddressCommand, Result<Guid>>
+    IValidator<AddAddressCommand> validator,
+    IAuditLogWriter auditLogWriter) : IRequestHandler<AddAddressCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(AddAddressCommand request, CancellationToken cancellationToken)
     {
@@ -37,6 +40,20 @@ public sealed class AddAddressCommandHandler(
             request.Country.Trim().ToUpperInvariant(),
             request.PostalCode,
             timeProvider.GetUtcNow().UtcDateTime);
+
+        await auditLogWriter.WriteAsync(new AuditOperation(
+            AuditActions.AddressAdded,
+            "CustomerAddress",
+            address.Id.ToString(),
+            After: new
+            {
+                address.Label,
+                address.Street,
+                address.City,
+                address.Region,
+                address.Country,
+                address.PostalCode
+            }), cancellationToken);
 
         addresses.Add(address);
         await unitOfWork.SaveChangesAsync(cancellationToken);

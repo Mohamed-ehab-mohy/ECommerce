@@ -3,11 +3,14 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using ECommerce.Domain.Audit;
+using ECommerce.Shared.Audit;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases.Identity;
+using ECommerce.UseCases.Identity.Ports;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -640,6 +643,145 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         var problem = await add.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
         Assert.NotNull(problem);
         Assert.Equal("problems/validation-failed", problem!.Type);
+    }
+
+    [SkippableFact]
+    public async Task Login_Writes_Audit_Entry_With_Actor_Ip_And_Linked_Hash()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"auditlogin_{Guid.NewGuid():N}@example.com");
+
+        await LoginAsync(email, "device-1");
+
+        await using (var scope = _fixture.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+            var entry = await db.AuditEntries.SingleAsync(candidate =>
+                candidate.Action == AuditActions.Login && candidate.EntityId == userId.ToString());
+
+            Assert.Equal(userId, entry.ActorId);
+            Assert.Equal(AuditActorType.User, entry.ActorType);
+            Assert.NotNull(entry.Ip);
+            Assert.NotNull(entry.TraceId);
+            Assert.False(string.IsNullOrWhiteSpace(entry.Hash));
+            Assert.NotNull(entry.PreviousHash);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Profile_And_Address_Changes_Produce_Tamper_Evident_Chain()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"auditchain_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var patch = new HttpRequestMessage(HttpMethod.Patch, "/api/v1/me")
+        {
+            Content = JsonContent.Create(new
+            {
+                displayName = "Ahmed Ehab",
+                phone = "+201001234567",
+                locale = "en",
+                currency = "USD"
+            })
+        };
+        patch.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var patchResponse = await _fixture.Client.SendAsync(patch);
+        Assert.Equal(HttpStatusCode.OK, patchResponse.StatusCode);
+
+        var add = await AddAddressAsync(accessToken, "Home", "1 Sheikh Zayed Rd", "Dubai", "AE");
+        var addressId = (await ReadJsonAsync(add)).GetProperty("id").GetGuid();
+        var delete = await DeleteAddressAsync(accessToken, addressId);
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+
+        await using (var scope = _fixture.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+
+            var actions = await db.AuditEntries.Where(candidate => candidate.ActorId == userId)
+                .Select(candidate => candidate.Action).ToListAsync();
+            Assert.Contains(AuditActions.Login, actions);
+            Assert.Contains(AuditActions.ProfileUpdated, actions);
+            Assert.Contains(AuditActions.AddressAdded, actions);
+            Assert.Contains(AuditActions.AddressRemoved, actions);
+
+            var removed = await db.AuditEntries.SingleAsync(candidate =>
+                candidate.Action == AuditActions.AddressRemoved &&
+                candidate.EntityId == addressId.ToString());
+            Assert.Null(removed.After);
+            Assert.Contains("1 Sheikh Zayed Rd", removed.Before!);
+
+            var chain = await db.AuditEntries.OrderBy(candidate => candidate.Id).ToListAsync();
+            Assert.True(AuditChain.Verify(chain), DescribeChainBreak(chain));
+        }
+    }
+
+    [SkippableFact]
+    public async Task Audit_Logs_Endpoint_Rejects_Non_Admin()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"audit403_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/audit-logs");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Audit_Logs_Endpoint_Returns_Entries_For_Admin()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"auditadmin_{Guid.NewGuid():N}@example.com");
+        await LoginAsync(email, "device-1");
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/audit-logs?action=identity.login");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", MintAdminToken());
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await ReadJsonAsync(response);
+        var items = body.GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(items);
+        Assert.All(items, item => Assert.Equal("identity.login", item.GetProperty("action").GetString()));
+        Assert.Contains(items, item => item.GetProperty("entityId").GetString() == userId.ToString());
+    }
+
+    private static string DescribeChainBreak(IReadOnlyList<AuditEntry> entries)
+    {
+        string? previousHash = null;
+        foreach (var entry in entries.OrderBy(candidate => candidate.Id))
+        {
+            if (!string.Equals(entry.PreviousHash, previousHash, StringComparison.Ordinal))
+            {
+                return $"Link break at Id={entry.Id} (Action={entry.Action}) expected prev='{previousHash}' got='{entry.PreviousHash}'";
+            }
+
+            var recomputed = AuditChain.Compute(previousHash, entry.CanonicalPayload());
+            if (!string.Equals(entry.Hash, recomputed, StringComparison.Ordinal))
+            {
+                return $"Hash mismatch at Id={entry.Id} (Action={entry.Action}) expected='{recomputed}' got='{entry.Hash}' payload='{entry.CanonicalPayload()}'";
+            }
+
+            previousHash = entry.Hash;
+        }
+
+        return "OK";
+    }
+
+    private string MintAdminToken()
+    {
+        using var scope = _fixture.Services.CreateAsyncScope();
+        var issuer = scope.ServiceProvider.GetRequiredService<IAccessTokenIssuer>();
+        var issued = issuer.Issue(new AccessTokenClaims(
+            Guid.NewGuid(),
+            "admin@example.com",
+            new[] { IdentityRoles.Admin },
+            Array.Empty<string>(),
+            Guid.NewGuid().ToString()));
+        return issued.Value;
     }
 
     private async Task<string> GetPasswordResetTokenAsync(Guid userId)

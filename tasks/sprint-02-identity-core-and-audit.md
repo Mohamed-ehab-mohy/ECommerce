@@ -17,9 +17,9 @@
 | US-A-003 | Password reset | 2 | [x] |
 | US-A-004 | Profile & address management | 3 | [x] |
 | US-A-009 | Lockout policy | 2 | [x] |
-| US-M-001 | Audit log (tamper-evident) | 3 | [ ] |
+| US-M-001 | Audit log (tamper-evident) | 3 | [x] |
 | T-SEC-001 | ASP.NET Identity + JWT infra + Data Protection | 4 | [x] |
-| T-DAT-001 | Audit middleware + hash-chain store | 3 | [ ] |
+| T-DAT-001 | Audit middleware + hash-chain store | 3 | [x] |
 
 ---
 
@@ -134,9 +134,9 @@
 - FRS-M-001 compliance.
 
 ### Acceptance
-- [ ] Write to audit is append-only; hash chain verifiable.
-- [ ] Audit capture for login, profile change, address change.
-- [ ] Integration test verifies chain integrity.
+- [x] Write to audit is append-only; hash chain verifiable.
+- [x] Audit capture for login, profile change, address change.
+- [x] Integration test verifies chain integrity.
 
 ### Commit
 `feat(audit): tamper-evident audit log with hash chain`
@@ -144,6 +144,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Auth flows E2E green; refresh rotation + family revocation tested; audit writes verified.
-- [ ] US-A-001,002,003,009 pass DoD with unit + integration tests.
+- [x] Auth flows E2E green; refresh rotation + family revocation tested; audit writes verified.
+- [x] US-A-001,002,003,009 pass DoD with unit + integration tests.
 - [ ] CI green; no sev ≥ 2 defects open.

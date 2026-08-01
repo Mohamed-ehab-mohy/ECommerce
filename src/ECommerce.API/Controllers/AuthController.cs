@@ -52,7 +52,7 @@ public sealed class AuthController(ISender sender) : ControllerBase
                 request.Email,
                 request.Password,
                 deviceId ?? "unknown",
-                ResolveClientIp(HttpContext)),
+                ClientIpResolver.Resolve(HttpContext)),
             cancellationToken);
 
         if (result.IsFailure)
@@ -137,26 +137,4 @@ public sealed class AuthController(ISender sender) : ControllerBase
     };
 
     private static IActionResult ToProblem(OperationError error) => ProblemResponse.Create(error);
-
-    private static string ResolveClientIp(HttpContext context)
-    {
-        var remote = context.Connection.RemoteIpAddress?.ToString();
-        var isLoopback = remote is null or "::1" or "127.0.0.1";
-
-        if (!isLoopback && !string.IsNullOrWhiteSpace(remote))
-        {
-            return remote;
-        }
-
-        if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwarded))
-        {
-            var first = forwarded.ToString().Split(',')[0].Trim();
-            if (!string.IsNullOrWhiteSpace(first))
-            {
-                return first;
-            }
-        }
-
-        return string.IsNullOrWhiteSpace(remote) ? "unknown" : remote;
-    }
 }

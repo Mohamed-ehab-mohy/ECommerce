@@ -1,7 +1,9 @@
+using ECommerce.Infrastructure.Audit;
 using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Outbox;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
@@ -27,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddSingleton<ILoginAttemptThrottler, InMemoryLoginAttemptThrottler>();
+        services.AddScoped<IAuditEntryRepository, AuditEntryRepository>();
 
         services.AddHttpClient<IPasswordBreachChecker, HibpPasswordBreachChecker>(client =>
             client.Timeout = TimeSpan.FromSeconds(10));

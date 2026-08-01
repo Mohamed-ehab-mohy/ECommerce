@@ -1,4 +1,8 @@
+using System.Reflection;
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
+using ECommerce.Shared.Audit;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 
@@ -157,4 +161,53 @@ internal sealed class CapturingEmailSender : IEmailSender
         Messages.Add(message);
         return Task.CompletedTask;
     }
+}
+
+internal sealed class FakeAuditEntryRepository : IAuditEntryRepository
+{
+    private static readonly PropertyInfo IdProperty = typeof(AuditEntry).GetProperty(nameof(AuditEntry.Id))!;
+
+    private long _nextId = 1;
+
+    public List<AuditEntry> Entries { get; } = [];
+
+    public Task AppendAsync(AuditEntry entry, CancellationToken cancellationToken)
+    {
+        IdProperty.SetValue(entry, _nextId++);
+        Entries.Add(entry);
+        return Task.CompletedTask;
+    }
+
+    public Task<string?> GetLatestHashAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Entries.Count == 0 ? null : Entries[^1].Hash);
+
+    public Task<IReadOnlyList<AuditEntry>> QueryAsync(AuditLogQuery query, CancellationToken cancellationToken)
+    {
+        var items = Entries
+            .Where(entry => Matches(entry, query))
+            .OrderByDescending(entry => entry.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<AuditEntry>>(items);
+    }
+
+    public Task<int> CountAsync(AuditLogQuery query, CancellationToken cancellationToken) =>
+        Task.FromResult(Entries.Count(entry => Matches(entry, query)));
+
+    private static bool Matches(AuditEntry entry, AuditLogQuery query) =>
+        (query.ActorId is not { } actorId || entry.ActorId == actorId) &&
+        (string.IsNullOrWhiteSpace(query.Action) || string.Equals(entry.Action, query.Action, StringComparison.Ordinal)) &&
+        (string.IsNullOrWhiteSpace(query.EntityType) || string.Equals(entry.EntityType, query.EntityType, StringComparison.Ordinal)) &&
+        (string.IsNullOrWhiteSpace(query.EntityId) || string.Equals(entry.EntityId, query.EntityId, StringComparison.Ordinal)) &&
+        (query.From is not { } from || entry.OccurredAt >= from) &&
+        (query.To is not { } to || entry.OccurredAt <= to);
+}
+
+internal sealed class FakeAuditContextProvider(Guid? actorId = null, string? ip = "203.0.113.1") : IAuditContextProvider
+{
+    public Guid? ActorId { get; set; } = actorId;
+
+    public AuditContext Get() => new(ActorId, AuditActorType.User, ip, "test-agent", "trace-1");
 }

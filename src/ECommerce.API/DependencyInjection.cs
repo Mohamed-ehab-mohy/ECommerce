@@ -1,6 +1,8 @@
+using ECommerce.API.Audit;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -19,6 +21,15 @@ public static class DependencyInjection
 
         services.AddControllers();
         services.AddProblemDetails();
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<IAuditContextProvider, AuditContextProvider>();
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AuditRead", policy => policy
+                .RequireClaim("roles", IdentityRoles.Admin, IdentityRoles.SuperAdmin));
+        });
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
         var authSettings = configuration.GetSection(AuthSettings.SectionName).Get<AuthSettings>() ?? new AuthSettings();

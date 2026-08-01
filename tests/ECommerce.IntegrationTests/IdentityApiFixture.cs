@@ -32,6 +32,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
         await _container.StartAsync();
 
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _container.GetConnectionString());
+
         var emailSender = new CapturingEmailSender();
 
         _factory = new WebApplicationFactory<Program>()

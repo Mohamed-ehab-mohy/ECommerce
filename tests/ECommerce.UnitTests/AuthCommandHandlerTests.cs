@@ -1,6 +1,9 @@
+using ECommerce.Domain.Audit;
+using ECommerce.Shared.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;
@@ -20,6 +23,7 @@ public sealed class AuthCommandHandlerTests
     private readonly FakeAccessTokenIssuer _accessTokenIssuer = new();
     private readonly AuthSettings _settings = new();
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly FakeAuditEntryRepository _auditEntries = new();
 
     private LoginCommandHandler LoginHandler =>
         new(
@@ -31,7 +35,8 @@ public sealed class AuthCommandHandlerTests
             _timeProvider,
             new TokenPairFactory(_accessTokenIssuer, _settings, _timeProvider),
             new LoginCommandValidator(),
-            new InMemoryLoginAttemptThrottler(_settings));
+            new InMemoryLoginAttemptThrottler(_settings),
+            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
 
     private RefreshCommandHandler RefreshHandler =>
         new(
@@ -78,7 +83,37 @@ public sealed class AuthCommandHandlerTests
     }
 
     [Fact]
-    public async Task Login_With_Wrong_Password_Returns_InvalidCredentials_And_Increments_Counter()
+    public async Task Login_With_Valid_Credentials_Writes_Audit_Entry()
+    {
+        var customer = CreateVerifiedCustomer();
+
+        var result = await LoginHandler.Handle(
+            new LoginCommand(customer.Email, Password, DeviceId, ClientIp),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var entry = Assert.Single(_auditEntries.Entries);
+        Assert.Equal(AuditActions.Login, entry.Action);
+        Assert.Equal("Customer", entry.EntityType);
+        Assert.Equal(customer.Id.ToString(), entry.EntityId);
+        Assert.Equal(customer.Id, entry.ActorId);
+        Assert.Equal(AuditActorType.User, entry.ActorType);
+        Assert.Null(entry.PreviousHash);
+    }
+
+    [Fact]
+    public async Task Login_Failure_Does_Not_Write_Audit_Entry()
+    {
+        var result = await LoginHandler.Handle(
+            new LoginCommand("nobody@example.com", "Wrong!Passw0rd", DeviceId, ClientIp),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Empty(_auditEntries.Entries);
+    }
+
+    [Fact]
+    public async Task Login_Wrong_Password_Returns_InvalidCredentials_And_Increments_Counter()
     {
         var customer = CreateVerifiedCustomer();
 
@@ -168,7 +203,8 @@ public sealed class AuthCommandHandlerTests
             _timeProvider,
             new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
             new LoginCommandValidator(),
-            throttler);
+            throttler,
+            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
 
         Result<LoginResult> result = null!;
         for (var attempt = 1; attempt <= 3; attempt++)
@@ -208,7 +244,8 @@ public sealed class AuthCommandHandlerTests
             _timeProvider,
             new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
             new LoginCommandValidator(),
-            throttler);
+            throttler,
+            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
 
         for (var attempt = 1; attempt <= 2; attempt++)
         {
@@ -247,7 +284,8 @@ public sealed class AuthCommandHandlerTests
             _timeProvider,
             new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
             new LoginCommandValidator(),
-            throttler);
+            throttler,
+            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
 
         for (var attempt = 1; attempt <= 3; attempt++)
         {

@@ -1,6 +1,8 @@
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Errors;
+using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;
@@ -14,15 +16,20 @@ public sealed class ProfileCommandHandlerTests
     private readonly FakeAddressRepository _addresses = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly TimeProvider _timeProvider = TimeProvider.System;
+    private readonly FakeAuditEntryRepository _auditEntries = new();
+    private readonly FakeAuditContextProvider _auditContext = new();
 
     private UpdateProfileCommandHandler UpdateProfileHandler =>
-        new(_users, _unitOfWork, _timeProvider, new UpdateProfileCommandValidator());
+        new(_users, _unitOfWork, _timeProvider, new UpdateProfileCommandValidator(),
+            new AuditLogWriter(_auditEntries, _auditContext));
 
     private AddAddressCommandHandler AddAddressHandler =>
-        new(_users, _addresses, _unitOfWork, _timeProvider, new AddAddressCommandValidator());
+        new(_users, _addresses, _unitOfWork, _timeProvider, new AddAddressCommandValidator(),
+            new AuditLogWriter(_auditEntries, _auditContext));
 
     private DeleteAddressCommandHandler DeleteAddressHandler =>
-        new(_addresses, _unitOfWork, new DeleteAddressCommandValidator());
+        new(_addresses, _unitOfWork, new DeleteAddressCommandValidator(),
+            new AuditLogWriter(_auditEntries, _auditContext));
 
     private GetProfileQueryHandler GetProfileHandler => new(_users);
 
@@ -254,6 +261,87 @@ public sealed class ProfileCommandHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Equal(CustomerErrors.CustomerNotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateProfile_Writes_Audit_Entry_With_Before_And_After()
+    {
+        var customer = CreateCustomer();
+        _auditContext.ActorId = customer.Id;
+
+        var result = await UpdateProfileHandler.Handle(
+            new UpdateProfileCommand(customer.Id, "Ahmed H.", "+201001234567", "en", "usd"),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var entry = Assert.Single(_auditEntries.Entries);
+        Assert.Equal(AuditActions.ProfileUpdated, entry.Action);
+        Assert.Equal("Customer", entry.EntityType);
+        Assert.Equal(customer.Id.ToString(), entry.EntityId);
+        Assert.Equal(customer.Id, entry.ActorId);
+        Assert.Contains("Ahmed Hassan", entry.Before!);
+        Assert.Contains("Ahmed H.", entry.After!);
+        Assert.Contains("AED", entry.Before!);
+        Assert.Contains("USD", entry.After!);
+        Assert.True(AuditChain.Verify(_auditEntries.Entries));
+    }
+
+    [Fact]
+    public async Task AddAddress_Writes_Audit_Entry_With_After_Snapshot()
+    {
+        var customer = CreateCustomer();
+
+        var result = await AddAddressHandler.Handle(
+            new AddAddressCommand(customer.Id, "Home", "12 Street", "Dubai", "DXB", "AE", "00000"),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var entry = Assert.Single(_auditEntries.Entries);
+        Assert.Equal(AuditActions.AddressAdded, entry.Action);
+        Assert.Equal("CustomerAddress", entry.EntityType);
+        Assert.Equal(result.Value.ToString(), entry.EntityId);
+        Assert.Null(entry.Before);
+        Assert.Contains("12 Street", entry.After!);
+        Assert.Contains("AE", entry.After!);
+    }
+
+    [Fact]
+    public async Task DeleteAddress_Writes_Audit_Entry_With_Before_Snapshot()
+    {
+        var customer = CreateCustomer();
+        var add = await AddAddressHandler.Handle(
+            new AddAddressCommand(customer.Id, "Home", "12 Street", "Dubai", "DXB", "AE", "00000"),
+            CancellationToken.None);
+        var addressId = add.Value;
+
+        var result = await DeleteAddressHandler.Handle(
+            new DeleteAddressCommand(customer.Id, addressId),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var entry = Assert.Single(_auditEntries.Entries, candidate => candidate.Action == AuditActions.AddressRemoved);
+        Assert.Equal(AuditActions.AddressAdded, _auditEntries.Entries[0].Action);
+        Assert.Equal(addressId.ToString(), entry.EntityId);
+        Assert.Null(entry.After);
+        Assert.Contains("12 Street", entry.Before!);
+        Assert.True(AuditChain.Verify(_auditEntries.Entries));
+    }
+
+    [Fact]
+    public async Task Address_Audit_Entries_Form_A_Linked_Hash_Chain()
+    {
+        var customer = CreateCustomer();
+
+        await AddAddressHandler.Handle(
+            new AddAddressCommand(customer.Id, "Home", "1 Street", "Dubai", "DXB", "AE", "00000"),
+            CancellationToken.None);
+        await AddAddressHandler.Handle(
+            new AddAddressCommand(customer.Id, "Work", "2 Street", "Sharjah", "SHJ", "AE", "00001"),
+            CancellationToken.None);
+
+        Assert.Equal(2, _auditEntries.Entries.Count);
+        Assert.Equal(_auditEntries.Entries[0].Hash, _auditEntries.Entries[1].PreviousHash);
+        Assert.True(AuditChain.Verify(_auditEntries.Entries));
     }
 
     private Customer CreateCustomer(string email = "ahmed@example.com")

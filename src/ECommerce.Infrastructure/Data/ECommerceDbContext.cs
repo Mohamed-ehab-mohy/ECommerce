@@ -1,3 +1,4 @@
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

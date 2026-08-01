@@ -1,4 +1,6 @@
 using ECommerce.Domain.Events;
+using ECommerce.UseCases.Audit;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
@@ -22,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<PasswordResetRequested>, PasswordResetRequestedEmailHandler>();
         services.AddScoped<IEventHandler<PasswordReset>, PasswordResetNotificationHandler>();
         services.AddScoped<TokenPairFactory>();
+        services.AddScoped<IAuditLogWriter, AuditLogWriter>();
 
         return services;
     }

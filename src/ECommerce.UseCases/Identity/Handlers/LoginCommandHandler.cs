@@ -1,6 +1,9 @@
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
+using ECommerce.Shared.Audit;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
@@ -18,7 +21,8 @@ public sealed class LoginCommandHandler(
     TimeProvider timeProvider,
     TokenPairFactory tokenPairFactory,
     IValidator<LoginCommand> validator,
-    ILoginAttemptThrottler loginAttemptThrottler) : IRequestHandler<LoginCommand, Result<LoginResult>>
+    ILoginAttemptThrottler loginAttemptThrottler,
+    IAuditLogWriter auditLogWriter) : IRequestHandler<LoginCommand, Result<LoginResult>>
 {
     public async Task<Result<LoginResult>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
@@ -76,6 +80,15 @@ public sealed class LoginCommandHandler(
 
         var pair = tokenPairFactory.Issue(customer, request.DeviceId, Guid.NewGuid());
         refreshTokens.Add(pair.RefreshToken);
+
+        await auditLogWriter.WriteAsync(new AuditOperation(
+            AuditActions.Login,
+            "Customer",
+            customer.Id.ToString(),
+            After: new { userId = customer.Id },
+            ActorId: customer.Id,
+            ActorType: AuditActorType.User), cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<LoginResult>.Success(pair.Result);
