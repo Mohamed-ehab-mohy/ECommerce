@@ -1,6 +1,6 @@
-using ECommerce.Domain.Errors;
+using ECommerce.Shared.Errors;
 
-namespace ECommerce.Domain.Primitives;
+namespace ECommerce.Shared.Primitives;
 
 public sealed class Result<T> where T : notnull
 {

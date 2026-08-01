@@ -9,6 +9,24 @@ public sealed class LayerDependencyTests
     private static readonly Assembly UseCases = typeof(ECommerce.UseCases.DependencyInjection).Assembly;
     private static readonly Assembly Infrastructure = typeof(ECommerce.Infrastructure.DependencyInjection).Assembly;
     private static readonly Assembly Domain = typeof(ECommerce.Domain.AssemblyMarker).Assembly;
+    private static readonly Assembly Shared = typeof(ECommerce.Shared.Primitives.Result).Assembly;
+
+    [Fact]
+    public void Shared_ShouldNotDependOnOtherProjects()
+    {
+        var result = Types.InAssembly(Shared)
+            .Should()
+            .NotHaveDependencyOn("ECommerce.API")
+            .And()
+            .NotHaveDependencyOn("ECommerce.UseCases")
+            .And()
+            .NotHaveDependencyOn("ECommerce.Infrastructure")
+            .And()
+            .NotHaveDependencyOn("ECommerce.Domain")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, GetFailureMessage(result));
+    }
 
     [Fact]
     public void Domain_ShouldNotDependOnOtherLayers()
@@ -63,7 +81,7 @@ public sealed class LayerDependencyTests
     [Fact]
     public void NoProject_ShouldDependOnTestAssemblies()
     {
-        foreach (var assembly in new[] { Api, UseCases, Infrastructure, Domain })
+        foreach (var assembly in new[] { Api, UseCases, Infrastructure, Domain, Shared })
         {
             var result = Types.InAssembly(assembly)
                 .Should()

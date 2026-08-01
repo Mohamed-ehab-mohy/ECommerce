@@ -10,6 +10,10 @@ public static class DependencyInjection
     {
         services.AddApplication();
         services.AddInfrastructure(configuration.GetConnectionString("Postgres")!);
+
+        services.AddControllers();
+        services.AddProblemDetails();
+
         return services;
     }
 }

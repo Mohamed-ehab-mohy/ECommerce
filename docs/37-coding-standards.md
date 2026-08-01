@@ -81,6 +81,7 @@ Scope: all C# code (`ECommerce.slnx`), tests, migrations, and infrastructure-as-
 ### 5.1 Solution Layout (matches `ECommerce.slnx`)
 
 ```
+ECommerce.Shared/         # Cross-layer shared kernel: Result/Error primitives only
 ECommerce.Domain/         # Entities, value objects, aggregates, invariants, domain events, ports
 ECommerce.UseCases/       # Application use-cases/handlers, DTOs, business orchestration
 ECommerce.Infrastructure/ # EF Core, repos, HTTP clients, bus, background workers, integrations
@@ -93,10 +94,11 @@ ECommerce.ArchitectureTests/
 
 | Project | May reference |
 |---------|---------------|
-| `Domain` | .NET only — zero dependencies |
-| `UseCases` | `Domain` |
-| `Infrastructure` | `Domain`, `UseCases` |
-| `Api` | `UseCases`, `Infrastructure` |
+| `Shared` | .NET only — zero dependencies |
+| `Domain` | `Shared` |
+| `UseCases` | `Domain`, `Shared` |
+| `Infrastructure` | `Domain`, `UseCases`, `Shared` |
+| `Api` | `UseCases`, `Infrastructure`, `Shared` |
 | Tests | Their target + shared test libs |
 
 Forbidden: `DbContext` in API, DTOs in Domain, cycles, `Infrastructure` in `UseCases`.

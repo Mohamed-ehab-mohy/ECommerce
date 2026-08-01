@@ -1,4 +1,4 @@
-using ECommerce.Domain.Errors;
+using ECommerce.Shared.Errors;
 
 namespace ECommerce.Domain.Exceptions;
 

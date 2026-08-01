@@ -1,5 +1,5 @@
-using ECommerce.Domain.Errors;
-using ECommerce.Domain.Primitives;
+using ECommerce.Shared.Errors;
+using ECommerce.Shared.Primitives;
 
 namespace ECommerce.UnitTests;
 

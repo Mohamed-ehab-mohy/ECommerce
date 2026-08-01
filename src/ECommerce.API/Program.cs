@@ -57,4 +57,9 @@ app.MapPrometheusScrapingEndpoint();
 
 app.MapGet("/", () => "ECommerce API");
 
+app.MapControllers();
+
 app.Run();
+
+public partial class Program;
+

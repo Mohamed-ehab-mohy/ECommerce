@@ -1,4 +1,4 @@
-using ECommerce.Domain.Errors;
+using ECommerce.Shared.Errors;
 using ECommerce.Domain.Exceptions;
 
 namespace ECommerce.UnitTests;

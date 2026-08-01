@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ECommerce.UseCases\ECommerce.UseCases.csproj" />
     <ProjectReference Include="..\ECommerce.Infrastructure\ECommerce.Infrastructure.csproj" />
+    <ProjectReference Include="..\ECommerce.Shared\ECommerce.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -79,6 +79,7 @@ ECommerce.slnx
 │   ├── Reports | Integrations
 │   └── Common (pipelines, interfaces, contracts)
 ├── ECommerce.Domain                 # Domain: aggregates, VOs, events, repositories, specs, services
+├── ECommerce.Shared                 # Shared kernel: Result/Error primitives referenced by all layers
 ├── ECommerce.Infrastructure         # EF Core, PostgreSQL, Redis, RabbitMQ/MassTransit, Hangfire,
 │   │                               # Identity, Serilog, OTel, Audit, FeatureFlags, Seeding, Migrations
 ├── ECommerce.UnitTests              # Domain + handler unit tests
@@ -94,17 +95,22 @@ flowchart BT
     UC["ECommerce.UseCases"]
     INFRA["ECommerce.Infrastructure"]
     DOM["ECommerce.Domain"]
+    SHARED["ECommerce.Shared"]
     API --> UC
     API --> INFRA
+    API --> SHARED
     UC --> DOM
+    UC --> SHARED
     INFRA --> DOM
-    API -.-> INFRA
+    INFRA --> SHARED
+    DOM --> SHARED
 ```
 
-- `Domain` references nothing.
-- `UseCases` references `Domain` only.
-- `Infrastructure` references `Domain` + `UseCases` contracts.
-- `API` references `UseCases` + `Infrastructure`.
+- `Shared` references nothing.
+- `Domain` references `Shared` only.
+- `UseCases` references `Domain` + `Shared`.
+- `Infrastructure` references `Domain` + `UseCases` + `Shared`.
+- `API` references `UseCases` + `Infrastructure` + `Shared`.
 - **Enforced by** `ECommerce.ArchitectureTests` (NetArchTest-style) in CI.
 
 ---
