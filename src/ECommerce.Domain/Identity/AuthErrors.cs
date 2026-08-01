@@ -25,8 +25,9 @@ public static class AuthErrors
         ErrorType.Locked,
         retryAfterSeconds);
 
-    public static readonly Error TooManyAttempts = new(
+    public static Error TooManyAttempts(int retryAfterSeconds) => new(
         "ERR_AUTH_005",
-        "Too many authentication attempts.",
-        ErrorType.TooManyRequests);
+        "Too many authentication attempts from this address.",
+        ErrorType.TooManyRequests,
+        retryAfterSeconds);
 }

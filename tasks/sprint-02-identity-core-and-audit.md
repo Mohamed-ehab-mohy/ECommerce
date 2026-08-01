@@ -16,7 +16,7 @@
 | US-A-002 | Login with JWT + rotating refresh | 3 | [x] |
 | US-A-003 | Password reset | 2 | [x] |
 | US-A-004 | Profile & address management | 3 | [x] |
-| US-A-009 | Lockout policy | 2 | [ ] |
+| US-A-009 | Lockout policy | 2 | [x] |
 | US-M-001 | Audit log (tamper-evident) | 3 | [ ] |
 | T-SEC-001 | ASP.NET Identity + JWT infra + Data Protection | 4 | [x] |
 | T-DAT-001 | Audit middleware + hash-chain store | 3 | [ ] |
@@ -112,10 +112,12 @@
 
 ### Scope
 - 5 failed attempts → 15 min lockout (per `08` §7.2); per-IP adaptive limits.
-- 423 `ERR_AUTH_003` response with `retryAfter`.
+- 423 `ERR_AUTH_003` response with `retryAfter`; 429 `ERR_AUTH_005` when an IP exceeds `MaxFailedLoginAttemptsPerIp` within the window, with `retryAfter` + `Retry-After` header.
 
 ### Acceptance
-- [ ] Lockout enforced; unlock after window; reset on success.
+- [x] Account lockout enforced; unlock after window; reset on success.
+- [x] Per-IP adaptive limits: failures (unknown email / wrong password / unverified) counted per source IP; blocked IP → 429 `ERR_AUTH_005` + `retryAfter`; counter reset on successful login; other IPs unaffected.
+- [x] Unit tests (throttler window/expiry/reset/per-IP scoping + handler behavior) and integration tests (429 with header; scoping; reset).
 
 ### Commit
 `feat(identity): lockout policy`

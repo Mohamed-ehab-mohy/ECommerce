@@ -1,4 +1,5 @@
 using ECommerce.Domain.Identity;
+using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
@@ -16,7 +17,8 @@ public sealed class LoginCommandHandler(
     AuthSettings settings,
     TimeProvider timeProvider,
     TokenPairFactory tokenPairFactory,
-    IValidator<LoginCommand> validator) : IRequestHandler<LoginCommand, Result<LoginResult>>
+    IValidator<LoginCommand> validator,
+    ILoginAttemptThrottler loginAttemptThrottler) : IRequestHandler<LoginCommand, Result<LoginResult>>
 {
     public async Task<Result<LoginResult>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
@@ -28,11 +30,17 @@ public sealed class LoginCommandHandler(
 
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var email = request.Email.Trim().ToLowerInvariant();
+        var clientIp = request.IpAddress.Trim();
+
+        if (loginAttemptThrottler.IsBlocked(clientIp, utcNow, out var retryAfterSeconds))
+        {
+            return Result<LoginResult>.Failure(AuthErrors.TooManyAttempts(retryAfterSeconds));
+        }
 
         var customer = await users.GetByEmailAsync(email, cancellationToken);
         if (customer is null)
         {
-            return Result<LoginResult>.Failure(AuthErrors.InvalidCredentials);
+            return RejectWithRecordedFailure(clientIp, utcNow, AuthErrors.InvalidCredentials);
         }
 
         if (customer.IsLockedOut(utcNow))
@@ -43,23 +51,27 @@ public sealed class LoginCommandHandler(
 
         if (settings.RequireVerifiedEmail && !customer.EmailVerified)
         {
-            return Result<LoginResult>.Failure(CustomerErrors.EmailNotVerified);
+            return RejectWithRecordedFailure(clientIp, utcNow, CustomerErrors.EmailNotVerified);
         }
 
         if (!passwordHasher.Verify(request.Password, customer.PasswordHash))
         {
+            loginAttemptThrottler.RecordFailure(clientIp, utcNow);
             customer.RecordFailedLogin(
                 settings.MaxFailedLoginAttempts,
                 TimeSpan.FromMinutes(settings.LockoutDurationMinutes),
                 utcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return customer.IsLockedOut(utcNow)
-                ? Result<LoginResult>.Failure(AuthErrors.AccountLocked(
-                    (int)customer.RemainingLockout(utcNow).TotalSeconds))
-                : Result<LoginResult>.Failure(AuthErrors.InvalidCredentials);
+            return loginAttemptThrottler.IsBlocked(clientIp, utcNow, out retryAfterSeconds)
+                ? Result<LoginResult>.Failure(AuthErrors.TooManyAttempts(retryAfterSeconds))
+                : customer.IsLockedOut(utcNow)
+                    ? Result<LoginResult>.Failure(AuthErrors.AccountLocked(
+                        (int)customer.RemainingLockout(utcNow).TotalSeconds))
+                    : Result<LoginResult>.Failure(AuthErrors.InvalidCredentials);
         }
 
+        loginAttemptThrottler.RecordSuccess(clientIp, utcNow);
         customer.RecordSuccessfulLogin(utcNow);
 
         var pair = tokenPairFactory.Issue(customer, request.DeviceId, Guid.NewGuid());
@@ -67,5 +79,14 @@ public sealed class LoginCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<LoginResult>.Success(pair.Result);
+    }
+
+    private Result<LoginResult> RejectWithRecordedFailure(string clientIp, DateTime utcNow, Error failure)
+    {
+        loginAttemptThrottler.RecordFailure(clientIp, utcNow);
+
+        return loginAttemptThrottler.IsBlocked(clientIp, utcNow, out var retryAfterSeconds)
+            ? Result<LoginResult>.Failure(AuthErrors.TooManyAttempts(retryAfterSeconds))
+            : Result<LoginResult>.Failure(failure);
     }
 }

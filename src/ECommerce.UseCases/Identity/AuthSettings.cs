@@ -10,5 +10,9 @@ public sealed record AuthSettings
 
     public int LockoutDurationMinutes { get; init; } = 15;
 
+    public int MaxFailedLoginAttemptsPerIp { get; init; } = 10;
+
+    public int LoginAttemptWindowMinutes { get; init; } = 5;
+
     public int RefreshTokenTtlDays { get; init; } = 30;
 }

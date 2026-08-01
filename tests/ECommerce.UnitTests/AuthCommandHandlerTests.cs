@@ -11,6 +11,7 @@ public sealed class AuthCommandHandlerTests
 {
     private const string Password = "Str0ng!Passw0rd";
     private const string DeviceId = "device-1";
+    private const string ClientIp = "127.0.0.1";
 
     private readonly FakeUserRepository _users = new();
     private readonly FakeRefreshTokenRepository _refreshTokens = new();
@@ -29,7 +30,8 @@ public sealed class AuthCommandHandlerTests
             _settings,
             _timeProvider,
             new TokenPairFactory(_accessTokenIssuer, _settings, _timeProvider),
-            new LoginCommandValidator());
+            new LoginCommandValidator(),
+            new InMemoryLoginAttemptThrottler(_settings));
 
     private RefreshCommandHandler RefreshHandler =>
         new(
@@ -52,7 +54,7 @@ public sealed class AuthCommandHandlerTests
         var customer = CreateVerifiedCustomer();
 
         var result = await LoginHandler.Handle(
-            new LoginCommand(customer.Email, Password, DeviceId),
+            new LoginCommand(customer.Email, Password, DeviceId, ClientIp),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -83,7 +85,7 @@ public sealed class AuthCommandHandlerTests
         for (var attempt = 1; attempt <= 4; attempt++)
         {
             var result = await LoginHandler.Handle(
-                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId),
+                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId, ClientIp),
                 CancellationToken.None);
 
             Assert.True(result.IsFailure);
@@ -105,7 +107,7 @@ public sealed class AuthCommandHandlerTests
         for (var attempt = 1; attempt <= 5; attempt++)
         {
             result = await LoginHandler.Handle(
-                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId),
+                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId, ClientIp),
                 CancellationToken.None);
         }
 
@@ -118,7 +120,7 @@ public sealed class AuthCommandHandlerTests
         Assert.Equal(0, customer.FailedLoginCount);
 
         var afterLockout = await LoginHandler.Handle(
-            new LoginCommand(customer.Email, Password, DeviceId),
+            new LoginCommand(customer.Email, Password, DeviceId, ClientIp),
             CancellationToken.None);
 
         Assert.True(afterLockout.IsFailure);
@@ -131,7 +133,7 @@ public sealed class AuthCommandHandlerTests
         var customer = CreateVerifiedCustomer(verified: false);
 
         var result = await LoginHandler.Handle(
-            new LoginCommand(customer.Email, Password, DeviceId),
+            new LoginCommand(customer.Email, Password, DeviceId, ClientIp),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -143,12 +145,118 @@ public sealed class AuthCommandHandlerTests
     public async Task Login_Unknown_Email_Returns_InvalidCredentials()
     {
         var result = await LoginHandler.Handle(
-            new LoginCommand("nobody@example.com", Password, DeviceId),
+            new LoginCommand("nobody@example.com", Password, DeviceId, ClientIp),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal(AuthErrors.InvalidCredentials, result.Error);
         Assert.Equal(0, _unitOfWork.SaveCount);
+    }
+
+    [Fact]
+    public async Task Login_Too_Many_Failures_From_Same_Ip_Returns_TooManyAttempts_With_RetryAfter()
+    {
+        CreateVerifiedCustomer();
+        var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
+        var throttler = new InMemoryLoginAttemptThrottler(settings);
+        var handler = new LoginCommandHandler(
+            _users,
+            _passwordHasher,
+            _refreshTokens,
+            _unitOfWork,
+            settings,
+            _timeProvider,
+            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
+            new LoginCommandValidator(),
+            throttler);
+
+        Result<LoginResult> result = null!;
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            result = await handler.Handle(
+                new LoginCommand("spray@example.com", "Wrong!Passw0rd", DeviceId, "198.51.100.10"),
+                CancellationToken.None);
+        }
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("ERR_AUTH_005", result.Error.Code);
+        Assert.Equal(ErrorType.TooManyRequests, result.Error.Type);
+        Assert.NotNull(result.Error.RetryAfterSeconds);
+        Assert.True(result.Error.RetryAfterSeconds!.Value > 0);
+        Assert.True(throttler.IsBlocked("198.51.100.10", DateTime.UtcNow, out _));
+
+        var stillBlocked = await handler.Handle(
+            new LoginCommand("spray@example.com", Password, DeviceId, "198.51.100.10"),
+            CancellationToken.None);
+
+        Assert.True(stillBlocked.IsFailure);
+        Assert.Equal(ErrorType.TooManyRequests, stillBlocked.Error.Type);
+    }
+
+    [Fact]
+    public async Task Login_Success_Resets_Ip_Failure_Counter()
+    {
+        var customer = CreateVerifiedCustomer();
+        var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
+        var throttler = new InMemoryLoginAttemptThrottler(settings);
+        var handler = new LoginCommandHandler(
+            _users,
+            _passwordHasher,
+            _refreshTokens,
+            _unitOfWork,
+            settings,
+            _timeProvider,
+            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
+            new LoginCommandValidator(),
+            throttler);
+
+        for (var attempt = 1; attempt <= 2; attempt++)
+        {
+            var failed = await handler.Handle(
+                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId, "203.0.113.5"),
+                CancellationToken.None);
+            Assert.True(failed.IsFailure);
+        }
+
+        var success = await handler.Handle(
+            new LoginCommand(customer.Email, Password, DeviceId, "203.0.113.5"),
+            CancellationToken.None);
+        Assert.True(success.IsSuccess);
+
+        for (var attempt = 1; attempt <= 2; attempt++)
+        {
+            var failed = await handler.Handle(
+                new LoginCommand(customer.Email, "Wrong!Passw0rd", DeviceId, "203.0.113.5"),
+                CancellationToken.None);
+            Assert.True(failed.IsFailure);
+            Assert.Equal(ErrorType.Unauthorized, failed.Error.Type);
+        }
+    }
+
+    [Fact]
+    public async Task Login_Failures_From_Different_Ips_Do_Not_Share_Counter()
+    {
+        var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
+        var throttler = new InMemoryLoginAttemptThrottler(settings);
+        var handler = new LoginCommandHandler(
+            _users,
+            _passwordHasher,
+            _refreshTokens,
+            _unitOfWork,
+            settings,
+            _timeProvider,
+            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
+            new LoginCommandValidator(),
+            throttler);
+
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            var result = await handler.Handle(
+                new LoginCommand("spray@example.com", "Wrong!Passw0rd", DeviceId, $"198.51.100.{attempt}"),
+                CancellationToken.None);
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Unauthorized, result.Error.Type);
+        }
     }
 
     [Fact]
@@ -266,7 +374,7 @@ public sealed class AuthCommandHandlerTests
     {
         var (login, customer) = await LoginAsync();
         var secondLogin = await LoginHandler.Handle(
-            new LoginCommand(customer.Email, Password, "device-2"),
+            new LoginCommand(customer.Email, Password, "device-2", ClientIp),
             CancellationToken.None);
 
         var result = await LogoutAllHandler.Handle(
@@ -305,7 +413,7 @@ public sealed class AuthCommandHandlerTests
     {
         var customer = CreateVerifiedCustomer();
         var result = await LoginHandler.Handle(
-            new LoginCommand(customer.Email, Password, DeviceId),
+            new LoginCommand(customer.Email, Password, DeviceId, ClientIp),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);

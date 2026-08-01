@@ -18,5 +18,9 @@ public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
         RuleFor(x => x.DeviceId)
             .NotEmpty()
             .MaximumLength(128);
+
+        RuleFor(x => x.IpAddress)
+            .NotEmpty()
+            .MaximumLength(64);
     }
 }

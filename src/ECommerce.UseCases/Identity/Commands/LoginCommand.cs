@@ -6,4 +6,5 @@ namespace ECommerce.UseCases.Identity.Commands;
 public sealed record LoginCommand(
     string Email,
     string Password,
-    string DeviceId) : IRequest<Result<LoginResult>>;
+    string DeviceId,
+    string IpAddress) : IRequest<Result<LoginResult>>;

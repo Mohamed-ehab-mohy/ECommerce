@@ -239,6 +239,48 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
     }
 
     [SkippableFact]
+    public async Task Login_Many_Unknown_Emails_From_Same_Ip_Returns_429_TooManyAttempts()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        const string attackerIp = "198.51.100.10";
+
+        HttpResponseMessage last = null!;
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            last = await LoginRawAsync($"spray_{attempt}_{Guid.NewGuid():N}@example.com", "Wrong!Passw0rd", "attacker-device", attackerIp);
+        }
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, last.StatusCode);
+        var problem = await last.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
+        Assert.NotNull(problem);
+        Assert.Equal("ERR_AUTH_005", problem!.Extensions["code"]!.ToString());
+        var retryAfter = Assert.IsType<JsonElement>(problem.Extensions["retryAfter"]);
+        Assert.True(retryAfter.GetInt32() > 0);
+        Assert.NotNull(last.Headers.RetryAfter);
+        Assert.NotNull(last.Headers.RetryAfter!.Delta);
+
+        var stillBlocked = await LoginRawAsync($"spray_{Guid.NewGuid():N}@example.com", "Wrong!Passw0rd", "attacker-device", attackerIp);
+        Assert.Equal(HttpStatusCode.TooManyRequests, stillBlocked.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Login_Throttling_Is_Scoped_Per_Ip_And_Success_Resets()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"perip_{Guid.NewGuid():N}@example.com");
+        const string otherIp = "198.51.100.20";
+
+        for (var attempt = 1; attempt <= 9; attempt++)
+        {
+            var response = await LoginRawAsync($"spray_{attempt}_{Guid.NewGuid():N}@example.com", "Wrong!Passw0rd", "other-device", otherIp);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        var login = await LoginRawAsync(email, "Str0ng!Passw0rd", "other-device", otherIp);
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+    }
+
+    [SkippableFact]
     public async Task Refresh_Rotates_Tokens_And_Old_Is_Single_Use()
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
@@ -631,13 +673,16 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         return await ReadJsonAsync(response);
     }
 
-    private Task<HttpResponseMessage> LoginRawAsync(string email, string password, string? deviceId = null)
+    private static int _ipCounter;
+
+    private Task<HttpResponseMessage> LoginRawAsync(string email, string password, string? deviceId = null, string? clientIp = null)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login")
         {
             Content = JsonContent.Create(new { email, password })
         };
         request.Headers.Add("X-Device-Id", deviceId ?? "test-device");
+        request.Headers.Add("X-Forwarded-For", clientIp ?? $"10.0.0.{Interlocked.Increment(ref _ipCounter)}");
         return _fixture.Client.SendAsync(request);
     }
 
