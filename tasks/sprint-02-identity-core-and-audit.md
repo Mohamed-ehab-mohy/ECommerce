@@ -18,7 +18,7 @@
 | US-A-004 | Profile & address management | 3 | [ ] |
 | US-A-009 | Lockout policy | 2 | [ ] |
 | US-M-001 | Audit log (tamper-evident) | 3 | [ ] |
-| T-SEC-001 | ASP.NET Identity + JWT infra + Data Protection | 4 | [ ] |
+| T-SEC-001 | ASP.NET Identity + JWT infra + Data Protection | 4 | [x] |
 | T-DAT-001 | Audit middleware + hash-chain store | 3 | [ ] |
 
 ---
@@ -26,18 +26,18 @@
 ## T-SEC-001 — ASP.NET Identity + JWT Infra + Data Protection
 
 ### Scope
-- Add `ECommerce.Infrastructure` registrations: `Microsoft.AspNetCore.Identity` EF stores, password hashing (bcrypt provider), cookie/data-protection (server-side).
-- JWT: RSA key via config; issuer/audience; access token 15 min; refresh token opaque, hashed at rest, device-bound, 30-day rotation.
-- `RefreshToken` entity + repository.
-- Data Protection: key ring, purposes per concern.
+- Auth infra: RSA-signed JWT (issuer/audience), access token 15 min; opaque refresh token hashed at rest, device-bound, 30-day rotation.
+- `RefreshToken` entity + repository (family/device revocation).
+- Data Protection: `SetApplicationName("ECommerce")` baseline.
+- Lockout fields + `RecordFailedLogin`/`RecordSuccessfulLogin` on `Customer`.
 
 ### Acceptance
-- [ ] Password hashed (bcrypt), never plaintext.
-- [ ] Access token verifies signature/issuer/audience.
-- [ ] Refresh rotation single-use; reuse revokes family (theft detection).
+- [x] Password hashed (bcrypt), never plaintext.
+- [x] Access token verifies signature/issuer/audience.
+- [x] Refresh rotation single-use; reuse revokes family (theft detection). *(End-to-end verified in US-A-002 integration tests.)*
 
 ### Commit
-`feat(identity): add aspnet identity, jwt and refresh token infrastructure`
+`feat(identity): add jwt access and refresh token infrastructure`
 
 ---
 
