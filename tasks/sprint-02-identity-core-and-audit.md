@@ -14,7 +14,7 @@
 |----|------|:------:|--------|
 | US-A-001 | Register & verify (email) | 3 | [x] |
 | US-A-002 | Login with JWT + rotating refresh | 3 | [x] |
-| US-A-003 | Password reset | 2 | [ ] |
+| US-A-003 | Password reset | 2 | [x] |
 | US-A-004 | Profile & address management | 3 | [ ] |
 | US-A-009 | Lockout policy | 2 | [ ] |
 | US-M-001 | Audit log (tamper-evident) | 3 | [ ] |
@@ -81,11 +81,11 @@
 
 ### Scope
 - `POST /api/v1/auth/forgot-password` (always 202), `POST /api/v1/auth/reset-password`.
-- Single-use 30-min token; invalidates sessions on success.
+- Single-use 30-min token; invalidates sessions on success; re-verify email per security architecture.
 
 ### Acceptance
-- [ ] 202 for unknown email (anti-enumeration).
-- [ ] Reset token invalid after use or 30 min.
+- [x] 202 for unknown email (anti-enumeration).
+- [x] Reset token invalid after use or 30 min.
 
 ### Commit
 `feat(identity): password reset flow`
