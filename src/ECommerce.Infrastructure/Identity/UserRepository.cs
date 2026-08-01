@@ -16,5 +16,8 @@ public sealed class UserRepository(ECommerceDbContext dbContext) : IUserReposito
     public Task<Customer?> GetByVerificationTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
         dbContext.Set<Customer>().SingleOrDefaultAsync(customer => customer.VerificationTokenHash == tokenHash, cancellationToken);
 
+    public Task<Customer?> GetByResetTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
+        dbContext.Set<Customer>().SingleOrDefaultAsync(customer => customer.PasswordResetTokenHash == tokenHash, cancellationToken);
+
     public void Add(Customer customer) => dbContext.Set<Customer>().Add(customer);
 }

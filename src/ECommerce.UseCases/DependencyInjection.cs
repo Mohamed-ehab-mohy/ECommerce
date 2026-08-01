@@ -19,6 +19,8 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IEventHandler<CustomerRegistered>, CustomerRegisteredEmailHandler>();
+        services.AddScoped<IEventHandler<PasswordResetRequested>, PasswordResetRequestedEmailHandler>();
+        services.AddScoped<IEventHandler<PasswordReset>, PasswordResetNotificationHandler>();
         services.AddScoped<TokenPairFactory>();
 
         return services;

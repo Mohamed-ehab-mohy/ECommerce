@@ -10,5 +10,7 @@ public interface IUserRepository
 
     Task<Customer?> GetByVerificationTokenHashAsync(string tokenHash, CancellationToken cancellationToken);
 
+    Task<Customer?> GetByResetTokenHashAsync(string tokenHash, CancellationToken cancellationToken);
+
     void Add(Customer customer);
 }

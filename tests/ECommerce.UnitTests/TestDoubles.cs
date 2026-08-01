@@ -19,6 +19,9 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<Customer?> GetByVerificationTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
         Task.FromResult(Customers.FirstOrDefault(customer => customer.VerificationTokenHash == tokenHash));
 
+    public Task<Customer?> GetByResetTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
+        Task.FromResult(Customers.FirstOrDefault(customer => customer.PasswordResetTokenHash == tokenHash));
+
     public void Add(Customer customer) => Customers.Add(customer);
 }
 

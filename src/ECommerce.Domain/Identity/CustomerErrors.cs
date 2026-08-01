@@ -38,4 +38,14 @@ public static class CustomerErrors
         "Customer.EmailNotVerified",
         "Email not verified; verify your email address before signing in.",
         ErrorType.Forbidden);
+
+    public static readonly Error PasswordResetTokenInvalid = new(
+        "Customer.PasswordResetTokenInvalid",
+        "The password reset token is invalid or has already been used.",
+        ErrorType.Validation);
+
+    public static readonly Error PasswordResetTokenExpired = new(
+        "Customer.PasswordResetTokenExpired",
+        "The password reset token has expired.",
+        ErrorType.Validation);
 }

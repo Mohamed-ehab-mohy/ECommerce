@@ -60,6 +60,13 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(customer => customer.LockoutEndAtUtc)
             .HasColumnName("lockout_end");
 
+        builder.Property(customer => customer.PasswordResetTokenHash)
+            .HasMaxLength(128)
+            .HasColumnName("password_reset_token_hash");
+
+        builder.Property(customer => customer.PasswordResetTokenExpiresAt)
+            .HasColumnName("password_reset_token_expires_at");
+
         builder.Property(customer => customer.CreatedAt).HasColumnName("created_at");
         builder.Property(customer => customer.UpdatedAt).HasColumnName("updated_at");
         builder.Property(customer => customer.IsDeleted).HasColumnName("is_deleted");

@@ -345,6 +345,119 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         return (userId, email);
     }
 
+    [SkippableFact]
+    public async Task ForgotPassword_Always_Returns_202()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var knownEmail = $"forgot_{Guid.NewGuid():N}@example.com";
+        var (userId, _) = await RegisterAndVerifyAsync(knownEmail);
+
+        var knownResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email = knownEmail });
+        Assert.Equal(HttpStatusCode.Accepted, knownResponse.StatusCode);
+
+        await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message =>
+            message.To == knownEmail && message.Subject == "Reset your password"));
+
+        var resetMessage = _fixture.EmailSender.Messages.Last(message =>
+            message.To == knownEmail && message.Subject == "Reset your password");
+        Assert.Contains("/reset-password?token=", resetMessage.HtmlBody);
+
+        var unknownEmail = $"ghost_{Guid.NewGuid():N}@example.com";
+        var unknownResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email = unknownEmail });
+        Assert.Equal(HttpStatusCode.Accepted, unknownResponse.StatusCode);
+
+        await Task.Delay(500);
+        Assert.DoesNotContain(_fixture.EmailSender.Messages, message => message.To == unknownEmail);
+    }
+
+    [SkippableFact]
+    public async Task Password_Reset_Flow_Changes_Password_And_Revokes_Sessions()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"pwreset_{Guid.NewGuid():N}@example.com");
+        var login = await LoginAsync(email, "device-1");
+        var oldRefreshToken = login.GetProperty("refreshToken").GetString()!;
+
+        var forgot = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email });
+        Assert.Equal(HttpStatusCode.Accepted, forgot.StatusCode);
+        var resetToken = await GetPasswordResetTokenAsync(userId);
+
+        var reset = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/reset-password", new
+        {
+            token = resetToken,
+            newPassword = "N3w!Passw0rd2026"
+        });
+        Assert.Equal(HttpStatusCode.OK, reset.StatusCode);
+        Assert.Equal("passwordReset", (await ReadJsonAsync(reset)).GetProperty("status").GetString());
+
+        var staleSession = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = oldRefreshToken });
+        Assert.Equal(HttpStatusCode.Unauthorized, staleSession.StatusCode);
+
+        await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message =>
+            message.To == email && message.Subject == "Your password has been changed"));
+
+        var reVerifyToken = await GetPasswordResetReVerifyTokenAsync(userId);
+        var reVerify = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/verify-email", new { token = reVerifyToken });
+        Assert.Equal(HttpStatusCode.OK, reVerify.StatusCode);
+
+        var loginWithNewPassword = await LoginRawAsync(email, "N3w!Passw0rd2026", "device-1");
+        Assert.Equal(HttpStatusCode.OK, loginWithNewPassword.StatusCode);
+
+        var loginWithOldPassword = await LoginRawAsync(email, "Str0ng!Passw0rd", "device-1");
+        Assert.Equal(HttpStatusCode.Unauthorized, loginWithOldPassword.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Reset_Password_Token_Is_Single_Use()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"pwuse_{Guid.NewGuid():N}@example.com");
+
+        await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email });
+        var resetToken = await GetPasswordResetTokenAsync(userId);
+
+        var first = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/reset-password", new
+        {
+            token = resetToken,
+            newPassword = "N3w!Passw0rd2026"
+        });
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+        var second = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/reset-password", new
+        {
+            token = resetToken,
+            newPassword = "An0ther!Passw0rd"
+        });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, second.StatusCode);
+        var problem = await second.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
+        Assert.NotNull(problem);
+        Assert.Equal("Customer.PasswordResetTokenInvalid", problem!.Extensions["code"]!.ToString());
+    }
+
+    private async Task<string> GetPasswordResetTokenAsync(Guid userId)
+    {
+        await using var scope = _fixture.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+        var message = await db.OutboxMessages.SingleAsync(candidate =>
+            candidate.AggregateId == userId &&
+            candidate.EventType == typeof(PasswordResetRequested).FullName);
+
+        using var json = JsonDocument.Parse(message.Content);
+        return json.RootElement.GetProperty("ResetToken").GetString()!;
+    }
+
+    private async Task<string> GetPasswordResetReVerifyTokenAsync(Guid userId)
+    {
+        await using var scope = _fixture.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+        var message = await db.OutboxMessages.SingleAsync(candidate =>
+            candidate.AggregateId == userId &&
+            candidate.EventType == typeof(PasswordReset).FullName);
+
+        using var json = JsonDocument.Parse(message.Content);
+        return json.RootElement.GetProperty("NewVerificationToken").GetString()!;
+    }
+
     private async Task<JsonElement> LoginAsync(string email, string deviceId)
     {
         var response = await LoginRawAsync(email, "Str0ng!Passw0rd", deviceId);

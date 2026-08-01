@@ -88,6 +88,26 @@ public sealed class AuthController(ISender sender) : ControllerBase
             : NoContent();
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ForgotPasswordCommand(request.Email), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : StatusCode(StatusCodes.Status202Accepted, new { status = "accepted" });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ResetPasswordCommand(request.Token, request.NewPassword), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : Ok(new { status = "passwordReset" });
+    }
+
     private static object ToTokenResponse(LoginResult result) => new
     {
         accessToken = result.AccessToken,

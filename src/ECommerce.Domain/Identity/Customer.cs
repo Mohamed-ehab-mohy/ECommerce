@@ -39,6 +39,10 @@ public sealed class Customer : BaseEntity<Guid>
 
     public DateTime? LockoutEndAtUtc { get; private set; }
 
+    public string? PasswordResetTokenHash { get; private set; }
+
+    public DateTime? PasswordResetTokenExpiresAt { get; private set; }
+
     public static Customer Register(
         string email,
         string displayName,
@@ -136,5 +140,59 @@ public sealed class Customer : BaseEntity<Guid>
         FailedLoginCount = 0;
         LockoutEndAtUtc = null;
         UpdatedAt = utcNow;
+    }
+
+    public void IssuePasswordResetToken(string tokenHash, string resetToken, DateTime expiresAtUtc, DateTime utcNow)
+    {
+        PasswordResetTokenHash = tokenHash;
+        PasswordResetTokenExpiresAt = expiresAtUtc;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new PasswordResetRequested(
+            Id,
+            Email,
+            DisplayName,
+            resetToken,
+            expiresAtUtc));
+    }
+
+    public Result ResetPassword(
+        string newPasswordHash,
+        string resetTokenHash,
+        string reVerifyToken,
+        string reVerifyTokenHash,
+        DateTime reVerifyTokenExpiresAtUtc,
+        DateTime utcNow)
+    {
+        if (PasswordResetTokenHash is null || !TokensMatch(PasswordResetTokenHash, resetTokenHash))
+        {
+            return Result.Failure(CustomerErrors.PasswordResetTokenInvalid);
+        }
+
+        if (PasswordResetTokenExpiresAt is null || PasswordResetTokenExpiresAt < utcNow)
+        {
+            return Result.Failure(CustomerErrors.PasswordResetTokenExpired);
+        }
+
+        PasswordHash = newPasswordHash;
+        PasswordResetTokenHash = null;
+        PasswordResetTokenExpiresAt = null;
+        FailedLoginCount = 0;
+        LockoutEndAtUtc = null;
+
+        EmailVerified = false;
+        EmailVerifiedAt = null;
+        VerificationTokenHash = reVerifyTokenHash;
+        VerificationTokenExpiresAt = reVerifyTokenExpiresAtUtc;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new PasswordReset(
+            Id,
+            Email,
+            DisplayName,
+            reVerifyToken,
+            reVerifyTokenExpiresAtUtc));
+
+        return Result.Success();
     }
 }
