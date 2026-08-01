@@ -12,7 +12,7 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-A-001 | Register & verify (email) | 3 | [ ] |
+| US-A-001 | Register & verify (email) | 3 | [x] |
 | US-A-002 | Login with JWT + rotating refresh | 3 | [ ] |
 | US-A-003 | Password reset | 2 | [ ] |
 | US-A-004 | Profile & address management | 3 | [ ] |
@@ -50,10 +50,10 @@
 - `CustomerRegistered` domain event → outbox.
 
 ### Acceptance
-- [ ] 201 + `pendingVerification`; duplicate → 409; invalid → 422.
-- [ ] Unverified users blocked from restricted actions.
-- [ ] Token single-use, expires 24h.
-- [ ] Unit + integration tests (Testcontainers).
+- [x] 201 + `pendingVerification`; duplicate → 409; invalid → 422.
+- [ ] Unverified users blocked from restricted actions. *(Deferred: no restricted endpoints exist yet; `EmailVerified` flag + auth middleware land with US-A-002.)*
+- [x] Token single-use, expires 24h.
+- [x] Unit + integration tests (Testcontainers).
 
 ### Commit
 `feat(identity): register and email verification`
