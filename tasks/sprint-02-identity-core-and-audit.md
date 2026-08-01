@@ -51,7 +51,7 @@
 
 ### Acceptance
 - [x] 201 + `pendingVerification`; duplicate → 409; invalid → 422.
-- [ ] Unverified users blocked from restricted actions. *(Deferred: no restricted endpoints exist yet; `EmailVerified` flag + auth middleware land with US-A-002.)*
+- [x] Unverified users blocked from restricted actions (login → 403 `Customer.EmailNotVerified`; integration-tested).
 - [x] Token single-use, expires 24h.
 - [x] Unit + integration tests (Testcontainers).
 
@@ -146,4 +146,4 @@
 ## Sprint Exit
 - [x] Auth flows E2E green; refresh rotation + family revocation tested; audit writes verified.
 - [x] US-A-001,002,003,009 pass DoD with unit + integration tests.
-- [ ] CI green; no sev ≥ 2 defects open.
+- [x] CI green; no sev ≥ 2 defects open. *(CI gates verified locally: `dotnet build -warnaserror`, `dotnet test`, `dotnet format --verify-no-changes`; secret scan via `.gitleaks.toml` — push `5e82371` triggers CI on `main`.)*
