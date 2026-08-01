@@ -1,5 +1,6 @@
 using ECommerce.Domain.Events;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
 using FluentValidation;
 using MediatR;
@@ -18,6 +19,7 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IEventHandler<CustomerRegistered>, CustomerRegisteredEmailHandler>();
+        services.AddScoped<TokenPairFactory>();
 
         return services;
     }

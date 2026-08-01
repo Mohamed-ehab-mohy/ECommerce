@@ -19,10 +19,11 @@ public static class AuthErrors
         "Refresh token reuse detected; the token family has been revoked.",
         ErrorType.Unauthorized);
 
-    public static readonly Error AccountLocked = new(
+    public static Error AccountLocked(int retryAfterSeconds) => new(
         "ERR_AUTH_003",
         "Account is locked due to too many failed attempts.",
-        ErrorType.Locked);
+        ErrorType.Locked,
+        retryAfterSeconds);
 
     public static readonly Error TooManyAttempts = new(
         "ERR_AUTH_005",

@@ -13,10 +13,78 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<Customer?> GetByEmailAsync(string email, CancellationToken cancellationToken) =>
         Task.FromResult(ExistingByEmail);
 
+    public Task<Customer?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Customers.FirstOrDefault(customer => customer.Id == id));
+
     public Task<Customer?> GetByVerificationTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
         Task.FromResult(Customers.FirstOrDefault(customer => customer.VerificationTokenHash == tokenHash));
 
     public void Add(Customer customer) => Customers.Add(customer);
+}
+
+internal sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
+{
+    public List<RefreshToken> Tokens { get; } = [];
+
+    public int RevokeFamilyCalls { get; private set; }
+
+    public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
+        Task.FromResult(Tokens.FirstOrDefault(token => token.TokenHash == tokenHash));
+
+    public Task<int> RevokeFamilyAsync(Guid familyId, DateTime utcNow, CancellationToken cancellationToken)
+    {
+        RevokeFamilyCalls++;
+        var count = 0;
+
+        foreach (var token in Tokens.Where(token => token.FamilyId == familyId && !token.IsRevoked))
+        {
+            token.Revoke(null, utcNow);
+            count++;
+        }
+
+        return Task.FromResult(count);
+    }
+
+    public Task<int> RevokeAllByUserAsync(Guid userId, DateTime utcNow, CancellationToken cancellationToken)
+    {
+        var count = 0;
+
+        foreach (var token in Tokens.Where(token => token.UserId == userId && !token.IsRevoked))
+        {
+            token.Revoke(null, utcNow);
+            count++;
+        }
+
+        return Task.FromResult(count);
+    }
+
+    public Task<int> TryRevokeAsync(Guid id, DateTime utcNow, CancellationToken cancellationToken)
+    {
+        var token = Tokens.FirstOrDefault(candidate => candidate.Id == id && !candidate.IsRevoked);
+
+        if (token is null)
+        {
+            return Task.FromResult(0);
+        }
+
+        token.Revoke(null, utcNow);
+        return Task.FromResult(1);
+    }
+
+    public void Add(RefreshToken token) => Tokens.Add(token);
+}
+
+internal sealed class FakeAccessTokenIssuer : IAccessTokenIssuer
+{
+    public DateTimeOffset ExpiresAtUtc { get; set; } = DateTimeOffset.UtcNow.AddMinutes(15);
+
+    public int IssueCount { get; private set; }
+
+    public IssuedAccessToken Issue(AccessTokenClaims claims)
+    {
+        IssueCount++;
+        return new IssuedAccessToken($"access:{claims.UserId}:{claims.TokenId}", ExpiresAtUtc);
+    }
 }
 
 internal sealed class FakeUnitOfWork : IUnitOfWork
@@ -28,6 +96,24 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
         SaveCount++;
         return Task.FromResult(1);
     }
+
+    public Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<ITransaction>(new FakeTransaction());
+}
+
+internal sealed class FakeTransaction : ITransaction
+{
+    public int CommitCount { get; private set; }
+
+    public Task CommitAsync(CancellationToken cancellationToken)
+    {
+        CommitCount++;
+        return Task.CompletedTask;
+    }
+
+    public Task RollbackAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
 
 internal sealed class FakePasswordHasher : IPasswordHasher

@@ -3,7 +3,7 @@ using ECommerce.Shared.Primitives;
 
 namespace ECommerce.UseCases.Common;
 
-public sealed record OperationError(int StatusCode, string Type, string Code, string Detail);
+public sealed record OperationError(int StatusCode, string Type, string Code, string Detail, int? RetryAfterSeconds = null);
 
 public static class ResultExtensions
 {
@@ -27,6 +27,6 @@ public static class ResultExtensions
             _ => (500, "problems/internal")
         };
 
-        return new OperationError(statusCode, type, error.Code, error.Description);
+        return new OperationError(statusCode, type, error.Code, error.Description, error.RetryAfterSeconds);
     }
 }
