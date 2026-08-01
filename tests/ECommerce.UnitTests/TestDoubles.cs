@@ -25,6 +25,22 @@ internal sealed class FakeUserRepository : IUserRepository
     public void Add(Customer customer) => Customers.Add(customer);
 }
 
+internal sealed class FakeAddressRepository : IAddressRepository
+{
+    public List<CustomerAddress> Addresses { get; } = [];
+
+    public Task<IReadOnlyList<CustomerAddress>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<CustomerAddress>>(
+            Addresses.Where(address => address.CustomerId == customerId).ToList());
+
+    public Task<CustomerAddress?> GetByIdAndCustomerIdAsync(Guid id, Guid customerId, CancellationToken cancellationToken) =>
+        Task.FromResult(Addresses.FirstOrDefault(address => address.Id == id && address.CustomerId == customerId));
+
+    public void Add(CustomerAddress address) => Addresses.Add(address);
+
+    public void Remove(CustomerAddress address) => Addresses.Remove(address);
+}
+
 internal sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
 {
     public List<RefreshToken> Tokens { get; } = [];

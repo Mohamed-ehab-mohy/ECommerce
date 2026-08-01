@@ -21,6 +21,8 @@ public sealed class Customer : BaseEntity<Guid>
 
     public string DisplayName { get; private set; }
 
+    public string? Phone { get; private set; }
+
     public string Locale { get; private set; }
 
     public string Currency { get; private set; }
@@ -82,6 +84,33 @@ public sealed class Customer : BaseEntity<Guid>
         VerificationTokenHash = tokenHash;
         VerificationTokenExpiresAt = expiresAtUtc;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateProfile(string? displayName, string? phone, string? locale, string? currency, DateTime utcNow)
+    {
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            DisplayName = displayName;
+        }
+
+        if (phone is not null)
+        {
+            Phone = string.IsNullOrWhiteSpace(phone) ? null : phone;
+        }
+
+        if (!string.IsNullOrWhiteSpace(locale))
+        {
+            Locale = locale;
+        }
+
+        if (!string.IsNullOrWhiteSpace(currency))
+        {
+            Currency = currency;
+        }
+
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new ProfileUpdated(Id, DisplayName, Phone, Locale, Currency));
     }
 
     public Result VerifyEmail(string tokenHash, DateTime utcNow)

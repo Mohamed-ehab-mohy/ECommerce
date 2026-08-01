@@ -15,7 +15,7 @@
 | US-A-001 | Register & verify (email) | 3 | [x] |
 | US-A-002 | Login with JWT + rotating refresh | 3 | [x] |
 | US-A-003 | Password reset | 2 | [x] |
-| US-A-004 | Profile & address management | 3 | [ ] |
+| US-A-004 | Profile & address management | 3 | [x] |
 | US-A-009 | Lockout policy | 2 | [ ] |
 | US-M-001 | Audit log (tamper-evident) | 3 | [ ] |
 | T-SEC-001 | ASP.NET Identity + JWT infra + Data Protection | 4 | [x] |
@@ -99,7 +99,9 @@
 - PII masking in logs; validation per address rules.
 
 ### Acceptance
-- [ ] Update profile persists; addresses CRUD scoped to owner.
+- [x] Update profile persists; addresses CRUD scoped to owner.
+- [x] `ProfileUpdated` domain event (feeds US-M-001 audit).
+- [x] Address validation: country ISO2, street/city required; no PII in logs.
 
 ### Commit
 `feat(identity): profile and address management`

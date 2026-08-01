@@ -434,6 +434,172 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Equal("Customer.PasswordResetTokenInvalid", problem!.Extensions["code"]!.ToString());
     }
 
+    [SkippableFact]
+    public async Task Get_Me_Returns_Authenticated_Customers_Profile()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"me_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var profile = await ReadJsonAsync(response);
+        Assert.Equal(userId, profile.GetProperty("id").GetGuid());
+        Assert.Equal(email, profile.GetProperty("email").GetString());
+        Assert.Equal("Ahmed Hassan", profile.GetProperty("displayName").GetString());
+        Assert.Equal("ar", profile.GetProperty("locale").GetString());
+        Assert.Equal("AED", profile.GetProperty("currency").GetString());
+        Assert.True(profile.GetProperty("emailVerified").GetBoolean());
+    }
+
+    [SkippableFact]
+    public async Task Patch_Me_Updates_Profile()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"patch_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var request = new HttpRequestMessage(HttpMethod.Patch, "/api/v1/me")
+        {
+            Content = JsonContent.Create(new
+            {
+                displayName = "Ahmed Ehab",
+                phone = "+201001234567",
+                locale = "en",
+                currency = "USD"
+            })
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var profile = await ReadJsonAsync(response);
+        Assert.Equal("Ahmed Ehab", profile.GetProperty("displayName").GetString());
+        Assert.Equal("+201001234567", profile.GetProperty("phone").GetString());
+        Assert.Equal("en", profile.GetProperty("locale").GetString());
+        Assert.Equal("USD", profile.GetProperty("currency").GetString());
+    }
+
+    [SkippableFact]
+    public async Task Me_Without_Token_Returns_401()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var response = await _fixture.Client.GetAsync("/api/v1/me");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task Address_Flow_Adds_Lists_And_Scopes_To_Owner()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"addr_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var add = await AddAddressAsync(accessToken, "Home", "1 Sheikh Zayed Rd", "Dubai", "AE");
+        Assert.Equal(HttpStatusCode.Created, add.StatusCode);
+        var addressId = (await ReadJsonAsync(add)).GetProperty("id").GetGuid();
+
+        var (otherUserId, _) = await RegisterAndVerifyAsync($"other_{Guid.NewGuid():N}@example.com");
+        var foreignAddressId = Guid.Empty;
+        await using (var scope = _fixture.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+            var foreign = CustomerAddress.Create(
+                otherUserId,
+                "Work",
+                "2 Another St",
+                "Cairo",
+                null,
+                "EG",
+                null,
+                DateTime.UtcNow);
+            db.Set<CustomerAddress>().Add(foreign);
+            await db.SaveChangesAsync();
+            foreignAddressId = foreign.Id;
+        }
+
+        var list = await GetAddressesAsync(accessToken);
+        Assert.Equal(HttpStatusCode.OK, list.StatusCode);
+        var addresses = await ReadJsonAsync(list);
+        var items = addresses.EnumerateArray().ToList();
+        var item = Assert.Single(items);
+        Assert.Equal(addressId, item.GetProperty("id").GetGuid());
+        Assert.Equal("Home", item.GetProperty("label").GetString());
+        Assert.Equal("AE", item.GetProperty("country").GetString());
+        Assert.DoesNotContain(foreignAddressId, items.Select(candidate => candidate.GetProperty("id").GetGuid()));
+    }
+
+    [SkippableFact]
+    public async Task Delete_Address_Own_Address_Returns_204()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"del_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var add = await AddAddressAsync(accessToken, "Home", "1 Sheikh Zayed Rd", "Dubai", "AE");
+        var addressId = (await ReadJsonAsync(add)).GetProperty("id").GetGuid();
+
+        var delete = await DeleteAddressAsync(accessToken, addressId);
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+
+        var list = await ReadJsonAsync(await GetAddressesAsync(accessToken));
+        Assert.Empty(list.EnumerateArray());
+    }
+
+    [SkippableFact]
+    public async Task Delete_Address_Not_Owned_Returns_404()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (userId, email) = await RegisterAndVerifyAsync($"nodel_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var otherAddressId = Guid.NewGuid();
+        await using (var scope = _fixture.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+            db.Set<CustomerAddress>().Add(CustomerAddress.Create(
+                userId,
+                null,
+                "1 Sheikh Zayed Rd",
+                "Dubai",
+                null,
+                "AE",
+                null,
+                DateTime.UtcNow));
+            await db.SaveChangesAsync();
+            otherAddressId = db.Set<CustomerAddress>().OrderBy(a => a.CreatedAt).Last().Id;
+        }
+
+        var otherEmail = $"foreign_{Guid.NewGuid():N}@example.com";
+        await RegisterAndVerifyAsync(otherEmail);
+        var otherToken = (await LoginAsync(otherEmail, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var delete = await DeleteAddressAsync(otherToken, otherAddressId);
+        Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
+        var problem = await delete.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
+        Assert.NotNull(problem);
+        Assert.Equal("Address.AddressNotFound", problem!.Extensions["code"]!.ToString());
+    }
+
+    [SkippableFact]
+    public async Task Add_Address_With_Invalid_Country_Returns_422()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"badaddr_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var add = await AddAddressAsync(accessToken, null, "1 Sheikh Zayed Rd", "Dubai", "123");
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, add.StatusCode);
+        var problem = await add.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
+        Assert.NotNull(problem);
+        Assert.Equal("problems/validation-failed", problem!.Type);
+    }
+
     private async Task<string> GetPasswordResetTokenAsync(Guid userId)
     {
         await using var scope = _fixture.Services.CreateAsyncScope();
@@ -501,6 +667,38 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
             locale = "ar",
             currency = "AED"
         });
+
+    private Task<HttpResponseMessage> AddAddressAsync(string accessToken, string? label, string street, string city, string country)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/me/addresses")
+        {
+            Content = JsonContent.Create(new
+            {
+                label,
+                street,
+                city,
+                region = "Dubai",
+                country,
+                postalCode = "00000"
+            })
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        return _fixture.Client.SendAsync(request);
+    }
+
+    private Task<HttpResponseMessage> GetAddressesAsync(string accessToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me/addresses");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        return _fixture.Client.SendAsync(request);
+    }
+
+    private Task<HttpResponseMessage> DeleteAddressAsync(string accessToken, Guid addressId)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/me/addresses/{addressId}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        return _fixture.Client.SendAsync(request);
+    }
 
     private static async Task<JsonElement> ReadJsonAsync(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>(WebJson);

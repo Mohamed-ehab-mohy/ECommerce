@@ -18,6 +18,7 @@ public static class DependencyInjection
             .AddInterceptors(new DomainEventsInterceptor()));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IEmailSender, LogEmailSender>();

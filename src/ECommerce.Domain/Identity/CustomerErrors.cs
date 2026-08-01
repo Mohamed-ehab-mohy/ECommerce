@@ -4,6 +4,11 @@ namespace ECommerce.Domain.Identity;
 
 public static class CustomerErrors
 {
+    public static readonly Error CustomerNotFound = new(
+        "Customer.CustomerNotFound",
+        "The customer account was not found.",
+        ErrorType.NotFound);
+
     public static readonly Error EmailAlreadyExists = new(
         "Customer.EmailAlreadyExists",
         "An account with this email already exists.",

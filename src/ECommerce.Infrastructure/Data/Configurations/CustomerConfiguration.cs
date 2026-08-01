@@ -26,6 +26,10 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasColumnName("display_name");
 
+        builder.Property(customer => customer.Phone)
+            .HasMaxLength(20)
+            .HasColumnName("phone");
+
         builder.Property(customer => customer.Locale)
             .HasMaxLength(10)
             .IsRequired()
