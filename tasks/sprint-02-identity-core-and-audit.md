@@ -13,7 +13,7 @@
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
 | US-A-001 | Register & verify (email) | 3 | [x] |
-| US-A-002 | Login with JWT + rotating refresh | 3 | [ ] |
+| US-A-002 | Login with JWT + rotating refresh | 3 | [x] |
 | US-A-003 | Password reset | 2 | [ ] |
 | US-A-004 | Profile & address management | 3 | [ ] |
 | US-A-009 | Lockout policy | 2 | [ ] |
@@ -64,13 +64,13 @@
 
 ### Scope
 - `POST /api/v1/auth/login`, `/refresh`, `/logout`, `/logout-all`.
-- Lockout integration, audit of login events.
-- Rotation concurrency-safe (single-use refresh).
+- Lockout integration (5 fails → 15 min, 423 + `retryAfter`, reset on success), verified-email gate (403).
+- Rotation concurrency-safe (single-use refresh; reuse revokes family).
 
 ### Acceptance
-- [ ] Token pair issued; access 15 min; refresh rotates.
-- [ ] Concurrent refresh of same token → family revoked (QAS-style concurrency test).
-- [ ] `logout-all` revokes all device tokens.
+- [x] Token pair issued; access 15 min; refresh rotates.
+- [x] Concurrent refresh of same token → family revoked (QAS-style concurrency test).
+- [x] `logout-all` revokes all device tokens.
 
 ### Commit
 `feat(identity): login with rotating refresh tokens`
