@@ -1,4 +1,6 @@
+using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Common;
 using MediatR;
 
 namespace ECommerce.UseCases.Catalog.Commands;
@@ -15,4 +17,7 @@ public sealed record UpdateProductCommand(
     Guid? BrandId,
     bool? IsFeatured,
     string? Status,
-    string? Locale) : IRequest<Result>;
+    string? Locale) : IRequest<Result>, IRequirePermission
+{
+    public string Permission => Permissions.CatalogProductWrite;
+}

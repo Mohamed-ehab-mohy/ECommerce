@@ -12,6 +12,7 @@ public sealed class RegisterCommandHandlerTests
     private const string DuplicateEmail = "taken@example.com";
 
     private readonly FakeUserRepository _users = new();
+    private readonly FakeRoleRepository _roles = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakePasswordHasher _passwordHasher = new();
     private readonly RegisterCommandValidator _validator = new();
@@ -21,6 +22,7 @@ public sealed class RegisterCommandHandlerTests
     {
         var handler = new RegisterCommandHandler(
             _users,
+            _roles,
             _passwordHasher,
             new FakeBreachChecker(breached: false),
             _unitOfWork,
@@ -60,6 +62,7 @@ public sealed class RegisterCommandHandlerTests
             "raw");
         var handler = new RegisterCommandHandler(
             _users,
+            _roles,
             _passwordHasher,
             new FakeBreachChecker(breached: false),
             _unitOfWork,
@@ -85,6 +88,7 @@ public sealed class RegisterCommandHandlerTests
     {
         var handler = new RegisterCommandHandler(
             _users,
+            _roles,
             _passwordHasher,
             new FakeBreachChecker(breached: true),
             _unitOfWork,
@@ -112,6 +116,7 @@ public sealed class RegisterCommandHandlerTests
     {
         var handler = new RegisterCommandHandler(
             _users,
+            _roles,
             _passwordHasher,
             new FakeBreachChecker(breached: false),
             _unitOfWork,
@@ -136,6 +141,7 @@ public sealed class RegisterCommandHandlerTests
     {
         var handler = new RegisterCommandHandler(
             _users,
+            _roles,
             _passwordHasher,
             new FakeBreachChecker(breached: false),
             _unitOfWork,

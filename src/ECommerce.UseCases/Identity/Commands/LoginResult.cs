@@ -14,6 +14,7 @@ public sealed record LoginResult(
         string accessToken,
         string refreshToken,
         int expiresInSeconds,
-        Customer customer) =>
-        new(accessToken, refreshToken, expiresInSeconds, customer.Id, customer.Email, [IdentityRoles.Customer]);
+        Customer customer,
+        IReadOnlyList<string> roles) =>
+        new(accessToken, refreshToken, expiresInSeconds, customer.Id, customer.Email, roles);
 }

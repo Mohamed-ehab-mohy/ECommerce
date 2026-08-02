@@ -10,6 +10,7 @@ namespace ECommerce.UseCases.Identity.Handlers;
 
 public sealed class RegisterCommandHandler(
     IUserRepository users,
+    IRoleRepository roles,
     IPasswordHasher passwordHasher,
     IPasswordBreachChecker breachChecker,
     IUnitOfWork unitOfWork,
@@ -52,6 +53,13 @@ public sealed class RegisterCommandHandler(
             verificationToken);
 
         users.Add(customer);
+
+        var customerRole = await roles.GetByNameAsync(IdentityRoles.Customer, cancellationToken);
+        if (customerRole is not null)
+        {
+            users.AddRole(UserRole.Create(customer.Id, customerRole.Id));
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(customer.Id);

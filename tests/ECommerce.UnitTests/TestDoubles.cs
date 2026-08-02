@@ -89,6 +89,10 @@ internal sealed class FakeUserRepository : IUserRepository
 {
     public List<Customer> Customers { get; } = [];
 
+    public Dictionary<Guid, List<string>> RolesByUser { get; } = [];
+
+    public Dictionary<Guid, List<string>> PermissionsByUser { get; } = [];
+
     public Customer? ExistingByEmail { get; set; }
 
     public Task<Customer?> GetByEmailAsync(string email, CancellationToken cancellationToken) =>
@@ -103,7 +107,33 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<Customer?> GetByResetTokenHashAsync(string tokenHash, CancellationToken cancellationToken) =>
         Task.FromResult(Customers.FirstOrDefault(customer => customer.PasswordResetTokenHash == tokenHash));
 
+    public Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<string>>(RolesByUser.TryGetValue(userId, out var roles) ? roles : []);
+
+    public Task<IReadOnlyList<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<string>>(PermissionsByUser.TryGetValue(userId, out var perms) ? perms : []);
+
     public void Add(Customer customer) => Customers.Add(customer);
+
+    public void AddRole(UserRole userRole) => throw new NotSupportedException(
+        "FakeUserRepository.AddRole is not supported; seed RolesByUser directly.");
+}
+
+internal sealed class FakeRoleRepository : IRoleRepository
+{
+    public List<Role> Roles { get; } = [];
+
+    public Task<Role?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Roles.FirstOrDefault(role => role.Id == id && !role.IsDeleted));
+
+    public Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken) =>
+        Task.FromResult(Roles.FirstOrDefault(role => role.Name == name && !role.IsDeleted));
+
+    public Task<IReadOnlyList<Role>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Role>>(
+            Roles.Where(role => !role.IsDeleted).OrderBy(role => role.Name).ToList());
+
+    public void Add(Role role) => Roles.Add(role);
 }
 
 internal sealed class FakeAddressRepository : IAddressRepository
@@ -287,4 +317,19 @@ internal sealed class FakeAuditContextProvider(Guid? actorId = null, string? ip 
     public Guid? ActorId { get; set; } = actorId;
 
     public AuditContext Get() => new(ActorId, AuditActorType.User, ip, "test-agent", "trace-1");
+}
+
+internal sealed class FakeCurrentUser(
+    bool isAuthenticated = true,
+    IReadOnlyList<string>? roles = null,
+    IReadOnlyList<string>? permissions = null,
+    Guid? userId = null) : ICurrentUser
+{
+    public Guid? UserId { get; } = userId;
+
+    public bool IsAuthenticated { get; } = isAuthenticated;
+
+    public IReadOnlyList<string> Roles { get; } = roles ?? [];
+
+    public IReadOnlyList<string> Permissions { get; } = permissions ?? [];
 }

@@ -12,5 +12,11 @@ public interface IUserRepository
 
     Task<Customer?> GetByResetTokenHashAsync(string tokenHash, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<string>> GetRolesAsync(Guid userId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken);
+
     void Add(Customer customer);
+
+    void AddRole(UserRole userRole);
 }

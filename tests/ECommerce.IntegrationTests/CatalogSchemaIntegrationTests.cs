@@ -34,6 +34,9 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             Assert.Contains(tables, table => table == "brands");
             Assert.Contains(tables, table => table == "product_translations");
             Assert.Contains(tables, table => table == "product_prices");
+            Assert.Contains(tables, table => table == "roles");
+            Assert.Contains(tables, table => table == "role_permissions");
+            Assert.Contains(tables, table => table == "user_roles");
         }
         finally
         {
@@ -165,7 +168,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name IN (
                 'products', 'product_variants', 'categories',
-                'category_hierarchy', 'brands', 'product_translations', 'product_prices')
+                'category_hierarchy', 'brands', 'product_translations', 'product_prices',
+                'roles', 'role_permissions', 'user_roles')
             """,
             connection);
         var tables = new List<string>();

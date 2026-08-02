@@ -14,9 +14,9 @@
 |----|------|:------:|--------|
 | US-B-001 | Product CRUD with SKU/slug uniqueness | 5 | [x] |
 | US-B-002 | Categories & brands | 4 | [x] |
-| US-A-006 | RBAC enforcement + role management | 3 | [ ] |
+| US-A-006 | RBAC enforcement + role management | 3 | [x] |
 | US-A-005 | Support account lookup | 2 | [ ] |
-| T-SEC-002 | Permission matrix seeded + policy infrastructure | 4 | [ ] |
+| T-SEC-002 | Permission matrix seeded + policy infrastructure | 4 | [x] |
 | T-DAT-002 | Catalog schema + indexes | 2 | [x] |
 
 ---
@@ -81,9 +81,9 @@
 - Enforce on catalog endpoints: `catalog.product.write`, `catalog.product.delete`.
 
 ### Acceptance
-- [ ] Every protected endpoint returns 403 with permission id when missing.
-- [ ] RBAC on endpoints works; role assignment audited.
-- [ ] Default deny (no permission = denied).
+- [x] Every protected endpoint returns 403 with permission id when missing.
+- [x] RBAC on endpoints works; role assignment audited.
+- [x] Default deny (no permission = denied).
 
 ### Commit
 `feat(authz): rbac permission matrix and policy infrastructure`

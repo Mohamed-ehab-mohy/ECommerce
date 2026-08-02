@@ -444,6 +444,7 @@ public sealed class AuthCommandHandlerTests
 
         _users.Customers.Add(customer);
         _users.ExistingByEmail = customer;
+        _users.RolesByUser[customer.Id] = [IdentityRoles.Customer];
         return customer;
     }
 

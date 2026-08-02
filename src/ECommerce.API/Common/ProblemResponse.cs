@@ -17,6 +17,11 @@ public static class ProblemResponse
 
         problem.Extensions["code"] = error.Code;
 
+        if (error.Permission is not null)
+        {
+            problem.Extensions["permission"] = error.Permission;
+        }
+
         if (error.RetryAfterSeconds is { } retryAfter)
         {
             problem.Extensions["retryAfter"] = retryAfter;

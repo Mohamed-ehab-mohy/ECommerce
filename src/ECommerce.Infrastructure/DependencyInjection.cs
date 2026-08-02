@@ -23,6 +23,7 @@ public static class DependencyInjection
             .AddInterceptors(new DomainEventsInterceptor()));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();

@@ -1,8 +1,10 @@
 using ECommerce.API.Audit;
+using ECommerce.API.Common;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -24,6 +26,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
 
         services.AddScoped<IAuditContextProvider, AuditContextProvider>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         services.AddAuthorization(options =>
         {

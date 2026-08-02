@@ -13,4 +13,7 @@ public static class AuditActions
     public const string CategoryUpdated = "catalog.category.updated";
     public const string BrandCreated = "catalog.brand.created";
     public const string BrandUpdated = "catalog.brand.updated";
+    public const string RoleCreated = "identity.role.created";
+    public const string RolePermissionsChanged = "identity.role.permissions.changed";
+    public const string RoleAssigned = "identity.role.assigned";
 }

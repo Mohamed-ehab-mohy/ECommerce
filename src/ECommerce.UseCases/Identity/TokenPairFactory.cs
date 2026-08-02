@@ -6,7 +6,12 @@ namespace ECommerce.UseCases.Identity;
 
 public sealed class TokenPairFactory(IAccessTokenIssuer accessTokenIssuer, AuthSettings settings, TimeProvider timeProvider)
 {
-    public IssuedPair Issue(Customer customer, string deviceId, Guid familyId)
+    public IssuedPair Issue(
+        Customer customer,
+        IReadOnlyList<string> roles,
+        IReadOnlyList<string> permissions,
+        string deviceId,
+        Guid familyId)
     {
         var utcNow = timeProvider.GetUtcNow();
 
@@ -22,15 +27,15 @@ public sealed class TokenPairFactory(IAccessTokenIssuer accessTokenIssuer, AuthS
         var issuedAccessToken = accessTokenIssuer.Issue(new AccessTokenClaims(
             customer.Id,
             customer.Email,
-            [IdentityRoles.Customer],
-            [],
+            roles,
+            permissions,
             Guid.NewGuid().ToString()));
 
         var expiresInSeconds = (int)(issuedAccessToken.ExpiresAtUtc - utcNow).TotalSeconds;
 
         return new IssuedPair(
             refreshToken,
-            LoginResult.From(issuedAccessToken.Value, rawToken, expiresInSeconds, customer));
+            LoginResult.From(issuedAccessToken.Value, rawToken, expiresInSeconds, customer, roles));
     }
 }
 

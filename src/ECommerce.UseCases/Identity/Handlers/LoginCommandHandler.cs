@@ -78,7 +78,9 @@ public sealed class LoginCommandHandler(
         loginAttemptThrottler.RecordSuccess(clientIp, utcNow);
         customer.RecordSuccessfulLogin(utcNow);
 
-        var pair = tokenPairFactory.Issue(customer, request.DeviceId, Guid.NewGuid());
+        var roles = await users.GetRolesAsync(customer.Id, cancellationToken);
+        var permissions = await users.GetPermissionsAsync(customer.Id, cancellationToken);
+        var pair = tokenPairFactory.Issue(customer, roles, permissions, request.DeviceId, Guid.NewGuid());
         refreshTokens.Add(pair.RefreshToken);
 
         await auditLogWriter.WriteAsync(new AuditOperation(

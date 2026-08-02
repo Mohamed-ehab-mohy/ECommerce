@@ -53,7 +53,9 @@ public sealed class RefreshCommandHandler(
             return Result<LoginResult>.Failure(AuthErrors.RefreshTokenInvalid);
         }
 
-        var pair = tokenPairFactory.Issue(customer, token.DeviceId, token.FamilyId);
+        var roles = await users.GetRolesAsync(token.UserId, cancellationToken);
+        var permissions = await users.GetPermissionsAsync(token.UserId, cancellationToken);
+        var pair = tokenPairFactory.Issue(customer, roles, permissions, token.DeviceId, token.FamilyId);
         token.Revoke(pair.RefreshToken.Id, utcNow);
         refreshTokens.Add(pair.RefreshToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
