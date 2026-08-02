@@ -9,4 +9,8 @@ public static class AuditActions
     public const string ProductCreated = "catalog.product.created";
     public const string ProductUpdated = "catalog.product.updated";
     public const string ProductDeactivated = "catalog.product.deactivated";
+    public const string CategoryCreated = "catalog.category.created";
+    public const string CategoryUpdated = "catalog.category.updated";
+    public const string BrandCreated = "catalog.brand.created";
+    public const string BrandUpdated = "catalog.brand.updated";
 }

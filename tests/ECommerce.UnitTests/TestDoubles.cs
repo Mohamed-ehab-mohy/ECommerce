@@ -45,6 +45,46 @@ internal sealed class FakeProductRepository : IProductRepository
     public void Add(Product product) => Products.Add(product);
 }
 
+internal sealed class FakeCategoryRepository : ICategoryRepository
+{
+    public List<Category> Categories { get; } = [];
+
+    public Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Categories.FirstOrDefault(category => category.Id == id));
+
+    public Task<Category?> GetBySlugAsync(string slug, CancellationToken cancellationToken) =>
+        Task.FromResult(Categories.FirstOrDefault(category => category.Slug == slug));
+
+    public Task<IReadOnlyList<Category>> ListAllAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Category>>(Categories.Where(category => !category.IsDeleted).ToList());
+
+    public void Add(Category category) => Categories.Add(category);
+}
+
+internal sealed class FakeBrandRepository : IBrandRepository
+{
+    public List<Brand> Brands { get; } = [];
+
+    public Task<Brand?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Brands.FirstOrDefault(brand => brand.Id == id));
+
+    public Task<Brand?> GetByNameAsync(string name, CancellationToken cancellationToken) =>
+        Task.FromResult(Brands.FirstOrDefault(brand => brand.Name == name));
+
+    public Task<IReadOnlyList<Brand>> ListAsync(int page, int pageSize, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Brand>>(Brands
+            .Where(brand => !brand.IsDeleted)
+            .OrderBy(brand => brand.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList());
+
+    public Task<int> CountAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Brands.Count(brand => !brand.IsDeleted));
+
+    public void Add(Brand brand) => Brands.Add(brand);
+}
+
 internal sealed class FakeUserRepository : IUserRepository
 {
     public List<Customer> Customers { get; } = [];

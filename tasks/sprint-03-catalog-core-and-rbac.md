@@ -13,7 +13,7 @@
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
 | US-B-001 | Product CRUD with SKU/slug uniqueness | 5 | [x] |
-| US-B-002 | Categories & brands | 4 | [ ] |
+| US-B-002 | Categories & brands | 4 | [x] |
 | US-A-006 | RBAC enforcement + role management | 3 | [ ] |
 | US-A-005 | Support account lookup | 2 | [ ] |
 | T-SEC-002 | Permission matrix seeded + policy infrastructure | 4 | [ ] |
@@ -63,8 +63,8 @@
 - Public product list by category/brand.
 
 ### Acceptance
-- [ ] Cycle/depth violations rejected (400).
-- [ ] Tree API returns nested structure.
+- [x] Cycle/depth violations rejected (400).
+- [x] Tree API returns nested structure.
 
 ### Commit
 `feat(catalog): categories hierarchy and brands`

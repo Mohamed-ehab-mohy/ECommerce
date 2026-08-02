@@ -24,6 +24,7 @@ public static class ResultExtensions
             ErrorType.Forbidden => (403, "problems/forbidden"),
             ErrorType.Locked => (423, "problems/locked"),
             ErrorType.TooManyRequests => (429, "problems/rate-limited"),
+            ErrorType.BadRequest => (400, "problems/bad-request"),
             _ => (500, "problems/internal")
         };
 

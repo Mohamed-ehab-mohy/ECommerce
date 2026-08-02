@@ -42,4 +42,19 @@ public sealed class Category : BaseEntity<Guid>
             UpdatedAt = utcNow
         };
     }
+
+    public void UpdateDetails(string name, string slug, int sortOrder, DateTime utcNow)
+    {
+        Name = name;
+        Slug = slug;
+        SortOrder = sortOrder;
+        UpdatedAt = utcNow;
+    }
+
+    public void ChangeParent(Guid? parentId, int newLevel, DateTime utcNow)
+    {
+        ParentId = parentId;
+        Level = newLevel;
+        UpdatedAt = utcNow;
+    }
 }

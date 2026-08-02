@@ -30,6 +30,7 @@ public static class ProblemResponse
 
     private static string Title(int statusCode) => statusCode switch
     {
+        400 => "Bad Request",
         422 => "Validation Failed",
         409 => "Conflict",
         404 => "Not Found",

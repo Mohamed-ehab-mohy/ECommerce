@@ -10,5 +10,6 @@ public enum ErrorType
     Forbidden,
     Internal,
     Locked,
-    TooManyRequests
+    TooManyRequests,
+    BadRequest
 }

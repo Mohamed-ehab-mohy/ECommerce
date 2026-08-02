@@ -27,4 +27,12 @@ public sealed class Brand : BaseEntity<Guid>
             UpdatedAt = utcNow
         };
     }
+
+    public void UpdateDetails(string name, string? description, string? website, DateTime utcNow)
+    {
+        Name = name;
+        Description = description;
+        Website = website;
+        UpdatedAt = utcNow;
+    }
 }
