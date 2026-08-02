@@ -16,6 +16,10 @@ public interface IUserRepository
 
     Task<IReadOnlyList<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<Customer>> SearchAsync(string? email, int page, int pageSize, CancellationToken cancellationToken);
+
+    Task<int> CountAsync(string? email, CancellationToken cancellationToken);
+
     void Add(Customer customer);
 
     void AddRole(UserRole userRole);

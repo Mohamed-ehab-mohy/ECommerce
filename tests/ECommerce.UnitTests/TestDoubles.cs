@@ -113,6 +113,29 @@ internal sealed class FakeUserRepository : IUserRepository
     public Task<IReadOnlyList<string>> GetPermissionsAsync(Guid userId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<string>>(PermissionsByUser.TryGetValue(userId, out var perms) ? perms : []);
 
+    public Task<IReadOnlyList<Customer>> SearchAsync(string? email, int page, int pageSize, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Customer>>(Filtered(email)
+            .OrderBy(customer => customer.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList());
+
+    public Task<int> CountAsync(string? email, CancellationToken cancellationToken) =>
+        Task.FromResult(Filtered(email).Count());
+
+    private IEnumerable<Customer> Filtered(string? email)
+    {
+        var customers = Customers.Where(customer => !customer.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var term = email.Trim().ToLowerInvariant();
+            customers = customers.Where(customer => customer.Email.ToLower().Contains(term));
+        }
+
+        return customers;
+    }
+
     public void Add(Customer customer) => Customers.Add(customer);
 
     public void AddRole(UserRole userRole) => throw new NotSupportedException(

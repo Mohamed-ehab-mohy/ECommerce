@@ -49,6 +49,44 @@ public sealed class UserRepository(ECommerceDbContext dbContext) : IUserReposito
         return permissions;
     }
 
+    public async Task<IReadOnlyList<Customer>> SearchAsync(
+        string? email,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.Set<Customer>()
+            .Where(customer => !customer.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var term = email.Trim().ToLowerInvariant();
+            query = query.Where(customer => customer.Email.ToLower().Contains(term));
+        }
+
+        var customers = await query
+            .OrderBy(customer => customer.Email)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return customers;
+    }
+
+    public async Task<int> CountAsync(string? email, CancellationToken cancellationToken)
+    {
+        var query = dbContext.Set<Customer>()
+            .Where(customer => !customer.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var term = email.Trim().ToLowerInvariant();
+            query = query.Where(customer => customer.Email.ToLower().Contains(term));
+        }
+
+        return await query.CountAsync(cancellationToken);
+    }
+
     public void Add(Customer customer) => dbContext.Set<Customer>().Add(customer);
 
     public void AddRole(UserRole userRole) => dbContext.Set<UserRole>().Add(userRole);

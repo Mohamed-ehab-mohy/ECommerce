@@ -15,7 +15,7 @@
 | US-B-001 | Product CRUD with SKU/slug uniqueness | 5 | [x] |
 | US-B-002 | Categories & brands | 4 | [x] |
 | US-A-006 | RBAC enforcement + role management | 3 | [x] |
-| US-A-005 | Support account lookup | 2 | [ ] |
+| US-A-005 | Support account lookup | 2 | [x] |
 | T-SEC-002 | Permission matrix seeded + policy infrastructure | 4 | [x] |
 | T-DAT-002 | Catalog schema + indexes | 2 | [x] |
 
@@ -96,7 +96,7 @@
 - `GET /api/v1/customers` + `GET /api/v1/customers/{id}` (staff, permission-gated), PII masking in responses.
 
 ### Acceptance
-- [ ] Support can search by email; PII masked for non-privileged roles.
+- [x] Support can search by email; PII masked for non-privileged roles.
 
 ### Commit
 `feat(identity): support customer lookup with pii masking`
@@ -104,6 +104,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Product slice with validation + audit; every endpoint permission-mapped (403 tested).
-- [ ] US-B-001,002 and US-A-005,006 green.
+- [x] Product slice with validation + audit; every endpoint permission-mapped (403 tested).
+- [x] US-B-001,002 and US-A-005,006 green.
 - [ ] CI green.

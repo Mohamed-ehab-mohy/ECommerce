@@ -8,6 +8,7 @@ public static class Permissions
     public const string RolesWrite = "roles.write";
     public const string RolesPermissionsWrite = "roles.permissions.write";
     public const string CustomersRead = "customers.read";
+    public const string CustomersPiiRead = "customers.pii.read";
     public const string AuthImpersonate = "auth.impersonate";
     public const string AuditRead = "audit.read";
 
@@ -19,6 +20,7 @@ public static class Permissions
         RolesWrite,
         RolesPermissionsWrite,
         CustomersRead,
+        CustomersPiiRead,
         AuthImpersonate,
         AuditRead
     ];
