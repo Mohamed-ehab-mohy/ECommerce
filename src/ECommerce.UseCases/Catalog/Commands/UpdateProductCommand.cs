@@ -1,0 +1,18 @@
+using ECommerce.Shared.Primitives;
+using MediatR;
+
+namespace ECommerce.UseCases.Catalog.Commands;
+
+public sealed record UpdateProductCommand(
+    Guid ProductId,
+    string? Slug,
+    string? Name,
+    string? Description,
+    string? Currency,
+    decimal? ListAmount,
+    decimal? OfferAmount,
+    Guid? CategoryId,
+    Guid? BrandId,
+    bool? IsFeatured,
+    string? Status,
+    string? Locale) : IRequest<Result>;

@@ -33,4 +33,11 @@ public sealed class ProductPrice
             UpdatedAt = utcNow
         };
     }
+
+    public void Update(decimal listAmount, decimal? offerAmount, DateTime utcNow)
+    {
+        ListAmount = listAmount;
+        OfferAmount = offerAmount;
+        UpdatedAt = utcNow;
+    }
 }

@@ -1,9 +1,11 @@
 using ECommerce.Infrastructure.Audit;
+using ECommerce.Infrastructure.Catalog;
 using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
@@ -23,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IEmailSender, LogEmailSender>();
         services.AddScoped<IAccessTokenIssuer, JwtAccessTokenIssuer>();

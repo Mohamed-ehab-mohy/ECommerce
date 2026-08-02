@@ -36,7 +36,7 @@ public sealed class ProductTranslationConfiguration : IEntityTypeConfiguration<P
             .HasColumnName("meta_description");
 
         builder.HasOne<Product>()
-            .WithMany()
+            .WithMany(product => product.Translations)
             .HasForeignKey(translation => translation.ProductId);
 
         builder.HasIndex(translation => translation.Locale).HasDatabaseName("ix_product_translations_locale");

@@ -38,4 +38,12 @@ public sealed class ProductTranslation
             MetaDescription = metaDescription
         };
     }
+
+    public void Update(string name, string? description, string? metaTitle = null, string? metaDescription = null)
+    {
+        Name = name;
+        Description = description;
+        MetaTitle = metaTitle;
+        MetaDescription = metaDescription;
+    }
 }

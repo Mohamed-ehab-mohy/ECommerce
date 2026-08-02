@@ -31,7 +31,7 @@ public sealed class ProductPriceConfiguration : IEntityTypeConfiguration<Product
         builder.Property(price => price.UpdatedAt).HasColumnName("updated_at");
 
         builder.HasOne<Product>()
-            .WithMany()
+            .WithMany(product => product.Prices)
             .HasForeignKey(price => price.ProductId);
 
         builder.HasIndex(price => new { price.Currency, price.ListAmount })

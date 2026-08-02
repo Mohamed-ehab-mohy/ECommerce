@@ -54,11 +54,11 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             await context.Database.MigrateAsync();
 
             var now = DateTime.UtcNow;
-            context.Products.Add(Product.Create("SKU-001", "slug-001", null, null, false, now));
+            context.Products.Add(Product.Create("SKU-001", "slug-001", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
             await context.SaveChangesAsync();
 
-            context.Products.Add(Product.Create("SKU-001", "slug-002", null, null, false, now));
+            context.Products.Add(Product.Create("SKU-001", "slug-002", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
             await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
         }
@@ -81,11 +81,11 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             await context.Database.MigrateAsync();
 
             var now = DateTime.UtcNow;
-            context.Products.Add(Product.Create("SKU-002", "same-slug", null, null, false, now));
+            context.Products.Add(Product.Create("SKU-002", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
             await context.SaveChangesAsync();
 
-            context.Products.Add(Product.Create("SKU-003", "same-slug", null, null, false, now));
+            context.Products.Add(Product.Create("SKU-003", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
             await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
         }
@@ -108,7 +108,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             await context.Database.MigrateAsync();
 
             var now = DateTime.UtcNow;
-            var product = Product.Create("SKU-004", "slug-004", null, null, false, now);
+            var product = Product.Create("SKU-004", "slug-004", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
@@ -138,7 +138,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             await context.Database.MigrateAsync();
 
             var now = DateTime.UtcNow;
-            var product = Product.Create("SKU-005", "slug-005", null, null, false, now);
+            var product = Product.Create("SKU-005", "slug-005", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
             context.Products.Add(product);
             await context.SaveChangesAsync();
 

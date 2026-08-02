@@ -12,7 +12,7 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-B-001 | Product CRUD with SKU/slug uniqueness | 5 | [ ] |
+| US-B-001 | Product CRUD with SKU/slug uniqueness | 5 | [x] |
 | US-B-002 | Categories & brands | 4 | [ ] |
 | US-A-006 | RBAC enforcement + role management | 3 | [ ] |
 | US-A-005 | Support account lookup | 2 | [ ] |
@@ -46,9 +46,9 @@
 - Errors: 409 SKU conflict; 422 validation.
 
 ### Acceptance
-- [ ] CRUD E2E; uniqueness enforced at DB level.
-- [ ] Deactivate (soft-delete) hides from public reads.
-- [ ] Audit captured on every mutation.
+- [x] CRUD E2E; uniqueness enforced at DB level.
+- [x] Deactivate (soft-delete) hides from public reads.
+- [x] Audit captured on every mutation.
 
 ### Commit
 `feat(catalog): product crud with sku/slug uniqueness`

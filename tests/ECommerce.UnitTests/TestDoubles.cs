@@ -1,12 +1,49 @@
 using System.Reflection;
 using ECommerce.Domain.Audit;
+using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 
 namespace ECommerce.UnitTests;
+
+internal sealed class FakeProductRepository : IProductRepository
+{
+    public List<Product> Products { get; } = [];
+
+    public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Products.FirstOrDefault(product => product.Id == id));
+
+    public Task<Product?> GetActiveByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Products.FirstOrDefault(
+            product => product.Id == id && product.Status == ProductStatus.Active && !product.IsDeleted));
+
+    public Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken) =>
+        Task.FromResult(Products.Any(product => product.Sku == sku));
+
+    public Task<bool> SlugExistsAsync(string slug, Guid excludeProductId, CancellationToken cancellationToken) =>
+        Task.FromResult(Products.Any(product => product.Slug == slug && product.Id != excludeProductId));
+
+    public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>
+        Task.FromResult(Products.Any(product => product.Slug == slug));
+
+    public Task<IReadOnlyList<Product>> ListActiveAsync(int page, int pageSize, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Product>>(Products
+            .Where(product => product.Status == ProductStatus.Active && !product.IsDeleted)
+            .OrderBy(product => product.Slug)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList());
+
+    public Task<int> CountActiveAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Products.Count(
+            product => product.Status == ProductStatus.Active && !product.IsDeleted));
+
+    public void Add(Product product) => Products.Add(product);
+}
 
 internal sealed class FakeUserRepository : IUserRepository
 {

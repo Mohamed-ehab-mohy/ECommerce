@@ -6,4 +6,7 @@ public static class AuditActions
     public const string ProfileUpdated = "identity.profile.updated";
     public const string AddressAdded = "identity.address.added";
     public const string AddressRemoved = "identity.address.removed";
+    public const string ProductCreated = "catalog.product.created";
+    public const string ProductUpdated = "catalog.product.updated";
+    public const string ProductDeactivated = "catalog.product.deactivated";
 }
