@@ -1,0 +1,180 @@
+using ECommerce.Domain.Catalog;
+using ECommerce.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+
+namespace ECommerce.IntegrationTests;
+
+public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContainerFixture>
+{
+    private readonly PostgresContainerFixture _fixture;
+
+    public CatalogSchemaIntegrationTests(PostgresContainerFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [SkippableFact]
+    public async Task CatalogMigration_Is_Additive_And_Applies()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
+        try
+        {
+            await using var context = CreateContext();
+            await context.Database.MigrateAsync();
+
+            var tables = await QueryTablesAsync();
+            Assert.Contains(tables, table => table == "products");
+            Assert.Contains(tables, table => table == "product_variants");
+            Assert.Contains(tables, table => table == "categories");
+            Assert.Contains(tables, table => table == "category_hierarchy");
+            Assert.Contains(tables, table => table == "brands");
+            Assert.Contains(tables, table => table == "product_translations");
+            Assert.Contains(tables, table => table == "product_prices");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Product_Sku_Uniqueness_Is_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
+        try
+        {
+            await using var context = CreateContext();
+            await context.Database.MigrateAsync();
+
+            var now = DateTime.UtcNow;
+            context.Products.Add(Product.Create("SKU-001", "slug-001", null, null, false, now));
+
+            await context.SaveChangesAsync();
+
+            context.Products.Add(Product.Create("SKU-001", "slug-002", null, null, false, now));
+
+            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Product_Slug_Uniqueness_Is_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
+        try
+        {
+            await using var context = CreateContext();
+            await context.Database.MigrateAsync();
+
+            var now = DateTime.UtcNow;
+            context.Products.Add(Product.Create("SKU-002", "same-slug", null, null, false, now));
+
+            await context.SaveChangesAsync();
+
+            context.Products.Add(Product.Create("SKU-003", "same-slug", null, null, false, now));
+
+            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Variant_Sku_Uniqueness_Is_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
+        try
+        {
+            await using var context = CreateContext();
+            await context.Database.MigrateAsync();
+
+            var now = DateTime.UtcNow;
+            var product = Product.Create("SKU-004", "slug-004", null, null, false, now);
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant One", now));
+            await context.SaveChangesAsync();
+
+            context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant Duplicate", now));
+
+            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Price_Constraints_Are_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
+        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
+        try
+        {
+            await using var context = CreateContext();
+            await context.Database.MigrateAsync();
+
+            var now = DateTime.UtcNow;
+            var product = Product.Create("SKU-005", "slug-005", null, null, false, now);
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
+
+            context.ProductPrices.Add(ProductPrice.Create(product.Id, "USD", 0m, null, now));
+
+            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+        }
+    }
+
+    private ECommerceDbContext CreateContext() =>
+        new ECommerceDbContextFactory().CreateDbContext(Array.Empty<string>());
+
+    private async Task<IReadOnlyCollection<string>> QueryTablesAsync()
+    {
+        await using var connection = new NpgsqlConnection(_fixture.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name IN (
+                'products', 'product_variants', 'categories',
+                'category_hierarchy', 'brands', 'product_translations', 'product_prices')
+            """,
+            connection);
+        var tables = new List<string>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            tables.Add(reader.GetString(0));
+        }
+
+        return tables;
+    }
+}

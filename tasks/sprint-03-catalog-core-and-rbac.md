@@ -17,7 +17,7 @@
 | US-A-006 | RBAC enforcement + role management | 3 | [ ] |
 | US-A-005 | Support account lookup | 2 | [ ] |
 | T-SEC-002 | Permission matrix seeded + policy infrastructure | 4 | [ ] |
-| T-DAT-002 | Catalog schema + indexes | 2 | [ ] |
+| T-DAT-002 | Catalog schema + indexes | 2 | [x] |
 
 ---
 
@@ -29,8 +29,8 @@
 - Indexes: SKU unique, slug unique, `(locale)` for translations, price index for search.
 
 ### Acceptance
-- [ ] Migration `CatalogMigration` additive; EF mapping matches ERD.
-- [ ] Integration test verifies uniqueness constraints.
+- [x] Migration `CatalogMigration` additive; EF mapping matches ERD.
+- [x] Integration test verifies uniqueness constraints.
 
 ### Commit
 `feat(infra): catalog schema and indexes`
