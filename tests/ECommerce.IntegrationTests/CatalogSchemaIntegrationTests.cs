@@ -145,7 +145,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            context.ProductPrices.Add(ProductPrice.Create(product.Id, "USD", 0m, null, now));
+            context.ProductPrices.Add(ProductPrice.Create(product.Id, "EUR", 0m, null, now));
 
             await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
         }

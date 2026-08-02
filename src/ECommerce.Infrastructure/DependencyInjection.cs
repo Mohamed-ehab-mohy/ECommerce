@@ -11,6 +11,7 @@ using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace ECommerce.Infrastructure;
 
@@ -18,8 +19,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string postgresConnectionString)
     {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+
         services.AddDbContext<ECommerceDbContext>(options => options
-            .UseNpgsql(postgresConnectionString)
+            .UseNpgsql(dataSource)
             .AddInterceptors(new DomainEventsInterceptor()));
 
         services.AddScoped<IUserRepository, UserRepository>();

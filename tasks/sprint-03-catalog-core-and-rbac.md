@@ -106,4 +106,4 @@
 ## Sprint Exit
 - [x] Product slice with validation + audit; every endpoint permission-mapped (403 tested).
 - [x] US-B-001,002 and US-A-005,006 green.
-- [ ] CI green.
+- [x] CI green.
