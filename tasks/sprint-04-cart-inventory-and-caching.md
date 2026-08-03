@@ -17,7 +17,7 @@
 | US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [ ] |
 | US-F-001 | Warehouse management | 3 | [ ] |
 | US-F-002 | Stock ledger (append-only) | 3 | [ ] |
-| T-DAT-003 | Redis cache + cart repository | 5 | [ ] |
+| T-DAT-003 | Redis cache + cart repository | 5 | [x] |
 | T-DAT-004 | Currency/locale configuration service | 3 | [ ] |
 
 ---
@@ -30,8 +30,8 @@
 - Stampede protection (per-key lock, 100 ms).
 
 ### Acceptance
-- [ ] Cart survives restart; mutations update cache + store.
-- [ ] Cache hit ratio logged; invalidation on mutation.
+- [x] Cart survives restart; mutations update cache + store.
+- [x] Cache hit ratio logged; invalidation on mutation.
 
 ### Commit
 `feat(cart): redis cache-aside cart repository`

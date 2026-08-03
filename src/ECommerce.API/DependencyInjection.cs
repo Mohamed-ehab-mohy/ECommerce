@@ -19,7 +19,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddApplication();
-        services.AddInfrastructure(configuration.GetConnectionString("Postgres")!);
+        services.AddInfrastructure(
+            configuration.GetConnectionString("Postgres")!,
+            configuration.GetConnectionString("Redis")!);
 
         services.AddControllers();
         services.AddProblemDetails();
