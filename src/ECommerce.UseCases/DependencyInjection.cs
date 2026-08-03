@@ -4,6 +4,7 @@ using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
+using ECommerce.UseCases.Pricing;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ILocaleCatalog, DefaultLocaleCatalog>();
+        services.AddSingleton<ICurrencyCatalog, DefaultCurrencyCatalog>();
         services.AddScoped<IEventHandler<CustomerRegistered>, CustomerRegisteredEmailHandler>();
         services.AddScoped<IEventHandler<PasswordResetRequested>, PasswordResetRequestedEmailHandler>();
         services.AddScoped<IEventHandler<PasswordReset>, PasswordResetNotificationHandler>();

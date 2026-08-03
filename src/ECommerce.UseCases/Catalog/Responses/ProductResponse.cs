@@ -1,4 +1,6 @@
 using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Pricing;
+using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UseCases.Catalog.Responses;
 
@@ -18,10 +20,15 @@ public sealed record ProductResponse(
 
 public static class ProductResponseFactory
 {
-    public static ProductResponse From(Product product, string? locale = null, string? currency = null)
+    public static ProductResponse From(
+        Product product,
+        ILocaleCatalog locales,
+        ICurrencyCatalog currencies,
+        string? locale = null,
+        string? currency = null)
     {
-        var translation = SelectTranslation(product, locale);
-        var price = SelectPrice(product, currency);
+        var translation = SelectTranslation(product, locales, locale);
+        var (listAmount, offerAmount, resolvedCurrency) = SelectPrice(product, currencies, currency);
 
         return new ProductResponse(
             product.Id,
@@ -29,40 +36,86 @@ public static class ProductResponseFactory
             product.Slug,
             translation?.Name ?? string.Empty,
             translation?.Description,
-            price?.Currency ?? string.Empty,
-            price?.ListAmount ?? 0m,
-            price?.OfferAmount,
+            resolvedCurrency,
+            listAmount,
+            offerAmount,
             product.Status,
             product.IsFeatured,
             product.CategoryId,
             product.BrandId);
     }
 
-    private static ProductTranslation? SelectTranslation(Product product, string? locale)
+    private static ProductTranslation? SelectTranslation(
+        Product product,
+        ILocaleCatalog locales,
+        string? locale)
     {
-        if (locale is not null)
+        var requested = string.IsNullOrWhiteSpace(locale) ? null : locale.Trim().ToLowerInvariant();
+
+        if (requested is not null && locales.IsSupported(requested))
         {
-            var match = product.Translations.FirstOrDefault(item => item.Locale == locale);
+            var match = product.Translations.FirstOrDefault(item => item.Locale == requested);
             if (match is not null)
             {
                 return match;
+            }
+
+            var fallback = product.Translations.FirstOrDefault(item => item.Locale == locales.DefaultLocale);
+            if (fallback is not null)
+            {
+                return fallback;
             }
         }
 
         return product.Translations.FirstOrDefault();
     }
 
-    private static ProductPrice? SelectPrice(Product product, string? currency)
+    private static (decimal ListAmount, decimal? OfferAmount, string Currency) SelectPrice(
+        Product product,
+        ICurrencyCatalog currencies,
+        string? currency)
     {
-        if (currency is not null)
+        var requested = string.IsNullOrWhiteSpace(currency) ? null : currency.Trim().ToUpperInvariant();
+
+        if (requested is not null && currencies.IsSupported(requested))
         {
-            var match = product.Prices.FirstOrDefault(item => item.Currency == currency);
+            var match = product.Prices.FirstOrDefault(item => item.Currency == requested);
             if (match is not null)
             {
-                return match;
+                return ToDisplay(match.ListAmount, match.OfferAmount, match.Currency);
             }
         }
 
-        return product.Prices.FirstOrDefault();
+        var source = product.Prices.FirstOrDefault();
+        if (source is null)
+        {
+            return (0m, null, string.Empty);
+        }
+
+        if (requested is null ||
+            requested == source.Currency ||
+            !currencies.IsSupported(source.Currency))
+        {
+            return ToDisplay(source.ListAmount, source.OfferAmount, source.Currency);
+        }
+
+        var rate = currencies.GetRate(source.Currency, requested);
+        var converted = Money.From(source.ListAmount, source.Currency).ConvertTo(requested, rate);
+        decimal? offer = source.OfferAmount is null
+            ? null
+            : Money.From(source.OfferAmount.Value, source.Currency).ConvertTo(requested, rate).DisplayAmount;
+
+        return (converted.DisplayAmount, offer, converted.Currency);
+    }
+
+    private static (decimal ListAmount, decimal? OfferAmount, string Currency) ToDisplay(
+        decimal listAmount,
+        decimal? offerAmount,
+        string currency)
+    {
+        return (
+            Money.From(listAmount, currency).DisplayAmount,
+            offerAmount is null ? null : Money.From(offerAmount.Value, currency).DisplayAmount,
+            currency);
     }
 }

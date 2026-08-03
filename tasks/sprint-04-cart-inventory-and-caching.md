@@ -18,7 +18,7 @@
 | US-F-001 | Warehouse management | 3 | [ ] |
 | US-F-002 | Stock ledger (append-only) | 3 | [ ] |
 | T-DAT-003 | Redis cache + cart repository | 5 | [x] |
-| T-DAT-004 | Currency/locale configuration service | 3 | [ ] |
+| T-DAT-004 | Currency/locale configuration service | 3 | [x] |
 
 ---
 
@@ -45,7 +45,7 @@
 - `Money` conversions with rounding rules.
 
 ### Acceptance
-- [ ] Pricing displayed in requested currency with correct rounding.
+- [x] Pricing displayed in requested currency with correct rounding.
 
 ### Commit
 `feat(pricing): currency and locale configuration service`

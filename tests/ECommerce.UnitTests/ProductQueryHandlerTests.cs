@@ -2,6 +2,7 @@ using ECommerce.Domain.Catalog;
 using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Catalog.Handlers;
 using ECommerce.UseCases.Catalog.Queries;
+using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UnitTests;
 
@@ -9,9 +10,13 @@ public sealed class ProductQueryHandlerTests
 {
     private readonly FakeProductRepository _products = new();
 
-    private GetProductQueryHandler GetHandler => new(_products);
+    private readonly ILocaleCatalog _locales = new DefaultLocaleCatalog();
 
-    private ListProductsQueryHandler ListHandler => new(_products, new ListProductsQueryValidator());
+    private readonly ICurrencyCatalog _currencies = new DefaultCurrencyCatalog();
+
+    private GetProductQueryHandler GetHandler => new(_products, _locales, _currencies);
+
+    private ListProductsQueryHandler ListHandler => new(_products, _locales, _currencies, new ListProductsQueryValidator(_currencies, _locales));
 
     [Fact]
     public async Task GetProduct_Returns_Active_Product()
@@ -78,6 +83,81 @@ public sealed class ProductQueryHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Equal(ErrorType.Validation, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task ListProducts_With_Unsupported_Currency_Returns_Validation_Failure()
+    {
+        var result = await ListHandler.Handle(new ListProductsQuery(1, 20, Currency: "JPY"), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task GetProduct_Converts_Price_To_Requested_Currency()
+    {
+        var product = CreateProduct("SKU-006", "convertible", name: "Convertible");
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "en", "AED"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("AED", result.Value.Currency);
+        Assert.Equal(367.25m, result.Value.ListAmount);
+    }
+
+    [Fact]
+    public async Task GetProduct_Converts_List_And_Offer_Amounts()
+    {
+        var product = CreateProduct("SKU-007", "with-offer");
+        product.UpdateDetails(null, null, null, null, null, null, null, null, "USD", 100m, 80m, DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "en", "EGP"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("EGP", result.Value.Currency);
+        Assert.Equal(4850m, result.Value.ListAmount);
+        Assert.Equal(3880m, result.Value.OfferAmount);
+    }
+
+    [Fact]
+    public async Task GetProduct_Falls_Back_To_Default_Locale_When_Requested_Translation_Missing()
+    {
+        var product = CreateProduct("SKU-008", "localized", name: "English Name");
+        product.UpdateDetails(null, null, null, null, null, "ar", "Arabic Name", null, null, null, null, DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "fr", "USD"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("English Name", result.Value.Name);
+    }
+
+    [Fact]
+    public async Task GetProduct_Falls_Back_To_First_Translation_When_Default_Locale_Also_Missing()
+    {
+        var product = Product.Create(
+            "SKU-009",
+            "arabic-only",
+            "ar",
+            "اسم عربي",
+            null,
+            "USD",
+            100m,
+            null,
+            null,
+            null,
+            false,
+            ProductStatus.Active,
+            DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "fr", "USD"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("اسم عربي", result.Value.Name);
     }
 
     private static Product CreateProduct(

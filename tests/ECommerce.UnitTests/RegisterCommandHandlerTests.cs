@@ -2,6 +2,7 @@ using ECommerce.Shared.Errors;
 using ECommerce.Domain.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;
+using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UnitTests;
 
@@ -15,7 +16,7 @@ public sealed class RegisterCommandHandlerTests
     private readonly FakeRoleRepository _roles = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakePasswordHasher _passwordHasher = new();
-    private readonly RegisterCommandValidator _validator = new();
+    private readonly RegisterCommandValidator _validator = new(new DefaultCurrencyCatalog(), new DefaultLocaleCatalog());
 
     [Fact]
     public async Task Handle_With_Valid_Request_Registers_Customer()

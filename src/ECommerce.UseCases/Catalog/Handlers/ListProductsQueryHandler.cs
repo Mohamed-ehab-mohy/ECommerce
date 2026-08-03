@@ -3,6 +3,7 @@ using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Catalog.Responses;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Pricing;
 using FluentValidation;
 using MediatR;
 
@@ -10,6 +11,8 @@ namespace ECommerce.UseCases.Catalog.Handlers;
 
 public sealed class ListProductsQueryHandler(
     IProductRepository products,
+    ILocaleCatalog locales,
+    ICurrencyCatalog currencies,
     IValidator<ListProductsQuery> validator) : IRequestHandler<ListProductsQuery, Result<PagedProductsResponse>>
 {
     public async Task<Result<PagedProductsResponse>> Handle(ListProductsQuery request, CancellationToken cancellationToken)
@@ -24,7 +27,7 @@ public sealed class ListProductsQueryHandler(
         var total = await products.CountActiveAsync(cancellationToken);
 
         return Result<PagedProductsResponse>.Success(new PagedProductsResponse(
-            items.Select(item => ProductResponseFactory.From(item, request.Locale, request.Currency)).ToList(),
+            items.Select(item => ProductResponseFactory.From(item, locales, currencies, request.Locale, request.Currency)).ToList(),
             request.Page,
             request.PageSize,
             total));

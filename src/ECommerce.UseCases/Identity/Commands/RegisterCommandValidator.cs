@@ -1,10 +1,11 @@
+using ECommerce.UseCases.Pricing;
 using FluentValidation;
 
 namespace ECommerce.UseCases.Identity.Commands;
 
 public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
-    public RegisterCommandValidator()
+    public RegisterCommandValidator(ICurrencyCatalog currencies, ILocaleCatalog locales)
     {
         RuleFor(x => x.Email)
             .NotEmpty()
@@ -22,10 +23,12 @@ public sealed class RegisterCommandValidator : AbstractValidator<RegisterCommand
 
         RuleFor(x => x.Locale)
             .NotEmpty()
-            .MaximumLength(10);
+            .Must(locales.IsSupported)
+            .WithMessage("'{PropertyValue}' is not a supported locale.");
 
         RuleFor(x => x.Currency)
             .NotEmpty()
-            .Length(3);
+            .Must(currencies.IsSupported)
+            .WithMessage("'{PropertyValue}' is not a supported currency.");
     }
 }
