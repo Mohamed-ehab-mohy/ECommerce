@@ -74,6 +74,22 @@ public sealed class Cart : BaseEntity<Guid>
         Guid productId,
         string sku,
         string name,
+        decimal listPrice,
+        decimal? offerPrice,
+        int quantity,
+        string? imageUrl,
+        DateTime utcNow)
+    {
+        var unitPrice = offerPrice ?? listPrice;
+
+        return AddItem(productId, sku, name, listPrice, unitPrice, quantity, imageUrl, utcNow);
+    }
+
+    public Result AddItem(
+        Guid productId,
+        string sku,
+        string name,
+        decimal listPrice,
         decimal unitPrice,
         int quantity,
         string? imageUrl,
@@ -84,10 +100,15 @@ public sealed class Cart : BaseEntity<Guid>
             return CartErrors.QuantityOutOfRange;
         }
 
+        if (unitPrice > listPrice || unitPrice < 0m)
+        {
+            return CartErrors.InvalidPrice;
+        }
+
         var existing = _items.FirstOrDefault(item => item.ProductId == productId);
         if (existing is null)
         {
-            var item = CartItem.Create(productId, sku, name, unitPrice, quantity, imageUrl, utcNow);
+            var item = CartItem.Create(productId, sku, name, listPrice, unitPrice, quantity, imageUrl, utcNow);
             item.CartId = Id;
             _items.Add(item);
         }

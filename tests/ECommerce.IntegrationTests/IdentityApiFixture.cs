@@ -1,4 +1,5 @@
 using ECommerce.Infrastructure.Data;
+using ECommerce.Infrastructure.Outbox;
 using ECommerce.UseCases.Identity.Ports;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 using Testcontainers.PostgreSql;
 
 namespace ECommerce.IntegrationTests;
@@ -32,8 +34,6 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
         await _container.StartAsync();
 
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _container.GetConnectionString());
-
         var emailSender = new CapturingEmailSender();
 
         _factory = new WebApplicationFactory<Program>()
@@ -54,6 +54,16 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
                     services.RemoveAll<IEmailSender>();
                     services.AddSingleton<IEmailSender>(emailSender);
+
+                    var dataSourceBuilder = new NpgsqlDataSourceBuilder(_container!.GetConnectionString());
+                    dataSourceBuilder.EnableDynamicJson();
+                    var dataSource = dataSourceBuilder.Build();
+                    services.RemoveAll<NpgsqlDataSource>();
+                    services.RemoveAll<DbContextOptions<ECommerceDbContext>>();
+                    services.RemoveAll<ECommerceDbContext>();
+                    services.AddDbContext<ECommerceDbContext>(options => options
+                        .UseNpgsql(dataSource)
+                        .AddInterceptors(new DomainEventsInterceptor()));
                 });
             });
 

@@ -18,19 +18,15 @@ public sealed class PostgresIntegrationTests : IClassFixture<PostgresContainerFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = new ECommerceDbContextFactory().CreateDbContext(Array.Empty<string>());
-            await context.Database.MigrateAsync();
-            var applied = await context.Database.GetAppliedMigrationsAsync();
-            Assert.Contains(applied, migration => migration.EndsWith("InitialMigration", StringComparison.Ordinal));
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        await using var context = new ECommerceDbContext(
+            new DbContextOptionsBuilder<ECommerceDbContext>()
+                .UseNpgsql(dataSourceBuilder.Build())
+                .Options);
+        await context.Database.MigrateAsync();
+        var applied = await context.Database.GetAppliedMigrationsAsync();
+        Assert.Contains(applied, migration => migration.EndsWith("InitialMigration", StringComparison.Ordinal));
     }
 
     [SkippableFact]

@@ -73,6 +73,12 @@ public static class ProductResponseFactory
     private static (decimal ListAmount, decimal? OfferAmount, string Currency) SelectPrice(
         Product product,
         ICurrencyCatalog currencies,
+        string? currency) =>
+        ResolvePrice(product, currencies, currency);
+
+    public static (decimal ListAmount, decimal? OfferAmount, string Currency) ResolvePrice(
+        Product product,
+        ICurrencyCatalog currencies,
         string? currency)
     {
         var requested = string.IsNullOrWhiteSpace(currency) ? null : currency.Trim().ToUpperInvariant();
@@ -107,6 +113,53 @@ public static class ProductResponseFactory
 
         return (converted.DisplayAmount, offer, converted.Currency);
     }
+
+    public static (decimal ListAmount, decimal? OfferAmount, string Currency) ResolveSnapshotPrice(
+        Product product,
+        ICurrencyCatalog currencies,
+        string? currency)
+    {
+        var requested = string.IsNullOrWhiteSpace(currency) ? null : currency.Trim().ToUpperInvariant();
+
+        if (requested is not null && currencies.IsSupported(requested))
+        {
+            var match = product.Prices.FirstOrDefault(item => item.Currency == requested);
+            if (match is not null)
+            {
+                return ToAmount(match.ListAmount, match.OfferAmount, match.Currency);
+            }
+        }
+
+        var source = product.Prices.FirstOrDefault();
+        if (source is null)
+        {
+            return (0m, null, string.Empty);
+        }
+
+        if (requested is null ||
+            requested == source.Currency ||
+            !currencies.IsSupported(source.Currency))
+        {
+            return ToAmount(source.ListAmount, source.OfferAmount, source.Currency);
+        }
+
+        var rate = currencies.GetRate(source.Currency, requested);
+        var converted = Money.From(source.ListAmount, source.Currency).ConvertTo(requested, rate);
+        decimal? offer = source.OfferAmount is null
+            ? null
+            : Money.From(source.OfferAmount.Value, source.Currency).ConvertTo(requested, rate).Amount;
+
+        return (converted.Amount, offer, converted.Currency);
+    }
+
+    private static (decimal ListAmount, decimal? OfferAmount, string Currency) ToAmount(
+        decimal listAmount,
+        decimal? offerAmount,
+        string currency) =>
+        (
+            Money.From(listAmount, currency).Amount,
+            offerAmount is null ? null : Money.From(offerAmount.Value, currency).Amount,
+            currency);
 
     private static (decimal ListAmount, decimal? OfferAmount, string Currency) ToDisplay(
         decimal listAmount,

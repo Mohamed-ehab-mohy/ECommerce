@@ -12,8 +12,8 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-C-001 | Guest cart persistence | 3 | [ ] |
-| US-C-003, US-C-004 | Cart mutations + totals | 5 | [ ] |
+| US-C-001 | Guest cart persistence | 3 | [x] |
+| US-C-003, US-C-004 | Cart mutations + totals | 5 | [x] |
 | US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [ ] |
 | US-F-001 | Warehouse management | 3 | [ ] |
 | US-F-002 | Stock ledger (append-only) | 3 | [ ] |
@@ -61,9 +61,9 @@
 - Optimistic version for concurrency.
 
 ### Acceptance
-- [ ] Cart totals correct in 5 currencies.
-- [ ] Concurrent mutations safe (QAS-style).
-- [ ] Guest cart persists 30 days.
+- [x] Cart totals correct in 5 currencies (flat shipping $9.90 USD converted; tax 5% on subtotal−discount; 4-dp math, 2-dp display).
+- [x] Concurrent mutations safe (optimistic version → 409).
+- [x] Guest cart persists 30 days (cache-aside `cart:{ownerKey}` write-through, TTL 30 d).
 
 ### Commit
 `feat(cart): cart mutations and server-side totals`

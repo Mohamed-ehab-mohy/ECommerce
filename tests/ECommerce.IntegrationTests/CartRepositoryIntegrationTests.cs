@@ -26,50 +26,41 @@ public sealed class CartRepositoryIntegrationTests :
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _postgres.ConnectionString);
-        try
+        var utcNow = DateTime.UtcNow;
+        var productId = Guid.NewGuid();
+
+        await using (var setup = CreateContext())
         {
-            var utcNow = DateTime.UtcNow;
-            var productId = Guid.NewGuid();
-
-            await using (var setup = CreateContext())
-            {
-                await setup.Database.MigrateAsync();
-            }
-
-            await using (var redis = await ConnectRedisAsync())
-            {
-                var repository = CreateRepository(redis);
-
-                var cart = Cart.Create("anon-key-1", "USD", utcNow.AddDays(30), utcNow);
-                var addResult = cart.AddItem(productId, "SKU-C1", "Widget", 12.50m, 2, null, utcNow);
-                Assert.True(addResult.IsSuccess);
-
-                await repository.SaveAsync(cart, CancellationToken.None);
-            }
-
-            var cacheKey = new RedisKey($"cart:anon-key-1");
-            await using (var connection = await ConnectionMultiplexer.ConnectAsync(_redis.ConnectionString))
-            {
-                var value = await connection.GetDatabase().StringGetAsync(cacheKey);
-                Assert.False(value.IsNullOrEmpty, "cache entry should be written through on save");
-            }
-
-            await using (var redis = await ConnectRedisAsync())
-            {
-                var repository = CreateRepository(redis);
-                var loaded = await repository.ByOwnerKeyAsync("anon-key-1", CancellationToken.None);
-                Assert.NotNull(loaded);
-                Assert.Equal("USD", loaded.Currency);
-                var item = Assert.Single(loaded.Items);
-                Assert.Equal(productId, item.ProductId);
-                Assert.Equal(2, item.Quantity);
-            }
+            await setup.Database.MigrateAsync();
         }
-        finally
+
+        await using (var redis = await ConnectRedisAsync())
         {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+            var repository = CreateRepository(redis);
+
+            var cart = Cart.Create("anon-key-1", "USD", utcNow.AddDays(30), utcNow);
+            var addResult = cart.AddItem(productId, "SKU-C1", "Widget", 12.50m, 12.50m, 2, null, utcNow);
+            Assert.True(addResult.IsSuccess);
+
+            await repository.SaveAsync(cart, CancellationToken.None);
+        }
+
+        var cacheKey = new RedisKey($"cart:anon-key-1");
+        await using (var connection = await ConnectionMultiplexer.ConnectAsync(_redis.ConnectionString))
+        {
+            var value = await connection.GetDatabase().StringGetAsync(cacheKey);
+            Assert.False(value.IsNullOrEmpty, "cache entry should be written through on save");
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            var loaded = await repository.ByOwnerKeyAsync("anon-key-1", CancellationToken.None);
+            Assert.NotNull(loaded);
+            Assert.Equal("USD", loaded.Currency);
+            var item = Assert.Single(loaded.Items);
+            Assert.Equal(productId, item.ProductId);
+            Assert.Equal(2, item.Quantity);
         }
     }
 
@@ -78,47 +69,38 @@ public sealed class CartRepositoryIntegrationTests :
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _postgres.ConnectionString);
-        try
+        var utcNow = DateTime.UtcNow;
+        var productId = Guid.NewGuid();
+
+        await using (var setup = CreateContext())
         {
-            var utcNow = DateTime.UtcNow;
-            var productId = Guid.NewGuid();
-
-            await using (var setup = CreateContext())
-            {
-                await setup.Database.MigrateAsync();
-            }
-
-            await using (var redis = await ConnectRedisAsync())
-            {
-                var repository = CreateRepository(redis);
-
-                var cart = Cart.Create("anon-key-2", "USD", utcNow.AddDays(30), utcNow);
-                cart.AddItem(productId, "SKU-C2", "Widget", 12.50m, 2, null, utcNow);
-                await repository.SaveAsync(cart, CancellationToken.None);
-            }
-
-            await using (var redis = await ConnectRedisAsync())
-            {
-                var mutated = CreateRepository(redis);
-                var cart = await mutated.ByOwnerKeyAsync("anon-key-2", CancellationToken.None);
-                Assert.NotNull(cart);
-                cart.AddItem(Guid.NewGuid(), "SKU-C3", "Gadget", 5.00m, 1, null, utcNow);
-                await mutated.SaveAsync(cart, CancellationToken.None);
-            }
-
-            await using (var redis = await ConnectRedisAsync())
-            {
-                var read = CreateRepository(redis);
-                var cart = await read.ByOwnerKeyAsync("anon-key-2", CancellationToken.None);
-                Assert.NotNull(cart);
-                Assert.Equal(2, cart.Items.Count);
-            }
+            await setup.Database.MigrateAsync();
         }
-        finally
+
+        await using (var redis = await ConnectRedisAsync())
         {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+            var repository = CreateRepository(redis);
+
+            var cart = Cart.Create("anon-key-2", "USD", utcNow.AddDays(30), utcNow);
+            cart.AddItem(productId, "SKU-C2", "Widget", 12.50m, 12.50m, 2, null, utcNow);
+            await repository.SaveAsync(cart, CancellationToken.None);
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var mutated = CreateRepository(redis);
+            var cart = await mutated.ByOwnerKeyAsync("anon-key-2", CancellationToken.None);
+            Assert.NotNull(cart);
+            cart.AddItem(Guid.NewGuid(), "SKU-C3", "Gadget", 5.00m, 5.00m, 1, null, utcNow);
+            await mutated.SaveAsync(cart, CancellationToken.None);
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var read = CreateRepository(redis);
+            var cart = await read.ByOwnerKeyAsync("anon-key-2", CancellationToken.None);
+            Assert.NotNull(cart);
+            Assert.Equal(2, cart.Items.Count);
         }
     }
 
@@ -127,21 +109,88 @@ public sealed class CartRepositoryIntegrationTests :
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _postgres.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            await using var redis = await ConnectRedisAsync();
-            var repository = CreateRepository(redis);
-            var cart = await repository.ByOwnerKeyAsync("missing-key", CancellationToken.None);
-            Assert.Null(cart);
-        }
-        finally
+        await using var redis = await ConnectRedisAsync();
+        var repository = CreateRepository(redis);
+        var cart = await repository.ByOwnerKeyAsync("missing-key", CancellationToken.None);
+        Assert.Null(cart);
+    }
+
+    [SkippableFact]
+    public async Task ListPrice_And_UnitPrice_Survive_Roundtrip()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var utcNow = DateTime.UtcNow;
+        var productId = Guid.NewGuid();
+
+        await using (var setup = CreateContext())
         {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
+            await setup.Database.MigrateAsync();
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            var cart = Cart.Create("anon-key-3", "USD", utcNow.AddDays(30), utcNow);
+            cart.AddItem(productId, "SKU-C4", "Widget", 20.00m, 15.00m, 2, null, utcNow);
+            await repository.SaveAsync(cart, CancellationToken.None);
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            var loaded = await repository.ByOwnerKeyAsync("anon-key-3", CancellationToken.None);
+            Assert.NotNull(loaded);
+            var item = Assert.Single(loaded.Items);
+            Assert.Equal(20.00m, item.ListPrice);
+            Assert.Equal(15.00m, item.UnitPrice);
+        }
+    }
+
+    [SkippableFact]
+    public async Task Save_With_Stale_Version_Throws_Concurrency_Conflict()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var utcNow = DateTime.UtcNow;
+        var productId = Guid.NewGuid();
+
+        await using (var setup = CreateContext())
+        {
+            await setup.Database.MigrateAsync();
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            var cart = Cart.Create("anon-key-4", "USD", utcNow.AddDays(30), utcNow);
+            cart.AddItem(productId, "SKU-C5", "Widget", 10.00m, 10.00m, 1, null, utcNow);
+            await repository.SaveAsync(cart, CancellationToken.None);
+        }
+
+        Cart firstCopy;
+        Cart secondCopy;
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            firstCopy = (await repository.ByOwnerKeyAsync("anon-key-4", CancellationToken.None))!;
+            secondCopy = (await repository.ByOwnerKeyAsync("anon-key-4", CancellationToken.None))!;
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            firstCopy.AddItem(Guid.NewGuid(), "SKU-C6", "Gadget", 5.00m, 5.00m, 1, null, utcNow);
+            await repository.SaveAsync(firstCopy, CancellationToken.None);
+        }
+
+        await using (var redis = await ConnectRedisAsync())
+        {
+            var repository = CreateRepository(redis);
+            await Assert.ThrowsAsync<CartConcurrencyException>(() => repository.SaveAsync(secondCopy, CancellationToken.None));
         }
     }
 

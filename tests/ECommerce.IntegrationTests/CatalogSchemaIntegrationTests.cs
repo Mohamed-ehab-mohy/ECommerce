@@ -19,31 +19,22 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            var tables = await QueryTablesAsync();
-            Assert.Contains(tables, table => table == "products");
-            Assert.Contains(tables, table => table == "product_variants");
-            Assert.Contains(tables, table => table == "categories");
-            Assert.Contains(tables, table => table == "category_hierarchy");
-            Assert.Contains(tables, table => table == "brands");
-            Assert.Contains(tables, table => table == "product_translations");
-            Assert.Contains(tables, table => table == "product_prices");
-            Assert.Contains(tables, table => table == "roles");
-            Assert.Contains(tables, table => table == "role_permissions");
-            Assert.Contains(tables, table => table == "user_roles");
-            Assert.Contains(tables, table => table == "carts");
-            Assert.Contains(tables, table => table == "cart_items");
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        var tables = await QueryTablesAsync();
+        Assert.Contains(tables, table => table == "products");
+        Assert.Contains(tables, table => table == "product_variants");
+        Assert.Contains(tables, table => table == "categories");
+        Assert.Contains(tables, table => table == "category_hierarchy");
+        Assert.Contains(tables, table => table == "brands");
+        Assert.Contains(tables, table => table == "product_translations");
+        Assert.Contains(tables, table => table == "product_prices");
+        Assert.Contains(tables, table => table == "roles");
+        Assert.Contains(tables, table => table == "role_permissions");
+        Assert.Contains(tables, table => table == "user_roles");
+        Assert.Contains(tables, table => table == "carts");
+        Assert.Contains(tables, table => table == "cart_items");
     }
 
     [SkippableFact]
@@ -51,26 +42,17 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            var now = DateTime.UtcNow;
-            context.Products.Add(Product.Create("SKU-001", "slug-001", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
+        var now = DateTime.UtcNow;
+        context.Products.Add(Product.Create("SKU-001", "slug-001", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
-            await context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
-            context.Products.Add(Product.Create("SKU-001", "slug-002", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
+        context.Products.Add(Product.Create("SKU-001", "slug-002", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
-            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
     [SkippableFact]
@@ -78,26 +60,17 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            var now = DateTime.UtcNow;
-            context.Products.Add(Product.Create("SKU-002", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
+        var now = DateTime.UtcNow;
+        context.Products.Add(Product.Create("SKU-002", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
-            await context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
-            context.Products.Add(Product.Create("SKU-003", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
+        context.Products.Add(Product.Create("SKU-003", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
 
-            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
     [SkippableFact]
@@ -105,29 +78,20 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            var now = DateTime.UtcNow;
-            var product = Product.Create("SKU-004", "slug-004", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
-            context.Products.Add(product);
-            await context.SaveChangesAsync();
+        var now = DateTime.UtcNow;
+        var product = Product.Create("SKU-004", "slug-004", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
 
-            context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant One", now));
-            await context.SaveChangesAsync();
+        context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant One", now));
+        await context.SaveChangesAsync();
 
-            context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant Duplicate", now));
+        context.ProductVariants.Add(ProductVariant.Create(product.Id, "VAR-001", "Variant Duplicate", now));
 
-            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
     [SkippableFact]
@@ -135,30 +99,28 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var previous = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres");
-        Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", _fixture.ConnectionString);
-        try
-        {
-            await using var context = CreateContext();
-            await context.Database.MigrateAsync();
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
 
-            var now = DateTime.UtcNow;
-            var product = Product.Create("SKU-005", "slug-005", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
-            context.Products.Add(product);
-            await context.SaveChangesAsync();
+        var now = DateTime.UtcNow;
+        var product = Product.Create("SKU-005", "slug-005", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
 
-            context.ProductPrices.Add(ProductPrice.Create(product.Id, "EUR", 0m, null, now));
+        context.ProductPrices.Add(ProductPrice.Create(product.Id, "EUR", 0m, null, now));
 
-            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ConnectionStrings__Postgres", previous);
-        }
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
-    private ECommerceDbContext CreateContext() =>
-        new ECommerceDbContextFactory().CreateDbContext(Array.Empty<string>());
+    private ECommerceDbContext CreateContext()
+    {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        return new(
+            new DbContextOptionsBuilder<ECommerceDbContext>()
+                .UseNpgsql(dataSourceBuilder.Build())
+                .Options);
+    }
 
     private async Task<IReadOnlyCollection<string>> QueryTablesAsync()
     {

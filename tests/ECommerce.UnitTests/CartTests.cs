@@ -26,7 +26,7 @@ public sealed class CartTests
     public void AddItem_Adds_Line_And_Raises_Event()
     {
         var cart = CreateCart();
-        var result = cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
+        var result = cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
 
         Assert.True(result.IsSuccess);
         var item = Assert.Single(cart.Items);
@@ -41,8 +41,8 @@ public sealed class CartTests
         var cart = CreateCart();
         var productId = Guid.NewGuid();
 
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 3, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 3, null, UtcNow);
 
         Assert.Single(cart.Items);
         Assert.Equal(5, Assert.Single(cart.Items).Quantity);
@@ -54,7 +54,7 @@ public sealed class CartTests
     public void AddItem_Rejects_Quantity_Outside_Bounds(int quantity)
     {
         var cart = CreateCart();
-        var result = cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, quantity, null, UtcNow);
+        var result = cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, 10.00m, quantity, null, UtcNow);
 
         Assert.True(result.IsFailure);
         Assert.Equal(CartErrors.QuantityOutOfRange, result.Error);
@@ -67,8 +67,8 @@ public sealed class CartTests
         var cart = CreateCart();
         var productId = Guid.NewGuid();
 
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 95, null, UtcNow);
-        var result = cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 95, null, UtcNow);
+        var result = cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 10, null, UtcNow);
 
         Assert.True(result.IsFailure);
         Assert.Equal(CartErrors.QuantityOutOfRange, result.Error);
@@ -80,7 +80,7 @@ public sealed class CartTests
     {
         var cart = CreateCart();
         var productId = Guid.NewGuid();
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
 
         var result = cart.UpdateQuantity(productId, 7, UtcNow.AddSeconds(1));
 
@@ -103,7 +103,7 @@ public sealed class CartTests
     {
         var cart = CreateCart();
         var productId = Guid.NewGuid();
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
 
         var result = cart.RemoveItem(productId, UtcNow.AddSeconds(1));
 
@@ -126,8 +126,8 @@ public sealed class CartTests
     public void Clear_Empties_Items()
     {
         var cart = CreateCart();
-        cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
-        cart.AddItem(Guid.NewGuid(), "SKU-2", "Gadget", 20.00m, 1, null, UtcNow);
+        cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
+        cart.AddItem(Guid.NewGuid(), "SKU-2", "Gadget", 20.00m, 20.00m, 1, null, UtcNow);
 
         cart.Clear(UtcNow.AddSeconds(1));
 
@@ -140,7 +140,7 @@ public sealed class CartTests
         var cart = CreateCart("user-1");
         var guest = CreateCart("anon-999");
         var productId = Guid.NewGuid();
-        guest.AddItem(productId, "SKU-1", "Widget", 10.00m, 3, null, UtcNow);
+        guest.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 3, null, UtcNow);
 
         cart.MergeFrom(guest, UtcNow.AddSeconds(1));
 
@@ -157,8 +157,8 @@ public sealed class CartTests
         var guest = CreateCart("anon-999");
         var productId = Guid.NewGuid();
 
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 1, null, UtcNow.AddSeconds(-10));
-        guest.AddItem(productId, "SKU-1", "Widget", 10.00m, 5, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 1, null, UtcNow.AddSeconds(-10));
+        guest.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 5, null, UtcNow);
 
         cart.MergeFrom(guest, UtcNow);
 
@@ -178,7 +178,7 @@ public sealed class CartTests
     {
         var productId = Guid.NewGuid();
         var cart = Cart.Create("anon-123", "USD", UtcNow.AddDays(30), UtcNow);
-        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 2, null, UtcNow);
+        cart.AddItem(productId, "SKU-1", "Widget", 10.00m, 10.00m, 2, null, UtcNow);
 
         var restored = Cart.Rehydrate(
             cart.Id,
@@ -198,3 +198,4 @@ public sealed class CartTests
         Assert.Equal(2, item.Quantity);
     }
 }
+

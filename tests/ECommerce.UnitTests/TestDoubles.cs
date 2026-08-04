@@ -1,14 +1,45 @@
 using System.Reflection;
 using ECommerce.Domain.Audit;
+using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 
 namespace ECommerce.UnitTests;
+
+internal sealed class FakeCartRepository : ICartRepository
+{
+    public List<Cart> Carts { get; } = [];
+
+    public bool ThrowConcurrencyOnSave { get; set; }
+
+    public Task<Cart?> ByOwnerKeyAsync(string ownerKey, CancellationToken cancellationToken) =>
+        Task.FromResult(Carts.FirstOrDefault(cart => cart.OwnerKey == ownerKey));
+
+    public Task SaveAsync(Cart cart, CancellationToken cancellationToken)
+    {
+        if (ThrowConcurrencyOnSave)
+        {
+            throw new CartConcurrencyException("Simulated concurrent modification.");
+        }
+
+        var existing = Carts.FirstOrDefault(candidate => candidate.OwnerKey == cart.OwnerKey);
+        if (existing is null)
+        {
+            Carts.Add(cart);
+            return Task.CompletedTask;
+        }
+
+        Carts.Remove(existing);
+        Carts.Add(cart);
+        return Task.CompletedTask;
+    }
+}
 
 internal sealed class FakeProductRepository : IProductRepository
 {

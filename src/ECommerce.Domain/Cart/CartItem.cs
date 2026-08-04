@@ -16,6 +16,8 @@ public sealed class CartItem
 
     public string Name { get; private set; }
 
+    public decimal ListPrice { get; private set; }
+
     public decimal UnitPrice { get; private set; }
 
     public int Quantity { get; private set; }
@@ -28,6 +30,7 @@ public sealed class CartItem
         Guid productId,
         string sku,
         string name,
+        decimal listPrice,
         decimal unitPrice,
         int quantity,
         string? imageUrl,
@@ -38,6 +41,7 @@ public sealed class CartItem
             ProductId = productId,
             Sku = sku,
             Name = name,
+            ListPrice = listPrice,
             UnitPrice = unitPrice,
             Quantity = quantity,
             ImageUrl = imageUrl,
@@ -49,6 +53,7 @@ public sealed class CartItem
         Guid productId,
         string sku,
         string name,
+        decimal listPrice,
         decimal unitPrice,
         int quantity,
         string? imageUrl,
@@ -59,6 +64,7 @@ public sealed class CartItem
             ProductId = productId,
             Sku = sku,
             Name = name,
+            ListPrice = listPrice,
             UnitPrice = unitPrice,
             Quantity = quantity,
             ImageUrl = imageUrl,

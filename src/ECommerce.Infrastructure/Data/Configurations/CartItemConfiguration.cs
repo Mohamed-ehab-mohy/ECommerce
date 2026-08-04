@@ -30,6 +30,11 @@ public sealed class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .IsRequired()
             .HasColumnName("name");
 
+        builder.Property(item => item.ListPrice)
+            .HasPrecision(18, 4)
+            .IsRequired()
+            .HasColumnName("list_price");
+
         builder.Property(item => item.UnitPrice)
             .HasPrecision(18, 4)
             .IsRequired()

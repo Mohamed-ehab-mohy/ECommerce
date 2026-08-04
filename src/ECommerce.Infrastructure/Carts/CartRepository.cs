@@ -95,7 +95,7 @@ public sealed class CartRepository : ICartRepository
         {
             if (existing.Version != cart.Version)
             {
-                throw new DbUpdateConcurrencyException(
+                throw new CartConcurrencyException(
                     $"Cart {cart.Id} was modified concurrently. Expected version {existing.Version}, got {cart.Version}.");
             }
 
@@ -115,8 +115,17 @@ public sealed class CartRepository : ICartRepository
             }
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new CartConcurrencyException(
+                $"Cart {cart.Id} was modified concurrently.",
+                exception);
+        }
 
         var key = new RedisKey($"{CachePrefix}{cart.OwnerKey}");
         await _cache.StringSetAsync(key, CartCacheCodec.Serialize(cart), CacheTtl);
