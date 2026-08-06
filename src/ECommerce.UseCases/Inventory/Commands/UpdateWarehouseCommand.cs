@@ -1,0 +1,16 @@
+using ECommerce.Shared.Authorization;
+using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Common;
+using MediatR;
+
+namespace ECommerce.UseCases.Inventory.Commands;
+
+public sealed record UpdateWarehouseCommand(
+    Guid WarehouseId,
+    string? Name,
+    string? Address,
+    string? Timezone,
+    string? Status) : IRequest<Result>, IRequirePermission
+{
+    public string Permission => Permissions.InventoryWarehouseWrite;
+}

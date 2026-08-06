@@ -1,4 +1,5 @@
 using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Inventory;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -30,6 +31,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
         Assert.Contains(tables, table => table == "brands");
         Assert.Contains(tables, table => table == "product_translations");
         Assert.Contains(tables, table => table == "product_prices");
+        Assert.Contains(tables, table => table == "warehouses");
         Assert.Contains(tables, table => table == "roles");
         Assert.Contains(tables, table => table == "role_permissions");
         Assert.Contains(tables, table => table == "user_roles");
@@ -112,6 +114,24 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
+    [SkippableFact]
+    public async Task Warehouse_Code_Uniqueness_Is_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
+
+        var now = DateTime.UtcNow;
+        context.Warehouses.Add(Warehouse.Create("CAI-01", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now));
+
+        await context.SaveChangesAsync();
+
+        context.Warehouses.Add(Warehouse.Create("CAI-01", "Duplicate", "Somewhere", "UTC", WarehouseStatus.Active, now));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
     private ECommerceDbContext CreateContext()
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
@@ -133,6 +153,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             WHERE table_schema = 'public' AND table_name IN (
                 'products', 'product_variants', 'categories',
                 'category_hierarchy', 'brands', 'product_translations', 'product_prices',
+                'warehouses',
                 'roles', 'role_permissions', 'user_roles',
                 'carts', 'cart_items')
             """,

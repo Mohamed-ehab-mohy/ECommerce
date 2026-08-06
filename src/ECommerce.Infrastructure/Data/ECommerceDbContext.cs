@@ -2,6 +2,7 @@ using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
+using ECommerce.Domain.Inventory;
 using ECommerce.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<CategoryHierarchy> CategoryHierarchy => Set<CategoryHierarchy>();
 
     public DbSet<Brand> Brands => Set<Brand>();
+
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
 
     public DbSet<Cart> Carts => Set<Cart>();
 

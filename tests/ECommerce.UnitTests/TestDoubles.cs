@@ -3,12 +3,14 @@ using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
+using ECommerce.Domain.Inventory;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
+using ECommerce.UseCases.Inventory.Ports;
 
 namespace ECommerce.UnitTests;
 
@@ -114,6 +116,30 @@ internal sealed class FakeBrandRepository : IBrandRepository
         Task.FromResult(Brands.Count(brand => !brand.IsDeleted));
 
     public void Add(Brand brand) => Brands.Add(brand);
+}
+
+internal sealed class FakeWarehouseRepository : IWarehouseRepository
+{
+    public List<Warehouse> Warehouses { get; } = [];
+
+    public Task<Warehouse?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Warehouses.FirstOrDefault(warehouse => warehouse.Id == id && !warehouse.IsDeleted));
+
+    public Task<Warehouse?> GetByCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(Warehouses.FirstOrDefault(warehouse => warehouse.Code == code && !warehouse.IsDeleted));
+
+    public Task<IReadOnlyList<Warehouse>> ListAsync(int page, int pageSize, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Warehouse>>(Warehouses
+            .Where(warehouse => !warehouse.IsDeleted)
+            .OrderBy(warehouse => warehouse.Code)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList());
+
+    public Task<int> CountAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Warehouses.Count(warehouse => !warehouse.IsDeleted));
+
+    public void Add(Warehouse warehouse) => Warehouses.Add(warehouse);
 }
 
 internal sealed class FakeUserRepository : IUserRepository

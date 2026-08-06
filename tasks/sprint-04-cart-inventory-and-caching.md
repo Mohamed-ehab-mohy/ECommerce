@@ -15,7 +15,7 @@
 | US-C-001 | Guest cart persistence | 3 | [x] |
 | US-C-003, US-C-004 | Cart mutations + totals | 5 | [x] |
 | US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [x] |
-| US-F-001 | Warehouse management | 3 | [ ] |
+| US-F-001 | Warehouse management | 3 | [x] |
 | US-F-002 | Stock ledger (append-only) | 3 | [ ] |
 | T-DAT-003 | Redis cache + cart repository | 5 | [x] |
 | T-DAT-004 | Currency/locale configuration service | 3 | [x] |
@@ -98,7 +98,14 @@
 - Fields: code, name, address, timezone, status.
 
 ### Acceptance
-- [ ] Warehouse CRUD; code unique; audit on change.
+- [x] Warehouse CRUD; code unique; audit on change.
+
+### Closing (2026-08-06)
+- `Warehouse` aggregate in `Domain/Inventory`: code (immutable, unique, normalized upper), name, address, timezone, `status` (Active/Inactive).
+- CRUD on `/api/v1/warehouses`, fully permission-gated: `inventory.warehouse.read/write/delete` (new) granted to Admin + SuperAdmin via the `AddWarehouses` migration (table + grants in one additive migration under `Data/Migrations`).
+- Soft-delete for the DELETE verb (`DeactivateWarehouse`); audit on create/update/deactivate.
+- Handler + validator + query tests (14 new) and schema integration test (table presence + code uniqueness) added.
+- Gate: Release 0 warnings; format clean; Unit 260; Architecture 6; Integration 44; no pending model changes.
 
 ### Commit
 `feat(inventory): warehouse management`
