@@ -1,11 +1,12 @@
 using ECommerce.Domain.Catalog;
+using ECommerce.UseCases.Pricing;
 using FluentValidation;
 
 namespace ECommerce.UseCases.Catalog.Commands;
 
 public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
 {
-    public UpdateProductCommandValidator()
+    public UpdateProductCommandValidator(ICurrencyCatalog currencies, ILocaleCatalog locales)
     {
         RuleFor(x => x.ProductId).NotEmpty();
 
@@ -35,7 +36,9 @@ public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProd
         {
             RuleFor(x => x.Currency)
                 .NotEmpty()
-                .Length(3);
+                .Length(3)
+                .Must(currency => currencies.IsSupported(currency))
+                .WithMessage("'{PropertyValue}' is not a supported currency.");
         });
 
         When(x => x.ListAmount is not null, () =>
@@ -61,7 +64,9 @@ public sealed class UpdateProductCommandValidator : AbstractValidator<UpdateProd
         {
             RuleFor(x => x.Locale)
                 .NotEmpty()
-                .MaximumLength(10);
+                .MaximumLength(10)
+                .Must(locale => locales.IsSupported(locale))
+                .WithMessage("'{PropertyValue}' is not a supported locale.");
         });
 
         RuleFor(x => x)

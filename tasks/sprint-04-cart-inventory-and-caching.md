@@ -14,7 +14,7 @@
 |----|------|:------:|--------|
 | US-C-001 | Guest cart persistence | 3 | [x] |
 | US-C-003, US-C-004 | Cart mutations + totals | 5 | [x] |
-| US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [ ] |
+| US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [x] |
 | US-F-001 | Warehouse management | 3 | [ ] |
 | US-F-002 | Stock ledger (append-only) | 3 | [ ] |
 | T-DAT-003 | Redis cache + cart repository | 5 | [x] |
@@ -77,7 +77,14 @@
 - `GET /api/v1/products` localized by `locale` + `currency` query.
 
 ### Acceptance
-- [ ] Same product returns localized name + converted price.
+- [x] Same product returns localized name + converted price.
+
+### Closing (2026-08-06)
+- Read path was already implemented (factory, repository includes, controller query params, catalogs, `Money`).
+- Closed the write-side gap: `CreateProductCommandValidator`/`UpdateProductCommandValidator` now reject unsupported `currency`/`locale` against the catalogs (prevents a stored unsupported currency from later throwing `GetRate` → 500 on the public endpoint).
+- Added `GetProductQueryValidator` (parity with the list validator: unsupported `locale`/`currency` now fail validation on GET too).
+- Added acceptance coverage: single product with en+ar translations and USD+EUR prices resolves per-request name/price, converts when the requested currency has no own row, and rejects unsupported values.
+- Gate: Release 0 warnings; format clean; Unit 246; Architecture 6; Integration 43; no pending model changes.
 
 ### Commit
 `feat(catalog): localized and multi-currency product pricing`

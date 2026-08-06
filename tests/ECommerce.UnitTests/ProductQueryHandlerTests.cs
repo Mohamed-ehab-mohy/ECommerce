@@ -14,7 +14,8 @@ public sealed class ProductQueryHandlerTests
 
     private readonly ICurrencyCatalog _currencies = new DefaultCurrencyCatalog();
 
-    private GetProductQueryHandler GetHandler => new(_products, _locales, _currencies);
+    private GetProductQueryHandler GetHandler =>
+        new(_products, _locales, _currencies, new GetProductQueryValidator(_currencies, _locales));
 
     private ListProductsQueryHandler ListHandler => new(_products, _locales, _currencies, new ListProductsQueryValidator(_currencies, _locales));
 
@@ -158,6 +159,72 @@ public sealed class ProductQueryHandlerTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal("اسم عربي", result.Value.Name);
+    }
+
+    [Fact]
+    public async Task GetProduct_Returns_Localized_Name_For_Requested_Locale()
+    {
+        var product = CreateProduct("SKU-010", "multi-translation", name: "Wireless Headphones");
+        product.UpdateDetails(null, null, null, null, null, "ar", "سماعات لاسلكية", null, null, null, null, DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "ar", "USD"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("سماعات لاسلكية", result.Value.Name);
+    }
+
+    [Fact]
+    public async Task GetProduct_Returns_Exact_Price_When_Requested_Currency_Has_Own_Price()
+    {
+        var product = CreateProduct("SKU-011", "multi-currency", name: "Wireless Headphones");
+        product.UpdateDetails(null, null, null, null, null, null, null, null, "EUR", 92m, null, DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "en", "EUR"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("EUR", result.Value.Currency);
+        Assert.Equal(92m, result.Value.ListAmount);
+    }
+
+    [Fact]
+    public async Task GetProduct_Falls_Back_To_Default_Translation_And_Converts_Price()
+    {
+        var product = CreateProduct("SKU-012", "localized-priced", name: "Wireless Headphones");
+        product.UpdateDetails(null, null, null, null, null, "ar", "سماعات لاسلكية", null, null, null, null, DateTime.UtcNow);
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "fr", "AED"), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Wireless Headphones", result.Value.Name);
+        Assert.Equal("AED", result.Value.Currency);
+        Assert.Equal(367.25m, result.Value.ListAmount);
+    }
+
+    [Fact]
+    public async Task GetProduct_With_Unsupported_Currency_Returns_Validation_Failure()
+    {
+        var product = CreateProduct("SKU-013", "invalid-currency");
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "en", "JPY"), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task GetProduct_With_Unsupported_Locale_Returns_Validation_Failure()
+    {
+        var product = CreateProduct("SKU-014", "invalid-locale");
+        _products.Products.Add(product);
+
+        var result = await GetHandler.Handle(new GetProductQuery(product.Id, "xx", "USD"), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
     }
 
     private static Product CreateProduct(

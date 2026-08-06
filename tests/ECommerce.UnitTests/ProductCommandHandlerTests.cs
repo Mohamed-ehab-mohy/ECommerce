@@ -4,6 +4,7 @@ using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Catalog.Commands;
 using ECommerce.UseCases.Catalog.Handlers;
+using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UnitTests;
 
@@ -14,13 +15,15 @@ public sealed class ProductCommandHandlerTests
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly FakeAuditEntryRepository _auditEntries = new();
     private readonly FakeAuditContextProvider _auditContext = new();
+    private readonly ILocaleCatalog _locales = new DefaultLocaleCatalog();
+    private readonly ICurrencyCatalog _currencies = new DefaultCurrencyCatalog();
 
     private CreateProductCommandHandler CreateHandler =>
-        new(_products, _unitOfWork, _timeProvider, new CreateProductCommandValidator(),
+        new(_products, _unitOfWork, _timeProvider, new CreateProductCommandValidator(_currencies, _locales),
             new AuditLogWriter(_auditEntries, _auditContext));
 
     private UpdateProductCommandHandler UpdateHandler =>
-        new(_products, _unitOfWork, _timeProvider, new UpdateProductCommandValidator(),
+        new(_products, _unitOfWork, _timeProvider, new UpdateProductCommandValidator(_currencies, _locales),
             new AuditLogWriter(_auditEntries, _auditContext));
 
     private DeactivateProductCommandHandler DeactivateHandler =>
@@ -250,6 +253,71 @@ public sealed class ProductCommandHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Equal(ProductErrors.ProductNotFound, result.Error);
+        Assert.Equal(0, _unitOfWork.SaveCount);
+    }
+
+    [Fact]
+    public async Task CreateProduct_With_Unsupported_Currency_Returns_Validation_Failure()
+    {
+        var result = await CreateHandler.Handle(
+            new CreateProductCommand(
+                "SKU-JPY",
+                "jpy-product",
+                "Name",
+                null,
+                "JPY",
+                10m,
+                null,
+                null,
+                null,
+                false,
+                "Draft",
+                "en"),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
+        Assert.Equal(0, _unitOfWork.SaveCount);
+        Assert.Empty(_products.Products);
+    }
+
+    [Fact]
+    public async Task CreateProduct_With_Unsupported_Locale_Returns_Validation_Failure()
+    {
+        var result = await CreateHandler.Handle(
+            new CreateProductCommand(
+                "SKU-XX",
+                "xx-product",
+                "Name",
+                null,
+                "USD",
+                10m,
+                null,
+                null,
+                null,
+                false,
+                "Draft",
+                "xx"),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
+        Assert.Equal(0, _unitOfWork.SaveCount);
+        Assert.Empty(_products.Products);
+    }
+
+    [Fact]
+    public async Task UpdateProduct_With_Unsupported_Currency_Returns_Validation_Failure()
+    {
+        var product = CreateProduct("SKU-900", "slug");
+        _products.Products.Add(product);
+
+        var result = await UpdateHandler.Handle(
+            new UpdateProductCommand(product.Id, null, null, null, "JPY", 10m, null, null, null, null, null, "en"),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(ErrorType.Validation, result.Error.Type);
         Assert.Equal(0, _unitOfWork.SaveCount);
     }
 
