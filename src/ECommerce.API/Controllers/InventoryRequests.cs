@@ -12,3 +12,12 @@ public sealed record UpdateWarehouseRequest(
     string? Address,
     string? Timezone,
     string? Status);
+
+public sealed record PostStockMovementRequest(
+    string Sku,
+    Guid WarehouseId,
+    string Type,
+    int Quantity,
+    string Reason,
+    string? Reference,
+    string? Note);

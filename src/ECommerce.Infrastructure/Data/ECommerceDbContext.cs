@@ -32,6 +32,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
 
+    public DbSet<StockItem> StockItems => Set<StockItem>();
+
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+
     public DbSet<Cart> Carts => Set<Cart>();
 
     public DbSet<Role> Roles => Set<Role>();

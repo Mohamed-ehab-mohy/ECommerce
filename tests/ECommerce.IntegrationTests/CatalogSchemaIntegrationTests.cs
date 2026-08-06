@@ -32,6 +32,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
         Assert.Contains(tables, table => table == "product_translations");
         Assert.Contains(tables, table => table == "product_prices");
         Assert.Contains(tables, table => table == "warehouses");
+        Assert.Contains(tables, table => table == "stock_items");
+        Assert.Contains(tables, table => table == "stock_movements");
         Assert.Contains(tables, table => table == "roles");
         Assert.Contains(tables, table => table == "role_permissions");
         Assert.Contains(tables, table => table == "user_roles");
@@ -132,6 +134,82 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
         await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
     }
 
+    [SkippableFact]
+    public async Task Stock_Sku_And_Warehouse_Uniqueness_Is_Enforced()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
+
+        var now = DateTime.UtcNow;
+        var warehouse = Warehouse.Create("WH-STK-01", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
+        context.Warehouses.Add(warehouse);
+        await context.SaveChangesAsync();
+
+        context.StockItems.Add(StockItem.Create("SKU-100", warehouse.Id, now));
+        await context.SaveChangesAsync();
+
+        context.StockItems.Add(StockItem.Create("SKU-100", warehouse.Id, now));
+
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+    }
+
+    [SkippableFact]
+    public async Task Stock_Movements_Are_Append_Only()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
+
+        var now = DateTime.UtcNow;
+        var warehouse = Warehouse.Create("WH-STK-02", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
+        context.Warehouses.Add(warehouse);
+        await context.SaveChangesAsync();
+
+        var item = StockItem.Create("SKU-200", warehouse.Id, now);
+        context.StockItems.Add(item);
+        context.StockMovements.Add(StockMovement.Create(item.Id, StockMovementType.Receipt, 10, "PO-1", null, null, now));
+        await context.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<PostgresException>(
+            () => context.Database.ExecuteSqlRawAsync("UPDATE stock_movements SET quantity = quantity"));
+
+        await Assert.ThrowsAsync<PostgresException>(
+            () => context.Database.ExecuteSqlRawAsync("DELETE FROM stock_movements"));
+    }
+
+    [SkippableFact]
+    public async Task Stock_Movement_And_Balance_Are_Persisted_Atomically()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        await using var context = CreateContext();
+        await context.Database.MigrateAsync();
+
+        var now = DateTime.UtcNow;
+        var warehouse = Warehouse.Create("WH-STK-03", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
+        context.Warehouses.Add(warehouse);
+        await context.SaveChangesAsync();
+
+        var item = StockItem.Create("SKU-300", warehouse.Id, now);
+        var movement = StockMovement.Create(item.Id, StockMovementType.Receipt, 10, "PO-1", null, null, now);
+        item.Apply(movement, now);
+        context.StockItems.Add(item);
+        context.StockMovements.Add(movement);
+        await context.SaveChangesAsync();
+
+        await using var freshContext = CreateContext();
+        var persisted = await freshContext.StockItems.SingleAsync(stockItem => stockItem.Id == item.Id);
+        var movementCount = await freshContext.StockMovements.CountAsync(movement => movement.StockItemId == item.Id);
+
+        Assert.Equal(10, persisted.OnHand);
+        Assert.Equal(0, persisted.Allocated);
+        Assert.Equal(10, persisted.Available);
+        Assert.Equal(1, movementCount);
+    }
+
     private ECommerceDbContext CreateContext()
     {
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
@@ -153,7 +231,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
             WHERE table_schema = 'public' AND table_name IN (
                 'products', 'product_variants', 'categories',
                 'category_hierarchy', 'brands', 'product_translations', 'product_prices',
-                'warehouses',
+                'warehouses', 'stock_items', 'stock_movements',
                 'roles', 'role_permissions', 'user_roles',
                 'carts', 'cart_items')
             """,

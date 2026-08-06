@@ -7,6 +7,8 @@ public static class Permissions
     public const string InventoryWarehouseRead = "inventory.warehouse.read";
     public const string InventoryWarehouseWrite = "inventory.warehouse.write";
     public const string InventoryWarehouseDelete = "inventory.warehouse.delete";
+    public const string InventoryStockRead = "inventory.stock.read";
+    public const string InventoryStockWrite = "inventory.stock.write";
     public const string RolesRead = "roles.read";
     public const string RolesWrite = "roles.write";
     public const string RolesPermissionsWrite = "roles.permissions.write";
@@ -22,6 +24,8 @@ public static class Permissions
         InventoryWarehouseRead,
         InventoryWarehouseWrite,
         InventoryWarehouseDelete,
+        InventoryStockRead,
+        InventoryStockWrite,
         RolesRead,
         RolesWrite,
         RolesPermissionsWrite,

@@ -413,3 +413,67 @@ internal sealed class FakeCurrentUser(
 
     public IReadOnlyList<string> Permissions { get; } = permissions ?? [];
 }
+
+internal sealed class FakeStockRepository : IStockRepository
+{
+    public List<StockItem> Items { get; } = [];
+
+    public List<StockMovement> Movements { get; } = [];
+
+    public Task<StockItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Items.FirstOrDefault(item => item.Id == id && !item.IsDeleted));
+
+    public Task<StockItem?> GetBySkuAndWarehouseAsync(string sku, Guid warehouseId, CancellationToken cancellationToken) =>
+        Task.FromResult(Items.FirstOrDefault(
+            item => item.Sku == sku && item.WarehouseId == warehouseId && !item.IsDeleted));
+
+    public Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken)
+    {
+        var query = Items.Where(item => !item.IsDeleted);
+
+        if (warehouseId is not null)
+        {
+            query = query.Where(item => item.WarehouseId == warehouseId);
+        }
+
+        var items = query
+            .OrderBy(item => item.Sku)
+            .ThenBy(item => item.WarehouseId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<StockItem>>(items);
+    }
+
+    public Task<int> CountAsync(Guid? warehouseId, CancellationToken cancellationToken)
+    {
+        var query = Items.Where(item => !item.IsDeleted);
+
+        if (warehouseId is not null)
+        {
+            query = query.Where(item => item.WarehouseId == warehouseId);
+        }
+
+        return Task.FromResult(query.Count());
+    }
+
+    public Task<IReadOnlyList<StockMovement>> ListMovementsAsync(Guid stockItemId, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var items = Movements
+            .Where(movement => movement.StockItemId == stockItemId)
+            .OrderByDescending(movement => movement.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<StockMovement>>(items);
+    }
+
+    public Task<int> CountMovementsAsync(Guid stockItemId, CancellationToken cancellationToken) =>
+        Task.FromResult(Movements.Count(movement => movement.StockItemId == stockItemId));
+
+    public void Add(StockItem stockItem) => Items.Add(stockItem);
+
+    public void AddMovement(StockMovement movement) => Movements.Add(movement);
+}

@@ -16,6 +16,7 @@ public static class AuditActions
     public const string WarehouseCreated = "inventory.warehouse.created";
     public const string WarehouseUpdated = "inventory.warehouse.updated";
     public const string WarehouseDeactivated = "inventory.warehouse.deactivated";
+    public const string StockMovementPosted = "inventory.stock.movement.posted";
     public const string RoleCreated = "identity.role.created";
     public const string RolePermissionsChanged = "identity.role.permissions.changed";
     public const string RoleAssigned = "identity.role.assigned";

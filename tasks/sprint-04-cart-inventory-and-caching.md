@@ -16,7 +16,7 @@
 | US-C-003, US-C-004 | Cart mutations + totals | 5 | [x] |
 | US-B-003, US-B-004 | Localized + multi-currency product pricing | 10 | [x] |
 | US-F-001 | Warehouse management | 3 | [x] |
-| US-F-002 | Stock ledger (append-only) | 3 | [ ] |
+| US-F-002 | Stock ledger (append-only) | 3 | [x] |
 | T-DAT-003 | Redis cache + cart repository | 5 | [x] |
 | T-DAT-004 | Currency/locale configuration service | 3 | [x] |
 
@@ -119,8 +119,19 @@
 - Ledger writes trigger recompute of `on_hand`; no in-place edits.
 
 ### Acceptance
-- [ ] Ledger append-only verified (no UPDATE on movements).
-- [ ] Movement inserts atomic with stock recompute.
+- [x] Ledger append-only verified (no UPDATE on movements).
+- [x] Movement inserts atomic with stock recompute.
+
+### Closing (2026-08-06)
+- `StockItem` (sku + warehouse unique, on_hand/allocated, available computed) and `StockMovement` ledger in `Domain/Inventory`.
+- Movement types: `Receipt/Issue/Adjustment/Allocate/Release/Fulfill`; each computes `on_hand_delta`/`allocated_delta`; `Adjustment` is the only signed-quantity type.
+- `StockItem.Apply(movement)` recomputes balances and rejects (via `StockBalanceException` → `StockErrors`, 409) any movement that would drive on_hand, allocated, or available negative.
+- `/api/v1/stock` endpoints, permission-gated: `GET /stock`, `GET /stock/{id}`, `GET /stock/movements`, `POST /stock/movements` (`inventory.stock.read/write`, new, granted to Admin + SuperAdmin in the `AddStockLedger` migration).
+- **Append-only is enforced at the database:** Postgres trigger `trg_stock_movements_append_only` raises on any UPDATE/DELETE of `stock_movements` rows (part of the same migration).
+- Atomic recompute: handler applies the movement to the `StockItem` then inserts item + movement in one `SaveChanges`.
+- Movement creation is reason-coded (required `Reason` ≤32, optional `Reference`/`Note`).
+- Tests: domain delta/invariant tests, command handler tests, query handler tests (30 new unit tests) + schema integration tests (tables, unique sku+warehouse, append-only trigger via raw UPDATE/DELETE, atomic persistence).
+- Gate: Release 0 warnings; format clean; Unit 293; Architecture 6; Integration 47; no pending model changes.
 
 ### Commit
 `feat(inventory): append-only stock ledger`
@@ -128,6 +139,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Cart totals correct in 5 currencies; ledger append-only verified; cache hit ratio baseline.
-- [ ] US-C-001,003,004; US-B-003,004; US-F-001,002 green.
+- [x] Cart totals correct in 5 currencies; ledger append-only verified; cache hit ratio baseline.
+- [x] US-C-001,003,004; US-B-003,004; US-F-001,002 green.
 - [ ] CI green.
