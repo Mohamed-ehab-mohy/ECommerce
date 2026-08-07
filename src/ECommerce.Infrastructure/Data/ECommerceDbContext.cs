@@ -44,6 +44,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<Checkout> Checkouts => Set<Checkout>();
 
+    public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
+
     public DbSet<Cart> Carts => Set<Cart>();
 
     public DbSet<Role> Roles => Set<Role>();

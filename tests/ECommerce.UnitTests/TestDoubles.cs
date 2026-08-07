@@ -14,6 +14,7 @@ using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 
 namespace ECommerce.UnitTests;
@@ -397,14 +398,19 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
 
     public int SaveCount { get; private set; }
 
+    public FakeTransaction? LastTransaction { get; private set; }
+
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
         SaveCount++;
         return Task.FromResult(1);
     }
 
-    public Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken) =>
-        Task.FromResult<ITransaction>(new FakeTransaction());
+    public Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        LastTransaction = new FakeTransaction();
+        return Task.FromResult<ITransaction>(LastTransaction);
+    }
 }
 
 internal sealed class FakeTransaction : ITransaction
@@ -578,4 +584,63 @@ internal sealed class FakeStockRepository : IStockRepository
     public void Add(StockItem stockItem) => Items.Add(stockItem);
 
     public void AddMovement(StockMovement movement) => Movements.Add(movement);
+}
+
+internal sealed class FakeStockAllocator(
+    IReadOnlyList<StockAllocationLine>? lines = null,
+    IReadOnlyList<StockShortfall>? shortfalls = null) : IStockAllocator
+{
+    public int AllocateCount { get; private set; }
+
+    public List<AllocationRequestItem> LastItems { get; private set; } = [];
+
+    public string? LastReason { get; private set; }
+
+    public string? LastReference { get; private set; }
+
+    public Task<StockAllocationResult> AllocateAsync(
+        IReadOnlyCollection<AllocationRequestItem> items,
+        string reason,
+        string reference,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        AllocateCount++;
+        LastItems = items.ToList();
+        LastReason = reason;
+        LastReference = reference;
+        return Task.FromResult(new StockAllocationResult(lines ?? [], shortfalls ?? []));
+    }
+}
+
+internal sealed class FakeOrderRepository : IOrderRepository
+{
+    public List<Order> Orders { get; } = [];
+
+    public Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Orders.FirstOrDefault(order => order.Id == id));
+
+    public void Add(Order order) => Orders.Add(order);
+}
+
+internal sealed class FakeIdempotencyKeyRepository : IIdempotencyKeyRepository
+{
+    public List<IdempotencyKey> Keys { get; } = [];
+
+    public Task<IdempotencyKey?> GetByKeyAsync(string key, CancellationToken cancellationToken) =>
+        Task.FromResult(Keys.FirstOrDefault(idempotencyKey => idempotencyKey.Key == key));
+
+    public Task<IdempotencyKey?> AddIfAbsentAsync(
+        IdempotencyKey idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        var existing = Keys.FirstOrDefault(candidate => candidate.Key == idempotencyKey.Key);
+        if (existing is not null)
+        {
+            return Task.FromResult<IdempotencyKey?>(existing);
+        }
+
+        Keys.Add(idempotencyKey);
+        return Task.FromResult<IdempotencyKey?>(null);
+    }
 }

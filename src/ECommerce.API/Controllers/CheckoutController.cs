@@ -2,6 +2,7 @@ using ECommerce.API.Common;
 using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Queries;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Orders.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,6 +56,21 @@ public sealed class CheckoutController(ISender sender, ICurrentUser currentUser)
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCheckoutQuery(id), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : Ok(result.Value);
+    }
+
+    [HttpPost("{checkoutId:guid}/place")]
+    public async Task<IActionResult> Place(
+        Guid checkoutId,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new PlaceOrderCommand(checkoutId, idempotencyKey ?? string.Empty),
+            cancellationToken);
 
         return result.IsFailure
             ? ToProblem(result.ToOperationError())

@@ -17,6 +17,7 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -55,6 +56,8 @@ public static class DependencyInjection
         services.AddScoped<IStockAllocator, StockAllocator>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICheckoutRepository, CheckoutRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IIdempotencyKeyRepository, IdempotencyKeyRepository>();
         services.AddScoped<IShippingRateProvider, ShippingRateStubProvider>();
         services.AddScoped<ITaxCalculator, FlatTaxCalculator>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();

@@ -24,6 +24,11 @@ public static class PaymentErrors
         "The capture amount must not exceed the authorized amount.",
         ErrorType.Conflict);
 
+    public static readonly Error PaymentNotAuthorized = new(
+        "ERR_PAY_003",
+        "The payment has not been authorized yet.",
+        ErrorType.Conflict);
+
     public static readonly Error ProviderUnavailable = new(
         "ERR_PAY_004",
         "The payment provider is temporarily unavailable. Please try again later.",
