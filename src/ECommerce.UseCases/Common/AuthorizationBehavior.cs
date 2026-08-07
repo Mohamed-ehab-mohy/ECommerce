@@ -14,14 +14,14 @@ public sealed class AuthorizationBehavior<TRequest, TResponse>(ICurrentUser curr
     {
         if (request is not IRequirePermission requiresPermission)
         {
-            return await next();
+            return await next(cancellationToken);
         }
 
         var hasAccess = currentUser.IsAuthenticated
             && currentUser.Permissions.Contains(requiresPermission.Permission, StringComparer.Ordinal);
 
         return hasAccess
-            ? await next()
+            ? await next(cancellationToken)
             : AuthorizationResultFactory.Forbidden<TResponse>(
                 currentUser.IsAuthenticated
                     ? AuthorizationErrors.PermissionDenied(requiresPermission.Permission)
