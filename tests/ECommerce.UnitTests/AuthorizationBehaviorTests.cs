@@ -16,7 +16,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new RequiresCatalogWrite(),
-            () => Task.FromResult(Result.Success()),
+            _ => Task.FromResult(Result.Success()),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -31,7 +31,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new RequiresCatalogWrite(),
-            () => Task.FromResult(Result.Success()),
+            _ => Task.FromResult(Result.Success()),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -45,7 +45,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new RequiresCatalogWrite(),
-            () => Task.FromResult(Result.Success()),
+            _ => Task.FromResult(Result.Success()),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -60,7 +60,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new RequiresCatalogWrite(),
-            () => Task.FromResult(Result.Success()),
+            _ => Task.FromResult(Result.Success()),
             CancellationToken.None);
 
         Assert.Equal("catalog.product.write", result.Error?.Permission);
@@ -74,7 +74,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new PlainRequest(),
-            () => Task.FromResult(Result.Success()),
+            _ => Task.FromResult(Result.Success()),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -88,7 +88,7 @@ public sealed class AuthorizationBehaviorTests
 
         var result = await behavior.Handle(
             new RequiresCatalogWrite(),
-            () => Task.FromResult(Result<Guid>.Success(Guid.NewGuid())),
+            _ => Task.FromResult(Result<Guid>.Success(Guid.NewGuid())),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
