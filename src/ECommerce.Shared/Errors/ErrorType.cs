@@ -12,5 +12,6 @@ public enum ErrorType
     Locked,
     TooManyRequests,
     BadRequest,
+    PaymentRequired,
     BadGateway
 }

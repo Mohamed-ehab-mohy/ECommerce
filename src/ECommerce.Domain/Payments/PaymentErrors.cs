@@ -12,7 +12,7 @@ public static class PaymentErrors
     public static readonly Error PaymentDeclined = new(
         "ERR_PAY_001",
         "Your payment was declined. Please use another card or payment method.",
-        ErrorType.BadRequest);
+        ErrorType.PaymentRequired);
 
     public static readonly Error CaptureConflict = new(
         "ERR_PAY_002",

@@ -32,6 +32,7 @@ public static class ResultExtensions
             ErrorType.Locked => (423, "problems/locked"),
             ErrorType.TooManyRequests => (429, "problems/rate-limited"),
             ErrorType.BadRequest => (400, "problems/bad-request"),
+            ErrorType.PaymentRequired => (402, "problems/payment-required"),
             ErrorType.BadGateway => (502, "problems/bad-gateway"),
             _ => (500, "problems/internal")
         };

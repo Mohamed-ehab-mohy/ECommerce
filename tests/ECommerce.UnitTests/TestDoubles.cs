@@ -312,6 +312,9 @@ internal sealed class FakeCheckoutRepository : ICheckoutRepository
     public Task<Checkout?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Checkouts.FirstOrDefault(checkout => checkout.Id == id));
 
+    public Task<Checkout?> GetByPaymentIdAsync(Guid paymentId, CancellationToken cancellationToken) =>
+        Task.FromResult(Checkouts.FirstOrDefault(checkout => checkout.PaymentId == paymentId));
+
     public void Add(Checkout checkout) => Checkouts.Add(checkout);
 }
 

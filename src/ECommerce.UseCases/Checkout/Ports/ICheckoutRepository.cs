@@ -6,5 +6,7 @@ public interface ICheckoutRepository
 {
     Task<CheckoutAggregate?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<CheckoutAggregate?> GetByPaymentIdAsync(Guid paymentId, CancellationToken cancellationToken);
+
     void Add(CheckoutAggregate checkout);
 }
