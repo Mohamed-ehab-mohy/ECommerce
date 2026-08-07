@@ -5,16 +5,21 @@ using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Inventory;
+using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
+using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Redis;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
+using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Payments.Ports;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using StackExchange.Redis;
@@ -47,7 +52,11 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IStockRepository, StockRepository>();
+        services.AddScoped<IStockAllocator, StockAllocator>();
         services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICheckoutRepository, CheckoutRepository>();
+        services.AddScoped<IShippingRateProvider, ShippingRateStubProvider>();
+        services.AddScoped<ITaxCalculator, FlatTaxCalculator>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IEmailSender, LogEmailSender>();
         services.AddScoped<IAccessTokenIssuer, JwtAccessTokenIssuer>();
@@ -63,6 +72,17 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(10));
 
         services.AddHostedService<OutboxBackgroundService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddPaymentInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<PaymentProviderOptions>(configuration.GetSection(PaymentProviderOptions.SectionName));
+        services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
 
         return services;
     }

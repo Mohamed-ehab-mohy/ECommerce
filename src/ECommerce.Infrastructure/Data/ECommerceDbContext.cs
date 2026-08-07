@@ -3,6 +3,8 @@ using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Orders;
+using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +37,12 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<StockItem> StockItems => Set<StockItem>();
 
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
+
+    public DbSet<Checkout> Checkouts => Set<Checkout>();
 
     public DbSet<Cart> Carts => Set<Cart>();
 

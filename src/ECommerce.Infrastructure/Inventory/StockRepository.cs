@@ -15,6 +15,12 @@ public sealed class StockRepository(ECommerceDbContext dbContext) : IStockReposi
             stockItem => stockItem.Sku == sku && stockItem.WarehouseId == warehouseId && !stockItem.IsDeleted,
             cancellationToken);
 
+    public async Task<IReadOnlyList<StockItem>> ListBySkuAsync(string sku, CancellationToken cancellationToken) =>
+        await dbContext.Set<StockItem>()
+            .Where(stockItem => stockItem.Sku == sku && !stockItem.IsDeleted)
+            .OrderBy(stockItem => stockItem.WarehouseId)
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken)
     {
         var query = dbContext.Set<StockItem>().Where(stockItem => !stockItem.IsDeleted);

@@ -1,9 +1,11 @@
 using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
+using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Pricing;
 using FluentValidation;
 using MediatR;
@@ -31,6 +33,9 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<PasswordReset>, PasswordResetNotificationHandler>();
         services.AddScoped<TokenPairFactory>();
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
+        services.AddScoped<CheckoutTotalsCalculator>();
+        services.AddScoped<StockAvailabilityVerifier>();
+        services.AddScoped<PaymentIntentService>();
 
         return services;
     }

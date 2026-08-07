@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddInfrastructure(
             configuration.GetConnectionString("Postgres")!,
             configuration.GetConnectionString("Redis")!);
+        services.AddPaymentInfrastructure(configuration);
 
         services.AddControllers();
         services.AddProblemDetails();

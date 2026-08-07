@@ -8,6 +8,8 @@ public interface IStockRepository
 
     Task<StockItem?> GetBySkuAndWarehouseAsync(string sku, Guid warehouseId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<StockItem>> ListBySkuAsync(string sku, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken);
 
     Task<int> CountAsync(Guid? warehouseId, CancellationToken cancellationToken);

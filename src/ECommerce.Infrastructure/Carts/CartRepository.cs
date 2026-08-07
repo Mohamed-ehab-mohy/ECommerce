@@ -79,6 +79,11 @@ public sealed class CartRepository : ICartRepository
         return retried;
     }
 
+    public Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        _dbContext.Set<Cart>()
+            .Include(cart => cart.Items)
+            .SingleOrDefaultAsync(cart => cart.Id == id, cancellationToken);
+
     public async Task SaveAsync(Cart cart, CancellationToken cancellationToken)
     {
         var existing = await _dbContext.Set<Cart>()

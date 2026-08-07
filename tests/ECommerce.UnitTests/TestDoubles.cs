@@ -4,13 +4,17 @@ using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Orders;
+using ECommerce.Domain.Payments;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
+using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Payments.Ports;
 
 namespace ECommerce.UnitTests;
 
@@ -22,6 +26,9 @@ internal sealed class FakeCartRepository : ICartRepository
 
     public Task<Cart?> ByOwnerKeyAsync(string ownerKey, CancellationToken cancellationToken) =>
         Task.FromResult(Carts.FirstOrDefault(cart => cart.OwnerKey == ownerKey));
+
+    public Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Carts.FirstOrDefault(cart => cart.Id == id));
 
     public Task SaveAsync(Cart cart, CancellationToken cancellationToken)
     {
@@ -297,8 +304,97 @@ internal sealed class FakeAccessTokenIssuer : IAccessTokenIssuer
     }
 }
 
+internal sealed class FakeCheckoutRepository : ICheckoutRepository
+{
+    public List<Checkout> Checkouts { get; } = [];
+
+    public Task<Checkout?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Checkouts.FirstOrDefault(checkout => checkout.Id == id));
+
+    public void Add(Checkout checkout) => Checkouts.Add(checkout);
+}
+
+internal sealed class FakePaymentRepository : IPaymentRepository
+{
+    public List<Payment> Payments { get; } = [];
+
+    public Task<Payment?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Payments.FirstOrDefault(payment => payment.Id == id));
+
+    public Task<Payment?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
+        Task.FromResult(Payments.FirstOrDefault(payment => payment.OrderId == orderId));
+
+    public void Add(Payment payment) => Payments.Add(payment);
+}
+
+internal sealed class FakePaymentProvider(
+    string key = "mock",
+    PaymentIntentResult? intent = null,
+    PaymentAuthorizationResult? authorization = null) : IPaymentProvider
+{
+    public PaymentIntentResult? IntentResult { get; set; } = intent;
+
+    public PaymentAuthorizationResult? AuthorizationResult { get; set; } = authorization;
+
+    public PaymentIntentRequest? LastIntentRequest { get; private set; }
+
+    public PaymentAuthorizationRequest? LastAuthorizationRequest { get; private set; }
+
+    public string Key => key;
+
+    public Task<PaymentIntentResult> CreateIntentAsync(PaymentIntentRequest request, CancellationToken cancellationToken)
+    {
+        LastIntentRequest = request;
+        return Task.FromResult(IntentResult ?? new PaymentIntentResult(true, "tok_mock_1", "pi_mock_1", "pi_mock_1", null));
+    }
+
+    public Task<PaymentAuthorizationResult> AuthorizeAsync(PaymentAuthorizationRequest request, CancellationToken cancellationToken)
+    {
+        LastAuthorizationRequest = request;
+        return Task.FromResult(AuthorizationResult ?? new PaymentAuthorizationResult(true, "pi_mock_1_auth", null));
+    }
+}
+
+internal sealed class FakePaymentProviderFactory(
+    string providerKey = "mock",
+    FakePaymentProvider? provider = null) : IPaymentProviderFactory
+{
+    public FakePaymentProvider Provider { get; } = provider ?? new FakePaymentProvider(providerKey);
+
+    public string? MissingKey { get; set; }
+
+    public Task<IPaymentProvider> RouteAsync(string currency, string country, CancellationToken cancellationToken) =>
+        Task.FromResult<IPaymentProvider>(Provider);
+
+    public Task<IPaymentProvider> GetAsync(string providerKey, CancellationToken cancellationToken) =>
+        Task.FromResult<IPaymentProvider>(MissingKey == providerKey ? null! : Provider);
+}
+
+internal sealed class FakeShippingRateProvider(IReadOnlyList<ShippingMethod>? methods = null) : IShippingRateProvider
+{
+    public IReadOnlyList<ShippingMethod> Methods { get; } =
+        methods ?? new List<ShippingMethod>
+        {
+            new("standard", "Standard", 9.90m, "USD", "3-5 business days")
+        };
+
+    public Task<IReadOnlyList<ShippingMethod>> ListAsync(string country, string currency, CancellationToken cancellationToken) =>
+        Task.FromResult(Methods);
+
+    public Task<ShippingMethod?> GetRateAsync(string methodId, string country, string currency, CancellationToken cancellationToken) =>
+        Task.FromResult(Methods.FirstOrDefault(method => method.Id == methodId));
+}
+
+internal sealed class FakeTaxCalculator(decimal tax = 0m) : ITaxCalculator
+{
+    public Task<decimal> ComputeAsync(decimal taxableSubtotal, string country, string currency, CancellationToken cancellationToken) =>
+        Task.FromResult(tax);
+}
+
 internal sealed class FakeUnitOfWork : IUnitOfWork
 {
+    public string Tag { get; set; } = "fake";
+
     public int SaveCount { get; private set; }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
@@ -426,6 +522,12 @@ internal sealed class FakeStockRepository : IStockRepository
     public Task<StockItem?> GetBySkuAndWarehouseAsync(string sku, Guid warehouseId, CancellationToken cancellationToken) =>
         Task.FromResult(Items.FirstOrDefault(
             item => item.Sku == sku && item.WarehouseId == warehouseId && !item.IsDeleted));
+
+    public Task<IReadOnlyList<StockItem>> ListBySkuAsync(string sku, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StockItem>>(
+            Items.Where(item => item.Sku == sku && !item.IsDeleted)
+                .OrderBy(item => item.WarehouseId)
+                .ToList());
 
     public Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken)
     {

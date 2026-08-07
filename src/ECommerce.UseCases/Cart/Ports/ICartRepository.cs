@@ -6,5 +6,7 @@ public interface ICartRepository
 {
     Task<CartAggregate?> ByOwnerKeyAsync(string ownerKey, CancellationToken cancellationToken);
 
+    Task<CartAggregate?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+
     Task SaveAsync(CartAggregate cart, CancellationToken cancellationToken);
 }
