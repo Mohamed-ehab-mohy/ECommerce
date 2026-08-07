@@ -1,7 +1,7 @@
 using System.Text.Json;
 using ECommerce.Domain.Abstractions;
 using ECommerce.Infrastructure.Data;
-using ECommerce.UseCases.Common;
+using ECommerce.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,7 +45,8 @@ public sealed class OutboxBackgroundService(
     {
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
-        var dispatcher = scope.ServiceProvider.GetRequiredService<IEventDispatcher>();
+        var publisher = scope.ServiceProvider.GetRequiredService<OutboxPublisher>();
+        var metrics = scope.ServiceProvider.GetRequiredService<OutboxMetrics>();
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -67,7 +68,7 @@ public sealed class OutboxBackgroundService(
 
         foreach (var message in messages)
         {
-            await ProcessMessageAsync(dbContext, dispatcher, message, cancellationToken);
+            await ProcessMessageAsync(publisher, metrics, message, cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -75,8 +76,8 @@ public sealed class OutboxBackgroundService(
     }
 
     private async Task ProcessMessageAsync(
-        ECommerceDbContext dbContext,
-        IEventDispatcher dispatcher,
+        OutboxPublisher publisher,
+        OutboxMetrics metrics,
         OutboxMessage message,
         CancellationToken cancellationToken)
     {
@@ -88,7 +89,7 @@ public sealed class OutboxBackgroundService(
                 throw new InvalidOperationException($"Unknown outbox event type '{message.EventType}'.");
             }
 
-            await dispatcher.DispatchAsync(domainEvent, cancellationToken);
+            await publisher.PublishAsync(message, domainEvent, cancellationToken);
             message.ProcessedOn = DateTime.UtcNow;
             message.Error = null;
         }
@@ -97,11 +98,25 @@ public sealed class OutboxBackgroundService(
             message.Attempts++;
             message.Error = exception.Message;
             message.ProcessedOn = message.Attempts >= MaxAttempts ? DateTime.UtcNow : null;
-            logger.LogError(
-                exception,
-                "Outbox message {OutboxMessageId} failed (attempt {Attempt})",
-                message.Id,
-                message.Attempts);
+
+            if (message.Attempts >= MaxAttempts)
+            {
+                metrics.RecordDeadLetter();
+                logger.LogError(
+                    exception,
+                    "Outbox message {OutboxMessageId} dead-lettered after {Attempt} attempts ({EventType}).",
+                    message.Id,
+                    message.Attempts,
+                    message.EventType);
+            }
+            else
+            {
+                logger.LogError(
+                    exception,
+                    "Outbox message {OutboxMessageId} failed (attempt {Attempt})",
+                    message.Id,
+                    message.Attempts);
+            }
         }
     }
 

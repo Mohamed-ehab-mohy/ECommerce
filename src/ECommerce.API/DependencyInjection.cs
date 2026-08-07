@@ -2,6 +2,7 @@ using ECommerce.API.Audit;
 using ECommerce.API.Common;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Messaging;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
@@ -23,6 +24,7 @@ public static class DependencyInjection
             configuration.GetConnectionString("Postgres")!,
             configuration.GetConnectionString("Redis")!);
         services.AddPaymentInfrastructure(configuration);
+        services.AddMessageBus(configuration);
 
         services.AddControllers();
         services.AddProblemDetails();

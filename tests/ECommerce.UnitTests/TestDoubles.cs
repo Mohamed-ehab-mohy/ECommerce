@@ -1,7 +1,9 @@
 using System.Reflection;
+using ECommerce.Domain.Abstractions;
 using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
@@ -14,8 +16,10 @@ using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
+using System.Diagnostics.Metrics;
 
 namespace ECommerce.UnitTests;
 
@@ -646,4 +650,49 @@ internal sealed class FakeIdempotencyKeyRepository : IIdempotencyKeyRepository
         Keys.Add(idempotencyKey);
         return Task.FromResult<IdempotencyKey?>(null);
     }
+}
+
+internal sealed class FakeEventDispatcher : IEventDispatcher
+{
+    public List<IDomainEvent> Dispatched { get; } = [];
+
+    public Task DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Dispatched.Add(domainEvent);
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeInboxMessageRepository : IInboxMessageRepository
+{
+    private readonly HashSet<(string ConsumerQueue, Guid MessageId)> _processed = [];
+
+    public int ConsumeCalls { get; private set; }
+
+    public Task<bool> TryConsumeAsync(
+        string consumerQueue,
+        Guid messageId,
+        CancellationToken cancellationToken)
+    {
+        ConsumeCalls++;
+        return Task.FromResult(_processed.Add((consumerQueue, messageId)));
+    }
+}
+
+internal sealed class CapturingOrderNotifier : IOrderNotifier
+{
+    public List<OrderPlaced> Notified { get; } = [];
+
+    public Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
+    {
+        Notified.Add(orderPlaced);
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeMeterFactory : IMeterFactory
+{
+    public Meter Create(MeterOptions options) => new(options);
+
+    public void Dispose() { }
 }

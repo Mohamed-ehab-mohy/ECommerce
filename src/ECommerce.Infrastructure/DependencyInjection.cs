@@ -5,6 +5,7 @@ using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Inventory;
+using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
@@ -17,6 +18,7 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +69,10 @@ public static class DependencyInjection
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddSingleton<ILoginAttemptThrottler, InMemoryLoginAttemptThrottler>();
         services.AddScoped<IAuditEntryRepository, AuditEntryRepository>();
+        services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
+        services.AddScoped<IOrderNotifier, LogOrderNotifier>();
+        services.AddSingleton<OutboxMetrics>();
+        services.AddScoped<OutboxPublisher>();
 
         services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis");
