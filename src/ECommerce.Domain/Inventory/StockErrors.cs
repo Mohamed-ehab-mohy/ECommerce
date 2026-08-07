@@ -23,4 +23,9 @@ public static class StockErrors
         "Stock.InsufficientAvailable",
         "The movement would make available stock negative.",
         ErrorType.Conflict);
+
+    public static readonly Error AllocationFailed = new(
+        "ERR_STK_001",
+        "Insufficient stock to complete the order.",
+        ErrorType.Conflict);
 }

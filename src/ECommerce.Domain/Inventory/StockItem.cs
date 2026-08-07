@@ -20,6 +20,8 @@ public sealed class StockItem : BaseEntity<Guid>
 
     public int Available => OnHand - Allocated;
 
+    public long Version { get; private set; }
+
     public static StockItem Create(string sku, Guid warehouseId, DateTime utcNow)
     {
         return new StockItem
@@ -29,10 +31,13 @@ public sealed class StockItem : BaseEntity<Guid>
             WarehouseId = warehouseId,
             OnHand = 0,
             Allocated = 0,
+            Version = 1,
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
     }
+
+    public void SetVersion(long version) => Version = version;
 
     public void Apply(StockMovement movement, DateTime utcNow)
     {

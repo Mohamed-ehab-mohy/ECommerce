@@ -8,7 +8,8 @@ public sealed class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
 {
     public void Configure(EntityTypeBuilder<StockItem> builder)
     {
-        builder.ToTable("stock_items");
+        builder.ToTable("stock_items", table => table
+            .HasCheckConstraint("ck_stock_items_allocated_le_on_hand", "\"allocated\" <= \"on_hand\""));
 
         builder.HasKey(stockItem => stockItem.Id);
         builder.Property(stockItem => stockItem.Id).ValueGeneratedNever().HasColumnName("id");
@@ -36,6 +37,11 @@ public sealed class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
         builder.Property(stockItem => stockItem.Allocated)
             .IsRequired()
             .HasColumnName("allocated");
+
+        builder.Property(stockItem => stockItem.Version)
+            .IsRequired()
+            .IsConcurrencyToken()
+            .HasColumnName("version");
 
         builder.Property(stockItem => stockItem.CreatedAt).HasColumnName("created_at");
         builder.Property(stockItem => stockItem.UpdatedAt).HasColumnName("updated_at");
