@@ -27,6 +27,14 @@ public static class ProblemResponse
             problem.Extensions["retryAfter"] = retryAfter;
         }
 
+        if (error.Metadata is not null)
+        {
+            foreach (var (key, value) in error.Metadata)
+            {
+                problem.Extensions[key] = value;
+            }
+        }
+
         return new ObjectResult(problem)
         {
             StatusCode = error.StatusCode
@@ -43,6 +51,7 @@ public static class ProblemResponse
         403 => "Forbidden",
         423 => "Locked",
         429 => "Too Many Requests",
+        502 => "Bad Gateway",
         _ => "Internal Server Error"
     };
 }

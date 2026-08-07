@@ -9,7 +9,8 @@ public sealed record OperationError(
     string Code,
     string Detail,
     int? RetryAfterSeconds = null,
-    string? Permission = null);
+    string? Permission = null,
+    IReadOnlyDictionary<string, object?>? Metadata = null);
 
 public static class ResultExtensions
 {
@@ -31,9 +32,10 @@ public static class ResultExtensions
             ErrorType.Locked => (423, "problems/locked"),
             ErrorType.TooManyRequests => (429, "problems/rate-limited"),
             ErrorType.BadRequest => (400, "problems/bad-request"),
+            ErrorType.BadGateway => (502, "problems/bad-gateway"),
             _ => (500, "problems/internal")
         };
 
-        return new OperationError(statusCode, type, error.Code, error.Description, error.RetryAfterSeconds, error.Permission);
+        return new OperationError(statusCode, type, error.Code, error.Description, error.RetryAfterSeconds, error.Permission, error.Metadata);
     }
 }

@@ -11,5 +11,6 @@ public enum ErrorType
     Internal,
     Locked,
     TooManyRequests,
-    BadRequest
+    BadRequest,
+    BadGateway
 }
