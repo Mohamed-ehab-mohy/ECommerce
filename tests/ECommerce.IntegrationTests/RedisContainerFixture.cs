@@ -4,13 +4,23 @@ namespace ECommerce.IntegrationTests;
 
 public sealed class RedisContainerFixture : IAsyncLifetime
 {
-    private readonly RedisContainer _container = new RedisBuilder("redis:7-alpine").Build();
+    private RedisContainer? _container;
 
-    public string ConnectionString => _container.GetConnectionString();
+    public string ConnectionString => _container!.GetConnectionString();
 
-    public Task InitializeAsync() =>
-        Docker.IsAvailable ? _container.StartAsync() : Task.CompletedTask;
+    public Task InitializeAsync()
+    {
+        if (!Docker.IsAvailable)
+        {
+            return Task.CompletedTask;
+        }
+
+        _container = new RedisBuilder("redis:7-alpine").Build();
+        return _container.StartAsync();
+    }
 
     public Task DisposeAsync() =>
-        Docker.IsAvailable ? _container.DisposeAsync().AsTask() : Task.CompletedTask;
+        _container is { } container && Docker.IsAvailable
+            ? container.DisposeAsync().AsTask()
+            : Task.CompletedTask;
 }

@@ -55,7 +55,8 @@ public sealed class PaymentProviderContractTests
         var masked = token.ToString();
 
         Assert.DoesNotContain(intent.ProviderToken, masked, StringComparison.Ordinal);
-        Assert.EndsWith("****", masked);
+        Assert.Contains("****", masked, StringComparison.Ordinal);
+        Assert.EndsWith(intent.ProviderToken[^4..], masked, StringComparison.Ordinal);
     }
 
     [SkippableFact]
