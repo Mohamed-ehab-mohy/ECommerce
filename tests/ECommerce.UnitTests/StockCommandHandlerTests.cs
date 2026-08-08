@@ -111,12 +111,28 @@ public sealed class StockCommandHandlerTests
         _stock.Items.Add(item);
 
         var result = await Handler.Handle(
-            new PostStockMovementCommand("SKU-1", WarehouseId, "Adjustment", -4, "COUNT-1", null, null),
+            new PostStockMovementCommand("SKU-1", WarehouseId, "Adjustment", -4, "COUNT-1", null, null, ApprovedBy: Guid.NewGuid()),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(6, item.OnHand);
         Assert.Single(_stock.Movements);
+    }
+
+    [Fact]
+    public async Task PostMovement_With_Negative_Quantity_On_Adjustment_Without_Approval_Returns_Approval_Required()
+    {
+        var item = StockItem.Create("SKU-1", WarehouseId, DateTime.UtcNow);
+        item.Apply(StockMovement.Create(item.Id, StockMovementType.Receipt, 10, "RECV", null, null, DateTime.UtcNow), DateTime.UtcNow);
+        _stock.Items.Add(item);
+
+        var result = await Handler.Handle(
+            new PostStockMovementCommand("SKU-1", WarehouseId, "Adjustment", -4, "COUNT-1", null, null),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(StockErrors.ApprovalRequired, result.Error);
+        Assert.Equal(0, _unitOfWork.SaveCount);
     }
 
     [Fact]

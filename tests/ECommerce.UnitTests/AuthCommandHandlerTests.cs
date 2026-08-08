@@ -4,9 +4,12 @@ using ECommerce.Domain.Identity;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit;
+using ECommerce.UseCases.Cart.Services;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;
+using ECommerce.UseCases.Identity.Ports;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ECommerce.UnitTests;
 
@@ -24,19 +27,30 @@ public sealed class AuthCommandHandlerTests
     private readonly AuthSettings _settings = new();
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly FakeAuditEntryRepository _auditEntries = new();
+    private readonly FakeCartRepository _carts = new();
 
-    private LoginCommandHandler LoginHandler =>
-        new(
+    private LoginCommandHandler LoginHandler => CreateLoginHandler();
+
+    private LoginCommandHandler CreateLoginHandler(
+        AuthSettings? settings = null,
+        ILoginAttemptThrottler? throttler = null)
+    {
+        var effective = settings ?? _settings;
+
+        return new LoginCommandHandler(
             _users,
             _passwordHasher,
             _refreshTokens,
             _unitOfWork,
-            _settings,
+            effective,
             _timeProvider,
-            new TokenPairFactory(_accessTokenIssuer, _settings, _timeProvider),
+            new TokenPairFactory(_accessTokenIssuer, effective, _timeProvider),
             new LoginCommandValidator(),
-            new InMemoryLoginAttemptThrottler(_settings),
-            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
+            throttler ?? new InMemoryLoginAttemptThrottler(effective),
+            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()),
+            new CartMergeService(_carts, _timeProvider, NullLogger<CartMergeService>.Instance),
+            NullLogger<LoginCommandHandler>.Instance);
+    }
 
     private RefreshCommandHandler RefreshHandler =>
         new(
@@ -194,17 +208,7 @@ public sealed class AuthCommandHandlerTests
         CreateVerifiedCustomer();
         var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
         var throttler = new InMemoryLoginAttemptThrottler(settings);
-        var handler = new LoginCommandHandler(
-            _users,
-            _passwordHasher,
-            _refreshTokens,
-            _unitOfWork,
-            settings,
-            _timeProvider,
-            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
-            new LoginCommandValidator(),
-            throttler,
-            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
+        var handler = CreateLoginHandler(settings, throttler);
 
         Result<LoginResult> result = null!;
         for (var attempt = 1; attempt <= 3; attempt++)
@@ -235,17 +239,7 @@ public sealed class AuthCommandHandlerTests
         var customer = CreateVerifiedCustomer();
         var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
         var throttler = new InMemoryLoginAttemptThrottler(settings);
-        var handler = new LoginCommandHandler(
-            _users,
-            _passwordHasher,
-            _refreshTokens,
-            _unitOfWork,
-            settings,
-            _timeProvider,
-            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
-            new LoginCommandValidator(),
-            throttler,
-            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
+        var handler = CreateLoginHandler(settings, throttler);
 
         for (var attempt = 1; attempt <= 2; attempt++)
         {
@@ -275,17 +269,7 @@ public sealed class AuthCommandHandlerTests
     {
         var settings = new AuthSettings { MaxFailedLoginAttemptsPerIp = 3, LoginAttemptWindowMinutes = 5 };
         var throttler = new InMemoryLoginAttemptThrottler(settings);
-        var handler = new LoginCommandHandler(
-            _users,
-            _passwordHasher,
-            _refreshTokens,
-            _unitOfWork,
-            settings,
-            _timeProvider,
-            new TokenPairFactory(_accessTokenIssuer, settings, _timeProvider),
-            new LoginCommandValidator(),
-            throttler,
-            new AuditLogWriter(_auditEntries, new FakeAuditContextProvider()));
+        var handler = CreateLoginHandler(settings, throttler);
 
         for (var attempt = 1; attempt <= 3; attempt++)
         {

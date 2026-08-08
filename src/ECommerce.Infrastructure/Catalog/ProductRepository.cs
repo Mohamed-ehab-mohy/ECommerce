@@ -21,6 +21,24 @@ public sealed class ProductRepository(ECommerceDbContext dbContext) : IProductRe
                 product => product.Id == id && product.Status == ProductStatus.Active && !product.IsDeleted,
                 cancellationToken);
 
+    public async Task<IReadOnlyList<Product>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var items = await dbContext.Set<Product>()
+            .Include(product => product.Translations)
+            .Include(product => product.Prices)
+            .Where(product => ids.Contains(product.Id))
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
+
     public Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken) =>
         dbContext.Set<Product>().AnyAsync(product => product.Sku == sku, cancellationToken);
 

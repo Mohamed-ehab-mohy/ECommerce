@@ -8,6 +8,8 @@ public interface IProductRepository
 
     Task<Product?> GetActiveByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<Product>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
+
     Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken);
 
     Task<bool> SlugExistsAsync(string slug, Guid excludeProductId, CancellationToken cancellationToken);

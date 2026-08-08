@@ -1,8 +1,10 @@
 using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Flags;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Messaging;
@@ -58,6 +60,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+
+    public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
+
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

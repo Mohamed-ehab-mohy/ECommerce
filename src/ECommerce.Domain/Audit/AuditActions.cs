@@ -20,4 +20,6 @@ public static class AuditActions
     public const string RoleCreated = "identity.role.created";
     public const string RolePermissionsChanged = "identity.role.permissions.changed";
     public const string RoleAssigned = "identity.role.assigned";
+    public const string FeatureFlagChanged = "platform.feature.flag.changed";
+    public const string NotificationPreferenceUpdated = "notifications.preference.updated";
 }

@@ -2,7 +2,9 @@ using ECommerce.API.Audit;
 using ECommerce.API.Common;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Jobs;
 using ECommerce.Infrastructure.Messaging;
+using ECommerce.Infrastructure.Notifications;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
@@ -25,6 +27,9 @@ public static class DependencyInjection
             configuration.GetConnectionString("Redis")!);
         services.AddPaymentInfrastructure(configuration);
         services.AddMessageBus(configuration);
+        services.AddJobs(configuration);
+
+        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
 
         services.AddControllers();
         services.AddProblemDetails();

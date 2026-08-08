@@ -45,6 +45,7 @@ public sealed class AuthController(ISender sender) : ControllerBase
     public async Task<IActionResult> Login(
         LoginRequest request,
         [FromHeader(Name = "X-Device-Id")] string? deviceId,
+        [FromHeader(Name = "X-Cart-Key")] string? cartKey,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
@@ -52,7 +53,8 @@ public sealed class AuthController(ISender sender) : ControllerBase
                 request.Email,
                 request.Password,
                 deviceId ?? "unknown",
-                ClientIpResolver.Resolve(HttpContext)),
+                ClientIpResolver.Resolve(HttpContext),
+                string.IsNullOrWhiteSpace(cartKey) ? null : cartKey),
             cancellationToken);
 
         if (result.IsFailure)

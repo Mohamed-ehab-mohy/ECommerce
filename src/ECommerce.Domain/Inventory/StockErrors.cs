@@ -28,4 +28,14 @@ public static class StockErrors
         "ERR_STK_001",
         "Insufficient stock to complete the order.",
         ErrorType.Conflict);
+
+    public static readonly Error ApprovalRequired = new(
+        "Stock.ApprovalRequired",
+        "Negative adjustments require approval.",
+        ErrorType.Validation);
+
+    public static readonly Error SameWarehouseTransfer = new(
+        "Stock.SameWarehouseTransfer",
+        "Source and target warehouses must differ.",
+        ErrorType.Validation);
 }

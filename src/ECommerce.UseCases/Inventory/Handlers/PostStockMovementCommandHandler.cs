@@ -30,6 +30,11 @@ public sealed class PostStockMovementCommandHandler(
         var sku = request.Sku.Trim().ToUpperInvariant();
         var type = Enum.Parse<StockMovementType>(request.Type, ignoreCase: true);
 
+        if (type == StockMovementType.Adjustment && request.Quantity < 0 && request.ApprovedBy is null)
+        {
+            return StockErrors.ApprovalRequired;
+        }
+
         var stockItem = await stock.GetBySkuAndWarehouseAsync(sku, request.WarehouseId, cancellationToken);
         var created = stockItem is null;
         stockItem ??= StockItem.Create(sku, request.WarehouseId, utcNow);

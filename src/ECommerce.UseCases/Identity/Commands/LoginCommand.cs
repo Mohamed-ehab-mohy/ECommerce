@@ -7,4 +7,5 @@ public sealed record LoginCommand(
     string Email,
     string Password,
     string DeviceId,
-    string IpAddress) : IRequest<Result<LoginResult>>;
+    string IpAddress,
+    string? GuestCartKey = null) : IRequest<Result<LoginResult>>;

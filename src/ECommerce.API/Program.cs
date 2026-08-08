@@ -1,4 +1,7 @@
 using ECommerce.API;
+using ECommerce.API.Jobs;
+using ECommerce.Infrastructure.Jobs;
+using Hangfire;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -59,6 +62,20 @@ app.MapGet("/", () => "ECommerce API");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new OpsRoleDashboardAuthorizationFilter()],
+    StatsPollingInterval = 5000
+});
+
+if (!builder.Environment.IsDevelopment())
+{
+    RecurringJob.AddOrUpdate<ExpiredCartPurgeJob>(
+        "expired-cart-purge",
+        job => job.ExecuteAsync(CancellationToken.None),
+        ExpiredCartPurgeJob.Schedule);
+}
 
 app.MapControllers();
 

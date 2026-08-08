@@ -36,7 +36,7 @@
 | S3 | `tasks/sprint-03-catalog-core-and-rbac.md` | [ ] |
 | S4 | `tasks/sprint-04-cart-inventory-and-caching.md` | [ ] |
 | S5 | `tasks/sprint-05-checkout-allocation-and-payments.md` | [x] |
-| S6 | `tasks/sprint-06-notifications-stock-ops-and-flags.md` | [ ] |
+| S6 | `tasks/sprint-06-notifications-stock-ops-and-flags.md` | [x] |
 | S7 | `tasks/sprint-07-order-lifecycle-and-v1-0.md` | [ ] |
 | S8 | `tasks/sprint-08-promotions-core.md` | [ ] |
 | S9 | `tasks/sprint-09-campaign-ops-and-payment-risk.md` | [ ] |

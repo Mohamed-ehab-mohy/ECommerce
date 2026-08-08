@@ -16,6 +16,8 @@ public static class Permissions
     public const string CustomersPiiRead = "customers.pii.read";
     public const string AuthImpersonate = "auth.impersonate";
     public const string AuditRead = "audit.read";
+    public const string PlatformFlagsRead = "platform.flags.read";
+    public const string PlatformFlagsWrite = "platform.flags.write";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -32,6 +34,8 @@ public static class Permissions
         CustomersRead,
         CustomersPiiRead,
         AuthImpersonate,
-        AuditRead
+        AuditRead,
+        PlatformFlagsRead,
+        PlatformFlagsWrite
     ];
 }

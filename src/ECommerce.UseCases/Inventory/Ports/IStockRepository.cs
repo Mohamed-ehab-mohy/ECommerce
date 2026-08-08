@@ -10,6 +10,12 @@ public interface IStockRepository
 
     Task<IReadOnlyList<StockItem>> ListBySkuAsync(string sku, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<StockItem>> LockForTransferAsync(
+        string sku,
+        Guid fromWarehouseId,
+        Guid toWarehouseId,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken);
 
     Task<int> CountAsync(Guid? warehouseId, CancellationToken cancellationToken);

@@ -12,7 +12,8 @@ public sealed record PostStockMovementCommand(
     int Quantity,
     string Reason,
     string? Reference,
-    string? Note) : IRequest<Result>, IRequirePermission
+    string? Note,
+    Guid? ApprovedBy = null) : IRequest<Result>, IRequirePermission
 {
     public string Permission => Permissions.InventoryStockWrite;
 }

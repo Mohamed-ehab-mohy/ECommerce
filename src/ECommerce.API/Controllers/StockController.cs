@@ -61,6 +61,22 @@ public sealed class StockController(ISender sender) : ControllerBase
             request.Quantity,
             request.Reason,
             request.Reference,
+            request.Note,
+            request.ApprovedBy), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : NoContent();
+    }
+
+    [HttpPost("transfers")]
+    public async Task<IActionResult> Transfer(TransferStockRequest request, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new TransferStockCommand(
+            request.Sku,
+            request.FromWarehouseId,
+            request.ToWarehouseId,
+            request.Quantity,
             request.Note), cancellationToken);
 
         return result.IsFailure

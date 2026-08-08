@@ -4,8 +4,10 @@ using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
+using ECommerce.Domain.Flags;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Shared.Audit;
@@ -14,9 +16,11 @@ using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Flags.Ports;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Messaging.Ports;
+using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 using System.Diagnostics.Metrics;
@@ -61,6 +65,12 @@ internal sealed class FakeProductRepository : IProductRepository
 
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Products.FirstOrDefault(product => product.Id == id));
+
+    public Task<IReadOnlyList<Product>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Product>>(
+            Products.Where(product => ids.Contains(product.Id)).ToList());
 
     public Task<Product?> GetActiveByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Products.FirstOrDefault(
@@ -523,6 +533,53 @@ internal sealed class FakeCurrentUser(
     public IReadOnlyList<string> Permissions { get; } = permissions ?? [];
 }
 
+internal sealed class FakeFeatureFlagRepository : IFeatureFlagRepository
+{
+    public List<FeatureFlag> Flags { get; } = [];
+
+    public Task<FeatureFlag?> GetByKeyAsync(string key, CancellationToken cancellationToken) =>
+        Task.FromResult(Flags.FirstOrDefault(flag => flag.Key == key));
+
+    public Task<IReadOnlyList<FeatureFlag>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<FeatureFlag>>(Flags.ToList());
+
+    public void Add(FeatureFlag flag) => Flags.Add(flag);
+}
+
+internal sealed class FakeNotificationPreferenceRepository : INotificationPreferenceRepository
+{
+    public List<NotificationPreference> Preferences { get; } = [];
+
+    public Task<bool> IsEnabledAsync(
+        Guid customerId,
+        NotificationChannel channel,
+        NotificationKind kind,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Preferences.Any(preference =>
+            preference.CustomerId == customerId &&
+            preference.Channel == channel &&
+            preference.Kind == kind &&
+            preference.Enabled));
+
+    public Task<NotificationPreference?> GetAsync(
+        Guid customerId,
+        NotificationChannel channel,
+        NotificationKind kind,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Preferences.FirstOrDefault(preference =>
+            preference.CustomerId == customerId &&
+            preference.Channel == channel &&
+            preference.Kind == kind));
+
+    public Task<IReadOnlyList<NotificationPreference>> ListByCustomerAsync(
+        Guid customerId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<NotificationPreference>>(
+            Preferences.Where(preference => preference.CustomerId == customerId).ToList());
+
+    public void Add(NotificationPreference preference) => Preferences.Add(preference);
+}
+
 internal sealed class FakeStockRepository : IStockRepository
 {
     public List<StockItem> Items { get; } = [];
@@ -540,6 +597,17 @@ internal sealed class FakeStockRepository : IStockRepository
         Task.FromResult<IReadOnlyList<StockItem>>(
             Items.Where(item => item.Sku == sku && !item.IsDeleted)
                 .OrderBy(item => item.WarehouseId)
+                .ToList());
+
+    public Task<IReadOnlyList<StockItem>> LockForTransferAsync(
+        string sku,
+        Guid fromWarehouseId,
+        Guid toWarehouseId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StockItem>>(
+            Items.Where(item => item.Sku == sku
+                && (item.WarehouseId == fromWarehouseId || item.WarehouseId == toWarehouseId)
+                && !item.IsDeleted)
                 .ToList());
 
     public Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken)

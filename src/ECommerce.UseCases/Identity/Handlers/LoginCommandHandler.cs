@@ -4,11 +4,13 @@ using ECommerce.Shared.Audit;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Cart.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace ECommerce.UseCases.Identity.Handlers;
 
@@ -22,7 +24,9 @@ public sealed class LoginCommandHandler(
     TokenPairFactory tokenPairFactory,
     IValidator<LoginCommand> validator,
     ILoginAttemptThrottler loginAttemptThrottler,
-    IAuditLogWriter auditLogWriter) : IRequestHandler<LoginCommand, Result<LoginResult>>
+    IAuditLogWriter auditLogWriter,
+    CartMergeService cartMergeService,
+    ILogger<LoginCommandHandler> logger) : IRequestHandler<LoginCommand, Result<LoginResult>>
 {
     public async Task<Result<LoginResult>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
@@ -93,7 +97,33 @@ public sealed class LoginCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await MergeGuestCartIfProvidedAsync(request, customer.Id, cancellationToken);
+
         return Result<LoginResult>.Success(pair.Result);
+    }
+
+    private async Task MergeGuestCartIfProvidedAsync(
+        LoginCommand request,
+        Guid customerId,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.GuestCartKey))
+        {
+            return;
+        }
+
+        try
+        {
+            await cartMergeService.MergeGuestCartAsync(request.GuestCartKey, customerId, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Guest cart merge failed for cart key {CartKey} on login of customer {CustomerId}.",
+                request.GuestCartKey,
+                customerId);
+        }
     }
 
     private Result<LoginResult> RejectWithRecordedFailure(string clientIp, DateTime utcNow, Error failure)

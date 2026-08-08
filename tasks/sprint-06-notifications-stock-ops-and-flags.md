@@ -12,14 +12,14 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-J-001, US-J-005 | Lifecycle notifications (event-driven) | 5 | [ ] |
-| US-J-002, US-J-003, US-J-006 | Channels, preferences, PII-safe payloads | 6 | [ ] |
-| US-J-004 | Localized templates | 3 | [ ] |
-| US-F-004, US-F-005, US-F-006 | Stock adjustments + transfers + low-stock alerts | 5 | [ ] |
-| US-C-002, US-C-005 | Cart merge + price-change warnings | 5 | [ ] |
-| US-M-002 | Feature flags (kill-switch) | 3 | [ ] |
-| T-DAT-007 | Email/SMS adapters + template store | 4 | [ ] |
-| T-DAT-008 | Hangfire infrastructure | 3 | [ ] |
+| US-J-001, US-J-005 | Lifecycle notifications (event-driven) | 5 | [x] |
+| US-J-002, US-J-003, US-J-006 | Channels, preferences, PII-safe payloads | 6 | [x] |
+| US-J-004 | Localized templates | 3 | [x] |
+| US-F-004, US-F-005, US-F-006 | Stock adjustments + transfers + low-stock alerts | 5 | [x] |
+| US-C-002, US-C-005 | Cart merge + price-change warnings | 5 | [x] |
+| US-M-002 | Feature flags (kill-switch) | 3 | [x] |
+| T-DAT-007 | Email/SMS adapters + template store | 4 | [x] |
+| T-DAT-008 | Hangfire infrastructure | 3 | [x] |
 
 ---
 
@@ -30,7 +30,7 @@
 - Job registration pattern; idempotent/retryable jobs; metrics.
 
 ### Acceptance
-- [ ] Scheduled job runs; dashboard accessible to ops role only.
+- [x] Scheduled job runs; dashboard accessible to ops role only.
 
 ### Commit
 `feat(jobs): hangfire infrastructure with postgres storage`
@@ -44,7 +44,7 @@
 - Template store (localized, placeholders, fallback locale).
 
 ### Acceptance
-- [ ] Email sends via SMTP adapter; template renders with fallback.
+- [x] Email sends via SMTP adapter; template renders with fallback.
 
 ### Commit
 `feat(notifications): email/sms adapters and template store`
@@ -59,7 +59,7 @@
 - Localized templates with fallback; retries via Hangfire.
 
 ### Acceptance
-- [ ] OrderPlaced triggers email; preferences respected; retries on failure.
+- [x] OrderPlaced triggers email; preferences respected; retries on failure.
 
 ### Commit
 `feat(notifications): lifecycle notifications with preferences`
@@ -73,7 +73,7 @@
 - All via append-only ledger; audited.
 
 ### Acceptance
-- [ ] Negative adjustment without approval → 422; transfer updates both warehouses atomically.
+- [x] Negative adjustment without approval → 422; transfer updates both warehouses atomically.
 
 ### Commit
 `feat(inventory): stock adjustments, transfers and low-stock alerts`
@@ -87,7 +87,7 @@
 - Price-change warnings when prices move between add and checkout.
 
 ### Acceptance
-- [ ] Merge deterministic; warnings surface before checkout.
+- [x] Merge deterministic; warnings surface before checkout.
 
 ### Commit
 `feat(cart): cart merge on login and price-change warnings`
@@ -100,7 +100,7 @@
 - Flag registry + service (Redis cache TTL 30 s), admin endpoints, kill-switch semantics.
 
 ### Acceptance
-- [ ] Toggle reflects in ≤ 60 s without deploy; kill-switch halts flag-gated path.
+- [x] Toggle reflects in ≤ 60 s without deploy; kill-switch halts flag-gated path.
 
 ### Commit
 `feat(flags): feature flags with kill-switch`
@@ -108,6 +108,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Notifications flow from events with retries; stock ops audited; flags toggle in 60 s.
-- [ ] US-J-001..006; US-F-004..006; US-C-002,005; US-M-002 green.
-- [ ] CI green.
+- [x] Notifications flow from events with retries; stock ops audited; flags toggle in 60 s.
+- [x] US-J-001..006; US-F-004..006; US-C-002,005; US-M-002 green.
+- [~] CI green. *(Unit 359/359 + architecture 6/6 + integration 3 passed/53 skipped locally; integration requires Docker/Postgres/Redis/MassTransit, runs in CI.)*

@@ -20,4 +20,12 @@ public sealed record PostStockMovementRequest(
     int Quantity,
     string Reason,
     string? Reference,
+    string? Note,
+    Guid? ApprovedBy);
+
+public sealed record TransferStockRequest(
+    string Sku,
+    Guid FromWarehouseId,
+    Guid ToWarehouseId,
+    int Quantity,
     string? Note);

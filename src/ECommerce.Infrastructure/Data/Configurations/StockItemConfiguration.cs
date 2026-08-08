@@ -38,6 +38,19 @@ public sealed class StockItemConfiguration : IEntityTypeConfiguration<StockItem>
             .IsRequired()
             .HasColumnName("allocated");
 
+        builder.Property(stockItem => stockItem.LowStockThreshold)
+            .IsRequired()
+            .HasDefaultValue(0)
+            .HasColumnName("low_stock_threshold");
+
+        builder.Property(stockItem => stockItem.LowStockNotifiedAt)
+            .HasColumnName("low_stock_notified_at");
+
+        builder.Property(stockItem => stockItem.LowStockCooldown)
+            .IsRequired()
+            .HasDefaultValue(TimeSpan.FromHours(24))
+            .HasColumnName("low_stock_cooldown");
+
         builder.Property(stockItem => stockItem.Version)
             .IsRequired()
             .IsConcurrencyToken()

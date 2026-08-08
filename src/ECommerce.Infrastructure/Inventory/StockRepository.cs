@@ -21,6 +21,26 @@ public sealed class StockRepository(ECommerceDbContext dbContext) : IStockReposi
             .OrderBy(stockItem => stockItem.WarehouseId)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<StockItem>> LockForTransferAsync(
+        string sku,
+        Guid fromWarehouseId,
+        Guid toWarehouseId,
+        CancellationToken cancellationToken)
+    {
+        var items = await dbContext.StockItems
+            .FromSqlInterpolated($"""
+                SELECT si.* FROM "stock_items" AS si
+                WHERE si."sku" = {sku}
+                  AND si."warehouse_id" IN ({fromWarehouseId}, {toWarehouseId})
+                  AND si."is_deleted" = FALSE
+                ORDER BY si."warehouse_id"
+                FOR UPDATE OF si
+                """)
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
+
     public async Task<IReadOnlyList<StockItem>> ListAsync(int page, int pageSize, Guid? warehouseId, CancellationToken cancellationToken)
     {
         var query = dbContext.Set<StockItem>().Where(stockItem => !stockItem.IsDeleted);

@@ -99,6 +99,25 @@ public sealed class CartController(ISender sender, ICurrentUser currentUser) : C
             : Ok(result.Value);
     }
 
+    [HttpGet("price-changes")]
+    public async Task<IActionResult> PriceChanges(CancellationToken cancellationToken = default)
+    {
+        var (ownerKey, issuedKey) = ResolveOwnerKey();
+
+        var result = await sender.Send(
+            new GetCartPriceChangesQuery(ownerKey),
+            cancellationToken);
+
+        if (issuedKey is not null)
+        {
+            Response.Headers[CartKeyHeader] = issuedKey;
+        }
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : Ok(result.Value);
+    }
+
     private (string OwnerKey, string? IssuedKey) ResolveOwnerKey()
     {
         if (currentUser.UserId is { } userId)

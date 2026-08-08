@@ -1,10 +1,12 @@
 using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
+using ECommerce.UseCases.Cart.Services;
 using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
+using ECommerce.UseCases.Notifications.Services;
 using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Pricing;
 using FluentValidation;
@@ -36,6 +38,8 @@ public static class DependencyInjection
         services.AddScoped<CheckoutTotalsCalculator>();
         services.AddScoped<StockAvailabilityVerifier>();
         services.AddScoped<PaymentIntentService>();
+        services.AddScoped<CartMergeService>();
+        services.AddScoped<NotificationDispatcher>();
 
         return services;
     }
