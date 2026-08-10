@@ -695,7 +695,42 @@ internal sealed class FakeOrderRepository : IOrderRepository
     public Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Orders.FirstOrDefault(order => order.Id == id));
 
+    public Task<Order?> GetByNumberAsync(string orderNumber, CancellationToken cancellationToken) =>
+        Task.FromResult(Orders.FirstOrDefault(order => order.OrderNumber == orderNumber));
+
+    public Task<Order?> GetByNumberWithDetailsAsync(string orderNumber, CancellationToken cancellationToken) =>
+        Task.FromResult(Orders.FirstOrDefault(order => order.OrderNumber == orderNumber));
+
+    public Task<OrderHistoryPage> ListByCustomerAsync(
+        Guid customerId,
+        string? cursor,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = Orders
+            .Where(order => order.CustomerId == customerId)
+            .OrderByDescending(order => order.PlacedAt)
+            .ToList();
+
+        var items = query.Take(pageSize).ToList();
+        var hasNext = query.Count > pageSize;
+
+        return Task.FromResult(new OrderHistoryPage(items, null, hasNext));
+    }
+
+    public Task<IReadOnlyList<Order>> FindByEmailAsync(string email, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Order>>(
+            Orders.Where(order => order.CustomerEmail == email).ToList());
+
     public void Add(Order order) => Orders.Add(order);
+}
+
+internal sealed class FakeOrderNumberGenerator : IOrderNumberGenerator
+{
+    private int _sequence;
+
+    public Task<string> GenerateAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult(OrderNumber.Create(utcNow, Interlocked.Increment(ref _sequence)).Value);
 }
 
 internal sealed class FakeIdempotencyKeyRepository : IIdempotencyKeyRepository

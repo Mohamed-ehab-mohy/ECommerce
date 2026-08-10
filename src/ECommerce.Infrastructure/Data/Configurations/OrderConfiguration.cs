@@ -17,6 +17,11 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(order => order.CartId).HasColumnName("cart_id");
         builder.Property(order => order.CustomerId).HasColumnName("customer_id");
 
+        builder.Property(order => order.OrderNumber)
+            .HasMaxLength(24)
+            .IsRequired()
+            .HasColumnName("order_number");
+
         builder.Property(order => order.CustomerEmail)
             .HasMaxLength(254)
             .IsRequired()
@@ -93,8 +98,17 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(item => item.OrderId)
             .HasConstraintName("fk_order_items_orders");
 
+        builder.HasMany(order => order.StatusLogs)
+            .WithOne()
+            .HasForeignKey(entry => entry.OrderId)
+            .HasConstraintName("fk_order_status_log_orders");
+
+        builder.HasIndex(order => order.OrderNumber).IsUnique().HasDatabaseName("ux_orders_order_number");
         builder.HasIndex(order => order.CheckoutId).HasDatabaseName("ix_orders_checkout_id");
         builder.HasIndex(order => order.PaymentId).HasDatabaseName("ix_orders_payment_id");
         builder.HasIndex(order => order.CartId).HasDatabaseName("ix_orders_cart_id");
+        builder.HasIndex(order => new { order.CustomerId, order.PlacedAt }).HasDatabaseName("ix_orders_customer_id_placed_at");
+        builder.HasIndex(order => order.PlacedAt).HasDatabaseName("ix_orders_placed_at");
+        builder.HasIndex(order => order.Status).HasDatabaseName("ix_orders_status");
     }
 }

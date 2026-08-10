@@ -64,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICheckoutRepository, CheckoutRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderNumberGenerator, OrderNumberGenerator>();
         services.AddScoped<IIdempotencyKeyRepository, IdempotencyKeyRepository>();
         services.AddScoped<IShippingRateProvider, ShippingRateStubProvider>();
         services.AddScoped<ITaxCalculator, FlatTaxCalculator>();

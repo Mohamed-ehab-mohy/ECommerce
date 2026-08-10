@@ -18,6 +18,8 @@ public static class Permissions
     public const string AuditRead = "audit.read";
     public const string PlatformFlagsRead = "platform.flags.read";
     public const string PlatformFlagsWrite = "platform.flags.write";
+    public const string OrdersRead = "orders.read";
+    public const string OrdersSupportRead = "orders.support.read";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -36,6 +38,8 @@ public static class Permissions
         AuthImpersonate,
         AuditRead,
         PlatformFlagsRead,
-        PlatformFlagsWrite
+        PlatformFlagsWrite,
+        OrdersRead,
+        OrdersSupportRead
     ];
 }

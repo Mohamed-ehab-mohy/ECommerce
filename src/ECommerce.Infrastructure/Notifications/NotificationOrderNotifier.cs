@@ -37,7 +37,7 @@ public sealed class NotificationOrderNotifier(
             ReferenceId: orderPlaced.OrderId.ToString("N"),
             Placeholders: new Dictionary<string, string>
             {
-                ["OrderNumber"] = orderPlaced.OrderId.ToString("N")[..8].ToUpperInvariant(),
+                ["OrderNumber"] = orderPlaced.OrderNumber,
                 ["Total"] = orderPlaced.Total.ToString("0.00", CultureInfo.InvariantCulture),
                 ["Currency"] = orderPlaced.Currency
             },

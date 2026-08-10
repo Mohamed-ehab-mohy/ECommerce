@@ -78,6 +78,7 @@ public sealed class MessagingIntegrationTests :
             var messageId = Guid.NewGuid();
             var orderPlaced = new OrderPlaced(
                 Guid.NewGuid(),
+                "E-20260807-000001",
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 "ahmed@example.com",

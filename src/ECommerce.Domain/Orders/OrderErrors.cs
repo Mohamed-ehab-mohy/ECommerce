@@ -15,6 +15,16 @@ public static class OrderErrors
         "The order state does not allow this operation.",
         ErrorType.Conflict);
 
+    public static readonly Error NotYourOrder = new(
+        "ERR_ORD_003",
+        "The order does not belong to the current customer.",
+        ErrorType.Forbidden);
+
+    public static readonly Error CancellationNotAllowed = new(
+        "ERR_ORD_004",
+        "The order cannot be cancelled in its current state.",
+        ErrorType.Conflict);
+
     public static readonly Error IdempotencyKeyReuse = new(
         "ERR_IDP_001",
         "The idempotency key was already used for a different checkout.",

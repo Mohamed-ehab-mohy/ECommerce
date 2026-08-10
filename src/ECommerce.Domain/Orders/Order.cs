@@ -6,8 +6,11 @@ namespace ECommerce.Domain.Orders;
 
 public sealed class Order : BaseEntity<Guid>
 {
+    private readonly List<OrderStatusLog> _statusLogs = [];
+
     private Order()
     {
+        OrderNumber = string.Empty;
         CustomerEmail = string.Empty;
         Currency = string.Empty;
         ShippingMethodId = string.Empty;
@@ -19,6 +22,8 @@ public sealed class Order : BaseEntity<Guid>
     public Guid CartId { get; private set; }
 
     public Guid? CustomerId { get; private set; }
+
+    public string OrderNumber { get; private set; }
 
     public string CustomerEmail { get; private set; }
 
@@ -50,12 +55,15 @@ public sealed class Order : BaseEntity<Guid>
 
     public IReadOnlyCollection<OrderItem> Items { get; private set; }
 
+    public IReadOnlyCollection<OrderStatusLog> StatusLogs => _statusLogs;
+
     public static Order Create(
         Guid checkoutId,
         Guid cartId,
         Guid? customerId,
         string customerEmail,
         string currency,
+        string orderNumber,
         PriceSnapshot priceSnapshot,
         AddressSnapshot shippingAddress,
         AddressSnapshot billingAddress,
@@ -75,6 +83,7 @@ public sealed class Order : BaseEntity<Guid>
             CustomerId = customerId,
             CustomerEmail = customerEmail,
             Currency = currency,
+            OrderNumber = orderNumber,
             Subtotal = priceSnapshot.Totals.Subtotal,
             ItemDiscount = priceSnapshot.Totals.ItemDiscount,
             CartDiscount = priceSnapshot.Totals.CartDiscount,
@@ -97,8 +106,11 @@ public sealed class Order : BaseEntity<Guid>
             item.OrderId = order.Id;
         }
 
+        order.RecordStatusChange(null, OrderStatus.Placed, "system", null, null, utcNow);
+
         order.AddDomainEvent(new OrderPlaced(
             order.Id,
+            order.OrderNumber,
             checkoutId,
             cartId,
             customerEmail,
@@ -108,15 +120,41 @@ public sealed class Order : BaseEntity<Guid>
         return order;
     }
 
-    public Result Cancel(DateTime utcNow)
+    public Result Cancel(
+        string reason,
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
     {
         if (Status != OrderStatus.Placed)
         {
-            return OrderErrors.InvalidState;
+            return OrderErrors.CancellationNotAllowed;
         }
 
+        RecordStatusChange(Status, OrderStatus.Cancelled, actorType, actorId, traceId, utcNow);
         Status = OrderStatus.Cancelled;
         UpdatedAt = utcNow;
+
+        AddDomainEvent(new OrderCancelled(
+            Id,
+            OrderNumber,
+            CustomerEmail,
+            GrandTotal,
+            Currency,
+            reason));
+
         return Result.Success();
+    }
+
+    private void RecordStatusChange(
+        OrderStatus? from,
+        OrderStatus to,
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        _statusLogs.Add(OrderStatusLog.Create(Id, from, to, actorType, actorId, traceId, utcNow));
     }
 }

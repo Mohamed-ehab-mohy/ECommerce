@@ -169,6 +169,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
             new OrderRepository(context),
             new IdempotencyKeyRepository(context),
             new StockAllocator(context, new StockRepository(context)),
+            new OrderNumberGenerator(context),
             new UnitOfWork(context),
             TimeProvider.System,
             new PlaceOrderCommandValidator());

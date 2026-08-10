@@ -23,6 +23,8 @@ public sealed class PlaceOrderCommandHandlerTests
 
     private readonly FakeStockAllocator _allocator = new();
 
+    private readonly FakeOrderNumberGenerator _orderNumberGenerator = new();
+
     private readonly FakeUnitOfWork _unitOfWork = new();
 
     private static readonly AddressSnapshot Address = new(
@@ -39,6 +41,7 @@ public sealed class PlaceOrderCommandHandlerTests
             _orders,
             _idempotencyKeys,
             _allocator,
+            _orderNumberGenerator,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());
@@ -86,6 +89,7 @@ public sealed class PlaceOrderCommandHandlerTests
         Assert.Equal(checkout.CartId, result.Value.CartId);
         Assert.Equal(39.90m, result.Value.GrandTotal);
         Assert.Equal(OrderStatus.Placed.ToString(), result.Value.Status);
+        Assert.StartsWith("E-20260807-", result.Value.OrderNumber);
         Assert.NotNull(result.Value.PlacedAt);
         var line = Assert.Single(result.Value.Lines);
         Assert.Equal("SKU-1", line.Sku);
@@ -206,6 +210,7 @@ public sealed class PlaceOrderCommandHandlerTests
             _orders,
             _idempotencyKeys,
             allocator,
+            _orderNumberGenerator,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());

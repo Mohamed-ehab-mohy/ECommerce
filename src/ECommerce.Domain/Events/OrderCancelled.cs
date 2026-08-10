@@ -2,14 +2,13 @@ using ECommerce.Domain.Abstractions;
 
 namespace ECommerce.Domain.Events;
 
-public sealed record OrderPlaced(
+public sealed record OrderCancelled(
     Guid OrderId,
     string OrderNumber,
-    Guid CheckoutId,
-    Guid CartId,
     string CustomerEmail,
     decimal Total,
-    string Currency) : IDomainEvent
+    string Currency,
+    string Reason) : IDomainEvent
 {
     public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
 }

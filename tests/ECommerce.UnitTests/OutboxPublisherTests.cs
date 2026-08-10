@@ -24,7 +24,7 @@ public sealed class OutboxPublisherTests
         };
 
     private static OrderPlaced CreateOrderPlaced() =>
-        new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "ahmed@example.com", 39.90m, "USD");
+        new(Guid.NewGuid(), "E-20260807-000001", Guid.NewGuid(), Guid.NewGuid(), "ahmed@example.com", 39.90m, "USD");
 
     private static OutboxMetrics CreateMetrics() => new(new FakeMeterFactory());
 

@@ -20,6 +20,7 @@ public sealed class PlaceOrderCommandHandler(
     IOrderRepository orders,
     IIdempotencyKeyRepository idempotencyKeys,
     IStockAllocator stockAllocator,
+    IOrderNumberGenerator orderNumberGenerator,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
     IValidator<PlaceOrderCommand> validator) : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
@@ -75,12 +76,15 @@ public sealed class PlaceOrderCommandHandler(
             return PaymentErrors.PaymentNotAuthorized;
         }
 
+        var orderNumber = await orderNumberGenerator.GenerateAsync(utcNow, cancellationToken);
+
         var order = Order.Create(
             checkout.Id,
             checkout.CartId,
             checkout.CustomerId,
             checkout.CustomerEmail,
             checkout.Currency,
+            orderNumber,
             checkout.PriceSnapshot,
             checkout.ShippingAddress,
             checkout.BillingAddress,
