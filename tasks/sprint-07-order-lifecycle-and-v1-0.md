@@ -13,12 +13,12 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-D-005, US-D-006 | Order confirmation + history + timeline | 6 | [ ] |
-| US-D-007 | Cancellation with restock/refund path | 3 | [ ] |
-| US-D-008, US-D-009 | Reorder + support lookup | 5 | [ ] |
-| US-M-006, US-M-007 | Health endpoints + API versioning | 4 | [ ] |
-| T-OPS-002 | v1.0 staging deploy + smoke suite | 4 | [ ] |
-| T-TST-001 | Baseline load smoke (checkout path) | 3 | [ ] |
+| US-D-005, US-D-006 | Order confirmation + history + timeline | 6 | [x] |
+| US-D-007 | Cancellation with restock/refund path | 3 | [x] |
+| US-D-008, US-D-009 | Reorder + support lookup | 5 | [x] |
+| US-M-006, US-M-007 | Health endpoints + API versioning | 4 | [x] |
+| T-OPS-002 | v1.0 staging deploy + smoke suite | 4 | [x] |
+| T-TST-001 | Baseline load smoke (checkout path) | 3 | [x] |
 
 ---
 
@@ -28,7 +28,7 @@
 - Order confirmation (event → notification), `GET /api/v1/orders` history (cursor paginated), `GET /api/v1/orders/{orderNumber}` detail + timeline.
 
 ### Acceptance
-- [ ] History paginates correctly; timeline shows state transitions with timestamps.
+- [x] History paginates correctly; timeline shows state transitions with timestamps.
 
 ### Commit
 `feat(orders): order confirmation, history and timeline`
@@ -42,7 +42,7 @@
 - Restock allocated items; refund path for paid orders (refund execution in S12 — wire stub now, ledger updates now).
 
 ### Acceptance
-- [ ] Cancel restocks atomically; paid orders get refund stub invoked; notify customer.
+- [x] Cancel restocks atomically; paid orders get refund stub invoked; notify customer.
 
 ### Commit
 `feat(orders): cancellation with restock and refund stub`
@@ -56,7 +56,7 @@
 - `GET /api/v1/support/orders` lookup by number/email/customer (permission-gated).
 
 ### Acceptance
-- [ ] Reorder copies items with availability checks; support lookup masked.
+- [x] Reorder copies items with availability checks; support lookup masked.
 
 ### Commit
 `feat(orders): reorder and support lookup`
@@ -70,7 +70,7 @@
 - API versioning: URL versioning `v1`, version policies, `Deprecation` header for deprecated.
 
 ### Acceptance
-- [ ] `/api/v1/health/live`, `ready` JSON; deprecated endpoints flagged.
+- [x] `/api/v1/health/live`, `ready` JSON; deprecated endpoints flagged.
 
 ### Commit
 `feat(platform): health endpoints contract and api versioning`
@@ -83,7 +83,7 @@
 - Staging environment (docker-compose or k8s-lite) + smoke suite (critical journeys: register→browse→cart→checkout→order).
 
 ### Acceptance
-- [ ] Smoke suite green on staging; deploy reproducible.
+- [x] Smoke suite green on staging; deploy reproducible.
 
 ### Commit
 `chore(deploy): v1.0 staging deploy and smoke suite`
@@ -96,7 +96,7 @@
 - k6 (or NBomber) baseline on checkout path against staging; record metrics; assert p95 < 800 ms, error < 0.5%.
 
 ### Acceptance
-- [ ] Baseline report recorded; thresholds met or gap documented.
+- [x] Baseline report recorded; thresholds met or gap documented.
 
 ### Commit
 `test(perf): baseline load smoke on checkout path`
@@ -104,7 +104,7 @@
 ---
 
 ## Sprint Exit — v1.0 MVP
-- [ ] Full order lifecycle E2E; cancellation refund path; staging deployment.
-- [ ] Checkout-to-order E2E green; 1 PSP; audit/flags/jobs live; CI gates green; load smoke < targets.
-- [ ] US-D-005..009; US-M-006,007 green.
-- [ ] CI green; no sev ≥ 2 defects open.
+- [x] Full order lifecycle E2E; cancellation refund path; staging deployment.
+- [x] Checkout-to-order E2E green; 1 PSP; audit/flags/jobs live; CI gates green; load smoke < targets.
+- [x] US-D-005..009; US-M-006,007 green.
+- [x] CI green; no sev ≥ 2 defects open.
