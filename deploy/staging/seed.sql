@@ -14,7 +14,7 @@ VALUES ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO products (id, sku, slug, category_id, brand_id, status, is_featured, image_urls, attributes, created_at, updated_at, is_deleted)
-VALUES ('00000000-0000-0000-0000-000000000004', 'SMOKE-PROD', 'smoke-product', NULL, NULL, 'Active', true, '[]', NULL, now(), now(), false)
+VALUES ('00000000-0000-0000-0000-000000000004', 'SMOKE-PROD', 'smoke-product', NULL, NULL, 'Active', true, '[]', '{}', now(), now(), false)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO product_translations (product_id, locale, name, description, meta_title, meta_description)
