@@ -146,6 +146,19 @@ public sealed class Payment : BaseEntity<Guid>
         return Result.Success();
     }
 
+    public Result RequestRefund(string reason, DateTime utcNow)
+    {
+        if (Status != PaymentStatus.Captured)
+        {
+            return PaymentErrors.RefundNotAllowed;
+        }
+
+        Status = PaymentStatus.Refunding;
+        UpdatedAt = utcNow;
+        RecordAttempt("refund_requested", Amount, "pending", null, null, utcNow);
+        return Result.Success();
+    }
+
     public void RecordAttempt(
         string action,
         decimal amount,

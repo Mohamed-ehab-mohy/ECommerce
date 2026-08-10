@@ -23,4 +23,18 @@ public interface IStockAllocator
         string reference,
         DateTime utcNow,
         CancellationToken cancellationToken);
+
+    Task<StockReleaseResult> ReleaseAsync(
+        IReadOnlyCollection<AllocationRequestItem> items,
+        string reason,
+        string reference,
+        DateTime utcNow,
+        CancellationToken cancellationToken);
 }
+
+public sealed record StockReleaseResult(IReadOnlyList<StockReleaseLine> Released)
+{
+    public bool HasLines => Released.Count > 0;
+}
+
+public sealed record StockReleaseLine(Guid StockItemId, string Sku, Guid WarehouseId, int Quantity);

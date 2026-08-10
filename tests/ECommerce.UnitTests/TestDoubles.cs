@@ -667,6 +667,8 @@ internal sealed class FakeStockAllocator(
 {
     public int AllocateCount { get; private set; }
 
+    public int ReleaseCount { get; private set; }
+
     public List<AllocationRequestItem> LastItems { get; private set; } = [];
 
     public string? LastReason { get; private set; }
@@ -685,6 +687,20 @@ internal sealed class FakeStockAllocator(
         LastReason = reason;
         LastReference = reference;
         return Task.FromResult(new StockAllocationResult(lines ?? [], shortfalls ?? []));
+    }
+
+    public Task<StockReleaseResult> ReleaseAsync(
+        IReadOnlyCollection<AllocationRequestItem> items,
+        string reason,
+        string reference,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        ReleaseCount++;
+        LastItems = items.ToList();
+        LastReason = reason;
+        LastReference = reference;
+        return Task.FromResult(new StockReleaseResult([]));
     }
 }
 
@@ -786,9 +802,17 @@ internal sealed class CapturingOrderNotifier : IOrderNotifier
 {
     public List<OrderPlaced> Notified { get; } = [];
 
+    public List<OrderCancelled> Cancelled { get; } = [];
+
     public Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
     {
         Notified.Add(orderPlaced);
+        return Task.CompletedTask;
+    }
+
+    public Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken)
+    {
+        Cancelled.Add(orderCancelled);
         return Task.CompletedTask;
     }
 }

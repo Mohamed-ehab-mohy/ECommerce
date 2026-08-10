@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddMassTransit(bus =>
         {
             bus.AddConsumer<OrderPlacedConsumer>();
+            bus.AddConsumer<OrderCancelledConsumer>();
 
             bus.UsingRabbitMq((context, cfg) =>
             {
@@ -31,6 +32,7 @@ public static class DependencyInjection
                 {
                     endpoint.SetQuorumQueue();
                     endpoint.ConfigureConsumer<OrderPlacedConsumer>(context);
+                    endpoint.ConfigureConsumer<OrderCancelledConsumer>(context);
                 });
             });
         });

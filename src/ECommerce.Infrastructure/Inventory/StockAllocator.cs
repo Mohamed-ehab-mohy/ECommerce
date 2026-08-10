@@ -62,6 +62,53 @@ public sealed class StockAllocator(
         return new StockAllocationResult(allocated, shortfalls);
     }
 
+    public async Task<StockReleaseResult> ReleaseAsync(
+        IReadOnlyCollection<AllocationRequestItem> items,
+        string reason,
+        string reference,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        var released = new List<StockReleaseLine>();
+
+        foreach (var item in items)
+        {
+            var remaining = item.Quantity;
+
+            var candidates = await LockForUpdateAsync(item.Sku, cancellationToken);
+            foreach (var candidate in candidates)
+            {
+                var release = Math.Min(remaining, candidate.Allocated);
+                if (release <= 0)
+                {
+                    continue;
+                }
+
+                var movement = StockMovement.Create(
+                    candidate.Id,
+                    StockMovementType.Release,
+                    release,
+                    reason,
+                    reference,
+                    null,
+                    utcNow);
+
+                candidate.Apply(movement, utcNow);
+                stock.AddMovement(movement);
+
+                released.Add(new StockReleaseLine(candidate.Id, candidate.Sku, candidate.WarehouseId, release));
+                remaining -= release;
+            }
+        }
+
+        if (released.Count > 0)
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        return new StockReleaseResult(released);
+    }
+
     private async Task<IReadOnlyList<StockItem>> LockForUpdateAsync(
         string sku,
         CancellationToken cancellationToken)

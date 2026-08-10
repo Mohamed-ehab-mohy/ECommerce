@@ -1,6 +1,7 @@
 using ECommerce.API.Common;
 using ECommerce.Shared.Authorization;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -77,4 +78,26 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
             ? ProblemResponse.Create(result.ToOperationError())
             : Ok(result.Value.Timeline);
     }
+
+    [HttpPost("{orderNumber}/cancel")]
+    public async Task<IActionResult> Cancel(
+        string orderNumber,
+        CancelOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new CancelOrderCommand(
+                orderNumber,
+                request.Reason,
+                currentUser.UserId,
+                currentUser.Permissions.Contains(Permissions.OrdersSupportRead, StringComparer.Ordinal)),
+            cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : Ok(result.Value);
+    }
 }
+
+public sealed record CancelOrderRequest(string? Reason);
+

@@ -161,9 +161,17 @@ public sealed class MessagingIntegrationTests :
     {
         public List<OrderPlaced> Notified { get; } = [];
 
+        public List<OrderCancelled> Cancelled { get; } = [];
+
         public Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
         {
             Notified.Add(orderPlaced);
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken)
+        {
+            Cancelled.Add(orderCancelled);
             return Task.CompletedTask;
         }
     }

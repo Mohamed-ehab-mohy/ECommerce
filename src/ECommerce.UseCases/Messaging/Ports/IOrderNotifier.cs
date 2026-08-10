@@ -5,4 +5,6 @@ namespace ECommerce.UseCases.Messaging.Ports;
 public interface IOrderNotifier
 {
     Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken);
+
+    Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken);
 }

@@ -29,6 +29,11 @@ public static class PaymentErrors
         "The payment has not been authorized yet.",
         ErrorType.Conflict);
 
+    public static readonly Error RefundNotAllowed = new(
+        "ERR_PAY_005",
+        "Only captured payments can be refunded.",
+        ErrorType.Conflict);
+
     public static readonly Error ProviderUnavailable = new(
         "ERR_PAY_004",
         "The payment provider is temporarily unavailable. Please try again later.",

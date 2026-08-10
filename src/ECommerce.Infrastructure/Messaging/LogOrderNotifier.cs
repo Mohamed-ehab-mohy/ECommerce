@@ -18,4 +18,16 @@ public sealed class LogOrderNotifier(ILogger<LogOrderNotifier> logger) : IOrderN
 
         return Task.CompletedTask;
     }
+
+    public Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Order {OrderId} ({OrderNumber}) cancelled for customer {CustomerEmail}: reason {Reason}.",
+            orderCancelled.OrderId,
+            orderCancelled.OrderNumber,
+            orderCancelled.CustomerEmail,
+            orderCancelled.Reason);
+
+        return Task.CompletedTask;
+    }
 }

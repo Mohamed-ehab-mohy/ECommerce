@@ -17,6 +17,8 @@ public sealed class NotificationOrderNotifier(
 {
     public const string OrderConfirmationFlag = "notifications.order-confirmation.enabled";
 
+    public const string OrderCancellationFlag = "notifications.order-cancelled.enabled";
+
     public async Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
     {
         if (!await flags.IsEnabledAsync(OrderConfirmationFlag, cancellationToken))
@@ -40,6 +42,34 @@ public sealed class NotificationOrderNotifier(
                 ["OrderNumber"] = orderPlaced.OrderNumber,
                 ["Total"] = orderPlaced.Total.ToString("0.00", CultureInfo.InvariantCulture),
                 ["Currency"] = orderPlaced.Currency
+            },
+            Transactional: true), cancellationToken);
+    }
+
+    public async Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken)
+    {
+        if (!await flags.IsEnabledAsync(OrderCancellationFlag, cancellationToken))
+        {
+            logger.LogInformation(
+                "Order cancellation notifications disabled by flag for order {OrderId}.",
+                orderCancelled.OrderId);
+            return;
+        }
+
+        await dispatcher.DispatchAsync(new NotificationRequest(
+            CustomerId: null,
+            Channel: NotificationChannel.Email,
+            Kind: NotificationKind.OrderStatusUpdate,
+            TemplateKey: "order.cancelled",
+            Locale: "en",
+            Recipient: orderCancelled.CustomerEmail,
+            ReferenceId: orderCancelled.OrderId.ToString("N"),
+            Placeholders: new Dictionary<string, string>
+            {
+                ["OrderNumber"] = orderCancelled.OrderNumber,
+                ["Total"] = orderCancelled.Total.ToString("0.00", CultureInfo.InvariantCulture),
+                ["Currency"] = orderCancelled.Currency,
+                ["Reason"] = orderCancelled.Reason
             },
             Transactional: true), cancellationToken);
     }
