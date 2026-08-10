@@ -60,6 +60,23 @@ public sealed class PlaceOrderCommandHandler(
             return CheckoutErrors.CheckoutExpired;
         }
 
+        if (checkout.Status != CheckoutStatus.PaymentAuthorized)
+        {
+            var concurrentKey = await idempotencyKeys.GetByKeyAsync(request.IdempotencyKey, cancellationToken);
+            if (concurrentKey is not null)
+            {
+                if (concurrentKey.CheckoutId != request.CheckoutId)
+                {
+                    return OrderErrors.IdempotencyKeyReuse;
+                }
+
+                var replayedOrder = await orders.GetByIdAsync(concurrentKey.OrderId, cancellationToken);
+                return replayedOrder is null ? OrderErrors.OrderNotFound : OrderResponse.From(replayedOrder);
+            }
+
+            return CheckoutErrors.InvalidState;
+        }
+
         if (checkout.PaymentId is null)
         {
             return CheckoutErrors.InvalidState;

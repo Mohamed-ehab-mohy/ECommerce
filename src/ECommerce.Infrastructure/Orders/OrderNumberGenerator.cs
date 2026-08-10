@@ -10,7 +10,7 @@ public sealed class OrderNumberGenerator(ECommerceDbContext dbContext) : IOrderN
     public async Task<string> GenerateAsync(DateTime utcNow, CancellationToken cancellationToken)
     {
         var sequence = await dbContext.Database
-            .SqlQuery<long>($"SELECT nextval('order_number_seq') AS value")
+            .SqlQuery<long>($"SELECT nextval('order_number_seq') AS \"Value\"")
             .SingleAsync(cancellationToken);
 
         return OrderNumber.Create(utcNow, sequence).Value;

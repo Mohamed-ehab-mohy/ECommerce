@@ -6,6 +6,7 @@ namespace ECommerce.Domain.Orders;
 
 public sealed class Order : BaseEntity<Guid>
 {
+    private readonly List<OrderItem> _items = [];
     private readonly List<OrderStatusLog> _statusLogs = [];
 
     private Order()
@@ -14,7 +15,6 @@ public sealed class Order : BaseEntity<Guid>
         CustomerEmail = string.Empty;
         Currency = string.Empty;
         ShippingMethodId = string.Empty;
-        Items = [];
     }
 
     public Guid CheckoutId { get; private set; }
@@ -53,7 +53,7 @@ public sealed class Order : BaseEntity<Guid>
 
     public DateTime? PlacedAt { get; private set; }
 
-    public IReadOnlyCollection<OrderItem> Items { get; private set; }
+    public IReadOnlyCollection<OrderItem> Items => _items;
 
     public IReadOnlyCollection<OrderStatusLog> StatusLogs => _statusLogs;
 
@@ -96,7 +96,6 @@ public sealed class Order : BaseEntity<Guid>
             PaymentId = paymentId,
             Status = OrderStatus.Placed,
             PlacedAt = utcNow,
-            Items = items,
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
@@ -104,6 +103,7 @@ public sealed class Order : BaseEntity<Guid>
         foreach (var item in items)
         {
             item.OrderId = order.Id;
+            order._items.Add(item);
         }
 
         order.RecordStatusChange(null, OrderStatus.Placed, "system", null, null, utcNow);

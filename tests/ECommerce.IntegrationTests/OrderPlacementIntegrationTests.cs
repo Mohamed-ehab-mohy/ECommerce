@@ -12,6 +12,7 @@ using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Handlers;
 using ECommerce.UseCases.Orders.Responses;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.IntegrationTests;
@@ -121,6 +122,20 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
         await using (var setup = CreateContext())
         {
             await setup.Database.MigrateAsync();
+            await setup.Database.ExecuteSqlRawAsync("""
+                TRUNCATE TABLE
+                    warehouses,
+                    stock_items,
+                    stock_movements,
+                    payments,
+                    payment_attempts,
+                    checkouts,
+                    orders,
+                    order_items,
+                    order_status_log,
+                    idempotency_keys
+                CASCADE;
+                """);
 
             var warehouse = Warehouse.Create("W-QAS", "QAS Warehouse", "Test", "UTC", WarehouseStatus.Active, utcNow);
             setup.Add(warehouse);
@@ -181,8 +196,10 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
 
     private ECommerceDbContext CreateContext()
     {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-            .UseNpgsql(_fixture.ConnectionString)
+            .UseNpgsql(dataSourceBuilder.Build())
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
         return new ECommerceDbContext(options);

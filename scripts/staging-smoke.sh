@@ -133,7 +133,8 @@ report "Resolve payment id for client token" $?
 
 LAST_CODE=$(req -X POST "$BASE_URL/api/v1/payments/$paymentId/authorize")
 authStatus=$(jq -r .status "$LAST_BODY_FILE")
-[[ "$LAST_CODE" == "200" && "$authStatus" == "Authorized" ]]
+authRef=$(jq -r .providerReference "$LAST_BODY_FILE")
+[[ "$LAST_CODE" == "200" && "$authStatus" == "1" && "$authRef" != "null" && "$authRef" != "" ]]
 report "POST /api/v1/payments/{id}/authorize" $?
 
 LAST_CODE=$(req "${auth_header[@]}" \

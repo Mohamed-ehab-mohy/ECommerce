@@ -22,12 +22,15 @@ public sealed class IdempotencyKeyRepository(ECommerceDbContext dbContext) : IId
             VALUES (@id, @key, @checkout_id, @order_id, @created_at, @updated_at, FALSE)
             ON CONFLICT (key) DO NOTHING
             """,
-            new NpgsqlParameter("@id", idempotencyKey.Id),
-            new NpgsqlParameter("@key", idempotencyKey.Key),
-            new NpgsqlParameter("@checkout_id", idempotencyKey.CheckoutId),
-            new NpgsqlParameter("@order_id", idempotencyKey.OrderId),
-            new NpgsqlParameter("@created_at", idempotencyKey.CreatedAt),
-            new NpgsqlParameter("@updated_at", idempotencyKey.UpdatedAt),
+            new object[]
+            {
+                new NpgsqlParameter("@id", idempotencyKey.Id),
+                new NpgsqlParameter("@key", idempotencyKey.Key),
+                new NpgsqlParameter("@checkout_id", idempotencyKey.CheckoutId),
+                new NpgsqlParameter("@order_id", idempotencyKey.OrderId),
+                new NpgsqlParameter("@created_at", idempotencyKey.CreatedAt),
+                new NpgsqlParameter("@updated_at", idempotencyKey.UpdatedAt),
+            },
             cancellationToken);
 
         return inserted > 0 ? null : await GetByKeyAsync(idempotencyKey.Key, cancellationToken);
