@@ -1,4 +1,5 @@
 using ECommerce.API;
+using ECommerce.API.Common;
 using ECommerce.API.Jobs;
 using ECommerce.Infrastructure.Jobs;
 using Hangfire;
@@ -43,6 +44,20 @@ builder.Services.AddOpenTelemetry()
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+
+app.UseMiddleware<ApiVersionMiddleware>();
+
+app.MapHealthChecks("/api/v1/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+    ResponseWriter = HealthResponseWriter.WriteAsync
+});
+
+app.MapHealthChecks("/api/v1/health/ready", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = HealthResponseWriter.WriteAsync
+});
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
