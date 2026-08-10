@@ -13,7 +13,7 @@ public sealed record CheckoutTotalsResponse(
     decimal GrandTotal,
     string Currency);
 
-public sealed record PaymentInitiationResponse(string ClientToken, string ProviderKey);
+public sealed record PaymentInitiationResponse(string ClientToken, string ProviderKey, Guid PaymentId);
 
 public sealed record CheckoutResponse(
     Guid CheckoutId,
@@ -42,6 +42,6 @@ public static class CheckoutResponseFactory
                 checkout.PriceSnapshot.Totals.TaxTotal,
                 checkout.PriceSnapshot.Totals.GrandTotal,
                 checkout.Currency),
-            new PaymentInitiationResponse(payment.ClientToken, payment.ProviderKey),
+            new PaymentInitiationResponse(payment.ClientToken, payment.ProviderKey, payment.Id),
             checkout.ExpiresAt);
 }

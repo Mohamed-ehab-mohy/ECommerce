@@ -92,6 +92,7 @@ public sealed class InitiateCheckoutCommandHandlerTests
         Assert.Equal(CheckoutStatus.Created, result.Value.Status);
         Assert.Equal("tok_mock_1", result.Value.Payment.ClientToken);
         Assert.Equal("mock", result.Value.Payment.ProviderKey);
+        Assert.NotEqual(Guid.Empty, result.Value.Payment.PaymentId);
         Assert.Equal(40.00m, result.Value.Totals.Subtotal);
         Assert.Equal(39.90m, result.Value.Totals.GrandTotal);
 
