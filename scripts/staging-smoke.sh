@@ -3,14 +3,24 @@
 # Covers the critical journeys: register -> browse -> cart -> checkout -> order,
 # plus the v1 health/versioning contract and the cancellation/refund path.
 #
-# Usage: BASE_URL=http://localhost:8080 bash scripts/staging-smoke.sh
+# Fixtures (warehouse/product/stock) are seeded into Postgres directly via
+# deploy/staging/seed.sql, because the write endpoints are permission-gated.
+#
+# Usage:
+#   docker compose -f deploy/staging/docker-compose.staging.yml up -d
+#   BASE_URL=http://localhost:8080 bash scripts/staging-smoke.sh
 set -uo pipefail
 
 BASE_URL="${BASE_URL:-http://localhost:8080}"
+PG_CONTAINER="${PG_CONTAINER:-ecommerce-staging-postgres}"
+POSTGRES_USER="${POSTGRES_USER:-ecommerce}"
+POSTGRES_DB="${POSTGRES_DB:-ecommerce_staging}"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 PASSWORD="${SMOKE_PASSWORD:-Smoke#$(date +%s)2026!}"
 EMAIL="smoke.$(date +%s)@example.com"
-SKU="SMOKE$(date +%s | tail -c 6)"
-SLUG="smoke-product-$(date +%s | tail -c 6)"
+SKU="SMOKE-PROD"
+PRODUCT_ID="00000000-0000-0000-0000-000000000004"
 IDEMPOTENCY_KEY="smoke-$(date +%s)"
 WORKDIR="$(mktemp -d)"
 
@@ -29,7 +39,7 @@ report() {
     else
         echo "  FAIL  $label (HTTP ${LAST_CODE:-n/a})"
         if [[ -s "$LAST_BODY_FILE" ]]; then
-            echo "  ----> $(cat "$LAST_BODY_FILE" | head -c 800)"
+            echo "  ----> $(head -c 800 "$LAST_BODY_FILE")"
         fi
         FAILURES=$((FAILURES + 1))
     fi
@@ -39,6 +49,17 @@ report() {
 req() {
     curl -s -o "$LAST_BODY_FILE" -w '%{http_code}' --max-time 30 "$@"
 }
+
+echo "== staging fixtures =="
+docker exec -i "$PG_CONTAINER" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 \
+    < "$REPO_ROOT/deploy/staging/seed.sql"
+if [[ $? -eq 0 ]]; then
+    echo "  PASS  seed.sql fixtures applied"
+    PASS_COUNT=$((PASS_COUNT + 1))
+else
+    echo "  FAIL  seed.sql fixtures applied"
+    FAILURES=$((FAILURES + 1))
+fi
 
 echo "== v1 health + versioning contract =="
 
@@ -79,26 +100,6 @@ report "POST /api/v1/auth/login" $?
 
 auth_header=(-H "Authorization: Bearer $token" -H "Content-Type: application/json")
 
-LAST_CODE=$(req "${auth_header[@]}" \
-    -d '{"code":"SMOKE-WH","name":"Smoke Warehouse","address":"1 Smoke St, Test City","timezone":"UTC"}' \
-    "$BASE_URL/api/v1/warehouses")
-warehouseId=$(jq -r .id "$LAST_BODY_FILE")
-[[ "$LAST_CODE" == "201" && "$warehouseId" != "null" && "$warehouseId" != "" ]]
-report "POST /api/v1/warehouses" $?
-
-LAST_CODE=$(req "${auth_header[@]}" \
-    -d "{\"sku\":\"$SKU\",\"warehouseId\":\"$warehouseId\",\"type\":\"Receipt\",\"quantity\":100,\"reason\":\"SMOKE-SEED\",\"reference\":\"smoke-stock\"}" \
-    "$BASE_URL/api/v1/stock/movements")
-[[ "$LAST_CODE" == "204" ]]
-report "POST /api/v1/stock/movements (receipt 100 units)" $?
-
-LAST_CODE=$(req "${auth_header[@]}" \
-    -d "{\"sku\":\"$SKU\",\"slug\":\"$SLUG\",\"name\":\"Smoke Product\",\"description\":\"Smoke seed product\",\"currency\":\"USD\",\"listAmount\":49.99,\"offerAmount\":39.99,\"categoryId\":null,\"brandId\":null,\"isFeatured\":true,\"status\":\"Active\",\"locale\":\"en\"}" \
-    "$BASE_URL/api/v1/products")
-productId=$(jq -r .id "$LAST_BODY_FILE")
-[[ "$LAST_CODE" == "201" && "$productId" != "null" && "$productId" != "" ]]
-report "POST /api/v1/products (active)" $?
-
 LAST_CODE=$(req -H "Content-Type: application/json" \
     "$BASE_URL/api/v1/products?page=1&pageSize=50&currency=USD")
 found=$(jq --arg sku "$SKU" '[.items[] | select(.sku == $sku)] | length' "$LAST_BODY_FILE")
@@ -106,7 +107,7 @@ found=$(jq --arg sku "$SKU" '[.items[] | select(.sku == $sku)] | length' "$LAST_
 report "GET /api/v1/products lists the seeded product" $?
 
 LAST_CODE=$(req "${auth_header[@]}" \
-    -d "{\"productId\":\"$productId\",\"quantity\":2}" \
+    -d "{\"productId\":\"$PRODUCT_ID\",\"quantity\":2}" \
     "$BASE_URL/api/v1/carts/me/items?currency=USD")
 itemCount=$(jq -r '.items | length' "$LAST_BODY_FILE")
 [[ "$LAST_CODE" == "200" && "$itemCount" -ge 1 ]]
