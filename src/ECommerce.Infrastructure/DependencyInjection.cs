@@ -95,6 +95,7 @@ public static class DependencyInjection
         services.AddHttpClient<IPasswordBreachChecker, HibpPasswordBreachChecker>(client =>
             client.Timeout = TimeSpan.FromSeconds(10));
 
+        services.AddHostedService<MigrateOnStartupHostedService>();
         services.AddHostedService<OutboxBackgroundService>();
 
         return services;

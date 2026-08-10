@@ -1,0 +1,51 @@
+name: staging-smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - staging
+
+concurrency:
+  group: staging-smoke
+  cancel-in-progress: true
+
+jobs:
+  deploy-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker compose -f deploy/staging/docker-compose.staging.yml build api
+
+      - name: Start staging stack
+        run: docker compose -f deploy/staging/docker-compose.staging.yml up -d
+
+      - name: Wait for API to become healthy
+        run: |
+          for i in $(seq 1 60); do
+            status=$(docker inspect --format='{{.State.Health.Status}}' ecommerce-staging-api 2>/dev/null || echo starting)
+            echo "attempt $i: api health=$status"
+            if [ "$status" = "healthy" ]; then
+              echo "api is healthy"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "api did not become healthy"
+          docker compose -f deploy/staging/docker-compose.staging.yml logs api || true
+          exit 1
+
+      - name: Run smoke suite
+        run: BASE_URL=http://localhost:8080 scripts/staging-smoke.sh
+
+      - name: Capture API logs on failure
+        if: failure()
+        run: docker compose -f deploy/staging/docker-compose.staging.yml logs api || true
+
+      - name: Tear down staging stack
+        if: always()
+        run: docker compose -f deploy/staging/docker-compose.staging.yml down -v

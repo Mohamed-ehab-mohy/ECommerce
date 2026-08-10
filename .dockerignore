@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+tests/
+tasks/
+docs/
+monitoring/
+.env
+**/*.user
+**/*.suo
