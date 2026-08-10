@@ -122,8 +122,19 @@ LAST_CODE=$(req "${auth_header[@]}" \
     -d "{\"cartId\":\"$cartId\",\"customerEmail\":\"$EMAIL\",\"currency\":\"USD\",\"shippingAddress\":{\"fullName\":\"Smoke Tester\",\"phone\":null,\"street\":\"1 Smoke St\",\"city\":\"Test City\",\"region\":null,\"country\":\"US\",\"postalCode\":\"12345\"},\"billingAddress\":null,\"shippingMethodId\":\"standard\",\"paymentMethod\":{\"providerKey\":\"mock\",\"methodType\":\"card\"}}" \
     "$BASE_URL/api/v1/checkouts")
 checkoutId=$(jq -r .checkoutId "$LAST_BODY_FILE")
-[[ "$LAST_CODE" == "201" && "$checkoutId" != "null" && "$checkoutId" != "" ]]
+clientToken=$(jq -r .payment.clientToken "$LAST_BODY_FILE")
+[[ "$LAST_CODE" == "201" && "$checkoutId" != "null" && "$checkoutId" != "" && "$clientToken" != "null" && "$clientToken" != "" ]]
 report "POST /api/v1/checkouts initiates checkout" $?
+
+paymentId=$(docker exec "$PG_CONTAINER" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A \
+    -c "SELECT id::text FROM payments WHERE client_token = '$clientToken' ORDER BY created_at DESC LIMIT 1;" | tr -d '[:space:]')
+[[ "$paymentId" != "" && "$paymentId" != "null" ]]
+report "Resolve payment id for client token" $?
+
+LAST_CODE=$(req -X POST "$BASE_URL/api/v1/payments/$paymentId/authorize")
+authStatus=$(jq -r .status "$LAST_BODY_FILE")
+[[ "$LAST_CODE" == "200" && "$authStatus" == "Authorized" ]]
+report "POST /api/v1/payments/{id}/authorize" $?
 
 LAST_CODE=$(req "${auth_header[@]}" \
     -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
