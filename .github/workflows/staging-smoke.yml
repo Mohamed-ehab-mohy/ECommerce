@@ -40,7 +40,7 @@ jobs:
           exit 1
 
       - name: Run smoke suite
-        run: BASE_URL=http://localhost:8080 scripts/staging-smoke.sh
+        run: BASE_URL=http://localhost:8080 bash scripts/staging-smoke.sh
 
       - name: Capture API logs on failure
         if: failure()
