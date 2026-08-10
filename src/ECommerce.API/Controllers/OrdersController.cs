@@ -97,6 +97,18 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
             ? ProblemResponse.Create(result.ToOperationError())
             : Ok(result.Value);
     }
+
+    [HttpPost("{orderNumber}/reorder")]
+    public async Task<IActionResult> Reorder(string orderNumber, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new ReorderOrderCommand(orderNumber, currentUser.UserId),
+            cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : Ok(result.Value);
+    }
 }
 
 public sealed record CancelOrderRequest(string? Reason);
