@@ -8,6 +8,7 @@ using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Payments.Responses;
 using FluentValidation;
 using MediatR;
+using System.Text.Json;
 
 namespace ECommerce.UseCases.Payments.Handlers;
 
@@ -75,7 +76,7 @@ public sealed class AuthorizePaymentCommandHandler(
         if (!authorization.IsSuccess)
         {
             payment.MarkFailed(utcNow);
-            payment.RecordAttempt("authorize", payment.Amount, "declined", authorization.DeclineCode, null, utcNow);
+            payment.RecordAttempt("authorize", payment.Amount, "declined", JsonSerializer.Serialize(authorization), null, utcNow);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return authorization.DeclineCode == "provider_unavailable"
                 ? PaymentErrors.ProviderUnavailable
@@ -90,7 +91,7 @@ public sealed class AuthorizePaymentCommandHandler(
             return markAuthorizedResult.Error;
         }
 
-        payment.RecordAttempt("authorize", payment.Amount, "authorized", authorization.ProviderReference, null, utcNow);
+        payment.RecordAttempt("authorize", payment.Amount, "authorized", JsonSerializer.Serialize(authorization), null, utcNow);
 
         var checkout = await checkouts.GetByPaymentIdAsync(payment.Id, cancellationToken);
         if (checkout is not null && checkout.Status == CheckoutStatus.Created)

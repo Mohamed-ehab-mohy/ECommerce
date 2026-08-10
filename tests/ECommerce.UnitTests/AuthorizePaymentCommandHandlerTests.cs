@@ -3,6 +3,7 @@ using ECommerce.Domain.Payments;
 using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Payments.Commands;
 using ECommerce.UseCases.Payments.Handlers;
+using System.Text.Json;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.UnitTests;
@@ -68,6 +69,10 @@ public sealed class AuthorizePaymentCommandHandlerTests
         var attempt = Assert.Single(payment.Attempts);
         Assert.Equal("authorize", attempt.Action);
         Assert.Equal("authorized", attempt.Status);
+        var response = JsonSerializer.Deserialize<PaymentAuthorizationResult>(attempt.ProviderResponse!);
+        Assert.NotNull(response);
+        Assert.Equal("pi_mock_1_auth", response.ProviderReference);
+        Assert.Null(response.DeclineCode);
 
         Assert.Equal(CheckoutStatus.PaymentAuthorized, checkout.Status);
 
@@ -98,7 +103,9 @@ public sealed class AuthorizePaymentCommandHandlerTests
         Assert.Equal(1, payment.Attempt);
         var attempt = Assert.Single(payment.Attempts);
         Assert.Equal("declined", attempt.Status);
-        Assert.Equal("card_declined", attempt.ProviderResponse);
+        var response = JsonSerializer.Deserialize<PaymentAuthorizationResult>(attempt.ProviderResponse!);
+        Assert.NotNull(response);
+        Assert.Equal("card_declined", response.DeclineCode);
     }
 
     [Fact]
