@@ -7,6 +7,7 @@ using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
+using ECommerce.Infrastructure.Promotions;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Handlers;
@@ -185,6 +186,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
             new IdempotencyKeyRepository(context),
             new StockAllocator(context, new StockRepository(context)),
             new OrderNumberGenerator(context),
+            new CouponRepository(context),
             new UnitOfWork(context),
             TimeProvider.System,
             new PlaceOrderCommandValidator());

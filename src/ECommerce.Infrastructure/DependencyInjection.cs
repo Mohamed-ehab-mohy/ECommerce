@@ -12,6 +12,7 @@ using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
+using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -26,6 +27,7 @@ using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
+using ECommerce.UseCases.Promotions.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,6 +88,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationProvider, StubSmsProvider>();
         services.AddScoped<IOrderNotifier, NotificationOrderNotifier>();
         services.AddScoped<IEventHandler<LowStockAlertRaised>, LowStockAlertNotificationHandler>();
+        services.AddScoped<IPromotionRepository, PromotionRepository>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
         services.AddSingleton<OutboxMetrics>();
         services.AddScoped<OutboxPublisher>();
 

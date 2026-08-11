@@ -7,6 +7,7 @@ using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
+using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,12 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
 
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
+
+    public DbSet<Promotion> Promotions => Set<Promotion>();
+
+    public DbSet<Coupon> Coupons => Set<Coupon>();
+
+    public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

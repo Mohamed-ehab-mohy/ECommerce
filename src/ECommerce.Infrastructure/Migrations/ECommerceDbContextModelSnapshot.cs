@@ -114,6 +114,11 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AppliedCouponCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("applied_coupon_code");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1113,6 +1118,15 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AppliedCouponId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("applied_coupon_id");
+
+                    b.Property<string>("AppliedPromotionIds")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("applied_promotion_ids");
+
                     b.Property<AddressSnapshot>("BillingAddress")
                         .IsRequired()
                         .HasColumnType("jsonb")
@@ -1242,6 +1256,11 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AppliedPromotionIds")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("applied_promotion_ids");
+
                     b.Property<AddressSnapshot>("BillingAddress")
                         .IsRequired()
                         .HasColumnType("jsonb")
@@ -1258,6 +1277,10 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<Guid>("CheckoutId")
                         .HasColumnType("uuid")
                         .HasColumnName("checkout_id");
+
+                    b.Property<Guid?>("CouponId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("coupon_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1611,6 +1634,175 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasDatabaseName("ix_payment_attempts_payment_id");
 
                     b.ToTable("payment_attempts", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Pricing.Coupon", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<int?>("PerCustomerLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("per_customer_limit");
+
+                    b.Property<Guid>("PromotionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promotion_id");
+
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<int>("TotalUses")
+                        .HasColumnType("integer")
+                        .HasColumnName("total_uses");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("used_count");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_coupons_code");
+
+                    b.HasIndex("PromotionId")
+                        .HasDatabaseName("ix_coupons_promotion_id");
+
+                    b.ToTable("coupons", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Pricing.CouponUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CouponId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("coupon_id");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.Property<DateTime>("RedeemedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("redeemed_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CouponId", "CustomerId")
+                        .HasDatabaseName("ix_coupon_usages_coupon_customer");
+
+                    b.HasIndex("CouponId", "OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_coupon_usages_coupon_order");
+
+                    b.ToTable("coupon_usages", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Pricing.Promotion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Actions")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("actions");
+
+                    b.Property<string>("Conditions")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("conditions");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EligibleCountries")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("eligible_countries");
+
+                    b.Property<string>("EligibleCurrencies")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("eligible_currencies");
+
+                    b.Property<DateTime?>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Stacking")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("stacking_matrix");
+
+                    b.Property<DateTime?>("StartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("starts_at");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("state");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("State")
+                        .HasDatabaseName("ix_promotions_state");
+
+                    b.HasIndex("State", "StartsAt", "EndsAt")
+                        .HasDatabaseName("ix_promotions_active")
+                        .HasFilter("\"state\" = 'Active'");
+
+                    b.ToTable("promotions", (string)null);
                 });
 
             modelBuilder.Entity("ECommerce.Infrastructure.Messaging.InboxMessage", b =>

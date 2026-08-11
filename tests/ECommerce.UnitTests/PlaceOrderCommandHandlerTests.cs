@@ -25,6 +25,8 @@ public sealed class PlaceOrderCommandHandlerTests
 
     private readonly FakeOrderNumberGenerator _orderNumberGenerator = new();
 
+    private readonly FakeCouponRepository _coupons = new();
+
     private readonly FakeUnitOfWork _unitOfWork = new();
 
     private static readonly AddressSnapshot Address = new(
@@ -42,6 +44,7 @@ public sealed class PlaceOrderCommandHandlerTests
             _idempotencyKeys,
             _allocator,
             _orderNumberGenerator,
+            _coupons,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());
@@ -211,6 +214,7 @@ public sealed class PlaceOrderCommandHandlerTests
             _idempotencyKeys,
             allocator,
             _orderNumberGenerator,
+            _coupons,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());

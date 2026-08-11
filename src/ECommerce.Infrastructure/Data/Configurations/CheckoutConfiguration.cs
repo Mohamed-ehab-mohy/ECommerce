@@ -31,6 +31,14 @@ public sealed class CheckoutConfiguration : IEntityTypeConfiguration<Checkout>
             .HasColumnName("price_snapshot")
             .IsRequired();
 
+        builder.Property(checkout => checkout.AppliedCouponId).HasColumnName("applied_coupon_id");
+
+        builder.Property(checkout => checkout.AppliedPromotionIds)
+            .HasColumnType("jsonb")
+            .HasColumnName("applied_promotion_ids")
+            .HasConversion(new JsonValueConverter<IReadOnlyList<Guid>>())
+            .IsRequired();
+
         builder.Property(checkout => checkout.ShippingAddress)
             .HasColumnType("jsonb")
             .HasColumnName("shipping_address")

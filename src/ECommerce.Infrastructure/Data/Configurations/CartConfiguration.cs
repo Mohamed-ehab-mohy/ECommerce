@@ -26,6 +26,10 @@ public sealed class CartConfiguration : IEntityTypeConfiguration<Cart>
             .IsRequired()
             .HasColumnName("currency");
 
+        builder.Property(cart => cart.AppliedCouponCode)
+            .HasMaxLength(64)
+            .HasColumnName("applied_coupon_code");
+
         builder.Property(cart => cart.Version)
             .IsConcurrencyToken()
             .HasColumnName("version");

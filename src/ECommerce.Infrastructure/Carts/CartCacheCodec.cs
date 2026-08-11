@@ -17,6 +17,7 @@ internal static class CartCacheCodec
             cart.ExpiresAt,
             cart.CreatedAt,
             cart.UpdatedAt,
+            cart.AppliedCouponCode,
             cart.Items
                 .Select(item => new CartCacheItemDto(
                     item.ProductId,
@@ -57,7 +58,8 @@ internal static class CartCacheCodec
             dto.ExpiresAt,
             dto.CreatedAt,
             dto.UpdatedAt,
-            items);
+            items,
+            dto.AppliedCouponCode);
     }
 
     private sealed record CartCacheItemDto(
@@ -78,5 +80,6 @@ internal static class CartCacheCodec
         DateTime ExpiresAt,
         DateTime CreatedAt,
         DateTime UpdatedAt,
+        string? AppliedCouponCode,
         List<CartCacheItemDto> Items);
 }

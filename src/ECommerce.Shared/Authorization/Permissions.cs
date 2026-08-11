@@ -20,6 +20,8 @@ public static class Permissions
     public const string PlatformFlagsWrite = "platform.flags.write";
     public const string OrdersRead = "orders.read";
     public const string OrdersSupportRead = "orders.support.read";
+    public const string PromotionsRead = "promotions.read";
+    public const string PromotionsWrite = "promotions.write";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -40,6 +42,8 @@ public static class Permissions
         PlatformFlagsRead,
         PlatformFlagsWrite,
         OrdersRead,
-        OrdersSupportRead
+        OrdersSupportRead,
+        PromotionsRead,
+        PromotionsWrite
     ];
 }

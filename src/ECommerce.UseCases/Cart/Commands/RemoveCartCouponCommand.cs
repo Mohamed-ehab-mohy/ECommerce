@@ -1,0 +1,8 @@
+using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Cart.Responses;
+using MediatR;
+
+namespace ECommerce.UseCases.Cart.Commands;
+
+public sealed record RemoveCartCouponCommand(
+    string OwnerKey) : IRequest<Result<CartResponse>>;

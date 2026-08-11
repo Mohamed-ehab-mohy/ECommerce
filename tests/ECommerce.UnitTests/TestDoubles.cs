@@ -10,6 +10,7 @@ using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
+using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -23,6 +24,7 @@ using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
+using ECommerce.UseCases.Promotions.Ports;
 using System.Diagnostics.Metrics;
 
 namespace ECommerce.UnitTests;
@@ -822,4 +824,78 @@ internal sealed class FakeMeterFactory : IMeterFactory
     public Meter Create(MeterOptions options) => new(options);
 
     public void Dispose() { }
+}
+
+internal sealed class FakeAuditLogWriter : IAuditLogWriter
+{
+    public List<AuditOperation> Operations { get; } = [];
+
+    public Task WriteAsync(AuditOperation operation, CancellationToken cancellationToken)
+    {
+        Operations.Add(operation);
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakePromotionRepository : IPromotionRepository
+{
+    public List<Promotion> Promotions { get; } = [];
+
+    public Task<Promotion?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Promotions.FirstOrDefault(promotion => promotion.Id == id));
+
+    public Task<IReadOnlyList<Promotion>> GetActiveForScopeAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Promotion>>(Promotions
+            .Where(promotion => promotion.State == PromotionState.Active)
+            .ToList());
+
+    public Task<IReadOnlyList<Promotion>> GetAllAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Promotion>>(Promotions.ToList());
+
+    public void Add(Promotion promotion) => Promotions.Add(promotion);
+}
+
+internal sealed class FakeCouponRepository : ICouponRepository
+{
+    public List<Coupon> Coupons { get; } = [];
+
+    public List<CouponUsage> Usages { get; } = [];
+
+    public Task<Coupon?> GetByCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(Coupons.FirstOrDefault(coupon => coupon.Code == code.Trim().ToUpperInvariant()));
+
+    public Task<Coupon?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Coupons.FirstOrDefault(coupon => coupon.Id == id));
+
+    public Task<IReadOnlyList<Coupon>> GetAllAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Coupon>>(Coupons.ToList());
+
+    public Task<int> GetRedemptionCountAsync(Guid couponId, Guid customerId, CancellationToken cancellationToken) =>
+        Task.FromResult(Usages.Count(usage => usage.CouponId == couponId && usage.CustomerId == customerId));
+
+    public Task<CouponRedemptionResult> TryRedeemAsync(
+        Guid couponId,
+        Guid orderId,
+        Guid customerId,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        var coupon = Coupons.First(coupon => coupon.Id == couponId);
+        if (Usages.Any(usage => usage.CouponId == couponId && usage.OrderId == orderId))
+        {
+            return Task.FromResult(CouponRedemptionResult.AlreadyApplied);
+        }
+
+        if (coupon.UsedCount >= coupon.TotalUses
+            || (coupon.PerCustomerLimit is { } limit
+                && Usages.Count(usage => usage.CouponId == couponId && usage.CustomerId == customerId) >= limit))
+        {
+            return Task.FromResult(CouponRedemptionResult.Exhausted);
+        }
+
+        Usages.Add(new CouponUsage(Guid.NewGuid(), couponId, orderId, customerId, utcNow));
+        return Task.FromResult(CouponRedemptionResult.Redeemed);
+    }
+
+    public void Add(Coupon coupon) => Coupons.Add(coupon);
 }

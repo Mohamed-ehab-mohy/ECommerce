@@ -1,7 +1,10 @@
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Orders;
+using ECommerce.Domain.Pricing;
+using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Ports;
+using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Checkout.Responses;
@@ -9,8 +12,10 @@ using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Payments.Services;
+using ECommerce.UseCases.Promotions.Ports;
 using FluentValidation;
 using MediatR;
+using CartAggregate = ECommerce.Domain.Cart.Cart;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.UseCases.Checkout.Handlers;
@@ -19,6 +24,9 @@ public sealed class InitiateCheckoutCommandHandler(
     ICartRepository carts,
     ICheckoutRepository checkouts,
     IPaymentRepository payments,
+    IProductRepository products,
+    IPromotionRepository promotions,
+    ICouponRepository coupons,
     PaymentIntentService paymentIntents,
     CheckoutTotalsCalculator totalsCalculator,
     StockAvailabilityVerifier availabilityVerifier,
@@ -26,6 +34,8 @@ public sealed class InitiateCheckoutCommandHandler(
     TimeProvider timeProvider,
     IValidator<InitiateCheckoutCommand> validator) : IRequestHandler<InitiateCheckoutCommand, Result<CheckoutResponse>>
 {
+    private const string DefaultCustomerSegment = "General";
+
     public async Task<Result<CheckoutResponse>> Handle(InitiateCheckoutCommand request, CancellationToken cancellationToken)
     {
         var validation = await validator.ValidateAsync(request, cancellationToken);
@@ -61,8 +71,23 @@ public sealed class InitiateCheckoutCommandHandler(
                 item.ImageUrl))
             .ToList();
 
-        var totalsResult = await totalsCalculator.ComputeAsync(
+        var productAttributes = await LoadProductAttributesAsync(lines, cancellationToken);
+
+        var activePromotions = await promotions.GetActiveForScopeAsync(utcNow, cancellationToken);
+
+        var (coupon, couponError) = await ResolveCouponAsync(cart, request.CustomerId, utcNow, cancellationToken);
+        if (couponError is not null)
+        {
+            return couponError;
+        }
+
+        var totalsResult = await totalsCalculator.ComputePromotionAwareAsync(
             lines,
+            productAttributes,
+            activePromotions,
+            coupon,
+            DefaultCustomerSegment,
+            utcNow,
             request.ShippingMethodId,
             shippingAddress.Country,
             request.Currency,
@@ -85,7 +110,7 @@ public sealed class InitiateCheckoutCommandHandler(
             request.MethodType,
             request.Currency,
             request.Country,
-            totalsResult.Value.GrandTotal,
+            totalsResult.Value.Totals.GrandTotal,
             cancellationToken);
         if (paymentResult.IsFailure)
         {
@@ -98,18 +123,20 @@ public sealed class InitiateCheckoutCommandHandler(
             request.CustomerEmail,
             request.Currency,
             new PriceSnapshot(lines, new TotalsSnapshot(
-                totalsResult.Value.Subtotal,
-                totalsResult.Value.ItemDiscount,
-                totalsResult.Value.CartDiscount,
-                totalsResult.Value.ShippingTotal,
-                totalsResult.Value.TaxTotal,
-                totalsResult.Value.GrandTotal)),
+                totalsResult.Value.Totals.Subtotal,
+                totalsResult.Value.Totals.ItemDiscount,
+                totalsResult.Value.Totals.CartDiscount,
+                totalsResult.Value.Totals.ShippingTotal,
+                totalsResult.Value.Totals.TaxTotal,
+                totalsResult.Value.Totals.GrandTotal)),
             shippingAddress,
             billingAddress ?? shippingAddress,
             request.ShippingMethodId,
             paymentResult.Value.Payment.Id,
             utcNow.AddMinutes(30),
-            utcNow);
+            utcNow,
+            totalsResult.Value.AppliedCouponId,
+            totalsResult.Value.AppliedPromotionIds);
 
         payments.Add(paymentResult.Value.Payment);
         checkouts.Add(checkout);
@@ -117,6 +144,57 @@ public sealed class InitiateCheckoutCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return CheckoutResponseFactory.From(checkout, paymentResult.Value.Payment);
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, ProductLineAttributes>> LoadProductAttributesAsync(
+        IReadOnlyCollection<PriceSnapshotItem> lines,
+        CancellationToken cancellationToken)
+    {
+        var productIds = lines.Select(line => line.ProductId).Distinct().ToList();
+        var productEntities = await products.GetByIdsAsync(productIds, cancellationToken);
+
+        return productEntities.ToDictionary(
+            product => product.Id,
+            product => new ProductLineAttributes(
+                product.CategoryId is { } categoryId ? [categoryId] : [],
+                product.BrandId is { } brandId ? [brandId] : []));
+    }
+
+    private async Task<(Coupon? Coupon, Error? Error)> ResolveCouponAsync(
+        CartAggregate cart,
+        Guid? customerId,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        if (cart.AppliedCouponCode is null)
+        {
+            return (null, null);
+        }
+
+        var coupon = await coupons.GetByCodeAsync(cart.AppliedCouponCode, cancellationToken);
+        if (coupon is null)
+        {
+            return (null, CouponErrors.CouponNotFound);
+        }
+
+        if (!coupon.IsActiveAt(utcNow))
+        {
+            return (null, CouponErrors.Inactive);
+        }
+
+        if (coupon.UsedCount >= coupon.TotalUses)
+        {
+            return (null, CouponErrors.Exhausted);
+        }
+
+        if (customerId is not null
+            && coupon.PerCustomerLimit is { } limit
+            && await coupons.GetRedemptionCountAsync(coupon.Id, customerId.Value, cancellationToken) >= limit)
+        {
+            return (null, CouponErrors.AlreadyUsed);
+        }
+
+        return (coupon, null);
     }
 
     private static AddressSnapshot ToSnapshot(AddressInput address) =>

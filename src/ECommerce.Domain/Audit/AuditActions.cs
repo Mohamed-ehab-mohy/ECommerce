@@ -22,4 +22,10 @@ public static class AuditActions
     public const string RoleAssigned = "identity.role.assigned";
     public const string FeatureFlagChanged = "platform.feature.flag.changed";
     public const string NotificationPreferenceUpdated = "notifications.preference.updated";
+    public const string PromotionCreated = "promotions.promotion.created";
+    public const string PromotionUpdated = "promotions.promotion.updated";
+    public const string PromotionActivated = "promotions.promotion.activated";
+    public const string PromotionPaused = "promotions.promotion.paused";
+    public const string PromotionScheduled = "promotions.promotion.scheduled";
+    public const string CouponCreated = "promotions.coupon.created";
 }

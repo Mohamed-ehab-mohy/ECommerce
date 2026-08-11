@@ -28,6 +28,7 @@ public sealed record CartResponse(
     long Version,
     DateTime ExpiresAt,
     DateTime UpdatedAt,
+    string? AppliedCouponCode,
     IReadOnlyList<CartItemResponse> Items,
     CartTotalsResponse Totals);
 
@@ -87,6 +88,7 @@ public static class CartResponseFactory
             cart.Version,
             cart.ExpiresAt,
             cart.UpdatedAt,
+            cart.AppliedCouponCode,
             items,
             CartTotalsCalculator.Compute(cart, currencies));
     }

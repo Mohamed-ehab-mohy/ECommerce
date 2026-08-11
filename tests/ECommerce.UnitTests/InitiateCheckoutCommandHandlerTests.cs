@@ -30,6 +30,12 @@ public sealed class InitiateCheckoutCommandHandlerTests
 
     private readonly FakeStockRepository _stock = new();
 
+    private readonly FakeProductRepository _products = new();
+
+    private readonly FakePromotionRepository _promotions = new();
+
+    private readonly FakeCouponRepository _coupons = new();
+
     private static readonly AddressInput Address = new(
         "Ahmed Hassan", "0501234567", "1 Sheikh Zayed Rd", "Dubai", "Dubai", "AE", "00000");
 
@@ -43,6 +49,9 @@ public sealed class InitiateCheckoutCommandHandlerTests
             _carts,
             _checkouts,
             _payments,
+            _products,
+            _promotions,
+            _coupons,
             paymentIntents,
             totals,
             availability,

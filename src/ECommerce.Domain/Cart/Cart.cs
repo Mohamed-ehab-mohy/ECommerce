@@ -22,6 +22,8 @@ public sealed class Cart : BaseEntity<Guid>
 
     public DateTime ExpiresAt { get; private set; }
 
+    public string? AppliedCouponCode { get; private set; }
+
     public IReadOnlyCollection<CartItem> Items => _items;
 
     public void SetVersion(long version) => Version = version;
@@ -48,7 +50,8 @@ public sealed class Cart : BaseEntity<Guid>
         DateTime expiresAtUtc,
         DateTime createdAtUtc,
         DateTime updatedAtUtc,
-        IEnumerable<CartItem> items)
+        IEnumerable<CartItem> items,
+        string? appliedCouponCode = null)
     {
         var cart = new Cart
         {
@@ -58,7 +61,8 @@ public sealed class Cart : BaseEntity<Guid>
             Version = version,
             ExpiresAt = expiresAtUtc,
             CreatedAt = createdAtUtc,
-            UpdatedAt = updatedAtUtc
+            UpdatedAt = updatedAtUtc,
+            AppliedCouponCode = appliedCouponCode
         };
 
         foreach (var item in items)
@@ -196,6 +200,32 @@ public sealed class Cart : BaseEntity<Guid>
     {
         _items.Clear();
         Touch(utcNow);
+    }
+
+    public void ApplyCoupon(string code, DateTime utcNow)
+    {
+        if (AppliedCouponCode == code.Trim().ToUpperInvariant())
+        {
+            return;
+        }
+
+        AppliedCouponCode = code.Trim().ToUpperInvariant();
+        Touch(utcNow);
+
+        AddDomainEvent(new CartCouponApplied(Id, AppliedCouponCode));
+    }
+
+    public void RemoveCoupon(DateTime utcNow)
+    {
+        if (AppliedCouponCode is null)
+        {
+            return;
+        }
+
+        AppliedCouponCode = null;
+        Touch(utcNow);
+
+        AddDomainEvent(new CartCouponRemoved(Id));
     }
 
     public bool IsExpired(DateTime utcNow) => ExpiresAt <= utcNow;

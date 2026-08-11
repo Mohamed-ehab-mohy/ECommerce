@@ -62,6 +62,14 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired()
             .HasColumnName("grand_total");
 
+        builder.Property(order => order.CouponId).HasColumnName("coupon_id");
+
+        builder.Property(order => order.AppliedPromotionIds)
+            .HasColumnType("jsonb")
+            .HasColumnName("applied_promotion_ids")
+            .HasConversion(new JsonValueConverter<IReadOnlyList<Guid>>())
+            .IsRequired();
+
         builder.Property(order => order.ShippingAddress)
             .HasColumnType("jsonb")
             .HasColumnName("shipping_address")

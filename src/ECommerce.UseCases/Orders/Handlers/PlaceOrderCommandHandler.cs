@@ -1,5 +1,6 @@
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
+using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
@@ -8,6 +9,7 @@ using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Responses;
 using ECommerce.UseCases.Payments.Ports;
+using ECommerce.UseCases.Promotions.Ports;
 using FluentValidation;
 using MediatR;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
@@ -21,6 +23,7 @@ public sealed class PlaceOrderCommandHandler(
     IIdempotencyKeyRepository idempotencyKeys,
     IStockAllocator stockAllocator,
     IOrderNumberGenerator orderNumberGenerator,
+    ICouponRepository coupons,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
     IValidator<PlaceOrderCommand> validator) : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
@@ -107,7 +110,9 @@ public sealed class PlaceOrderCommandHandler(
             checkout.BillingAddress,
             checkout.ShippingMethodId,
             payment.Id,
-            utcNow);
+            utcNow,
+            checkout.AppliedCouponId,
+            checkout.AppliedPromotionIds);
 
         orders.Add(order);
 
@@ -147,6 +152,23 @@ public sealed class PlaceOrderCommandHandler(
         if (markPlacedResult.IsFailure)
         {
             return markPlacedResult.Error;
+        }
+
+        // QAS-02: atomic coupon redemption inside the same transaction. Concurrent place-order attempts
+        // race on `UPDATE coupons SET used_count = used_count + 1 WHERE used_count < total_uses`.
+        if (checkout.AppliedCouponId is { } couponId && checkout.CustomerId is { } customerId)
+        {
+            var redemption = await coupons.TryRedeemAsync(
+                couponId,
+                order.Id,
+                customerId,
+                utcNow,
+                cancellationToken);
+
+            if (redemption == CouponRedemptionResult.Exhausted)
+            {
+                return CouponErrors.Exhausted;
+            }
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

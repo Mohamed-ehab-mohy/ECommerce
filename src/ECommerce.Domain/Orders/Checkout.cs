@@ -26,6 +26,10 @@ public sealed class Checkout : BaseEntity<Guid>
 
     public PriceSnapshot PriceSnapshot { get; private set; }
 
+    public Guid? AppliedCouponId { get; private set; }
+
+    public IReadOnlyList<Guid> AppliedPromotionIds { get; private set; } = [];
+
     public AddressSnapshot ShippingAddress { get; private set; }
 
     public AddressSnapshot BillingAddress { get; private set; }
@@ -51,7 +55,9 @@ public sealed class Checkout : BaseEntity<Guid>
         string shippingMethodId,
         Guid paymentId,
         DateTime expiresAtUtc,
-        DateTime utcNow)
+        DateTime utcNow,
+        Guid? appliedCouponId = null,
+        IReadOnlyList<Guid>? appliedPromotionIds = null)
     {
         var checkout = new Checkout
         {
@@ -61,6 +67,8 @@ public sealed class Checkout : BaseEntity<Guid>
             CustomerEmail = customerEmail,
             Currency = currency,
             PriceSnapshot = priceSnapshot,
+            AppliedCouponId = appliedCouponId,
+            AppliedPromotionIds = appliedPromotionIds ?? [],
             ShippingAddress = shippingAddress,
             BillingAddress = billingAddress,
             ShippingMethodId = shippingMethodId,

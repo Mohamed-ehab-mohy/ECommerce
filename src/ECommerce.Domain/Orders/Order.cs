@@ -41,6 +41,10 @@ public sealed class Order : BaseEntity<Guid>
 
     public decimal GrandTotal { get; private set; }
 
+    public Guid? CouponId { get; private set; }
+
+    public IReadOnlyList<Guid> AppliedPromotionIds { get; private set; } = [];
+
     public AddressSnapshot ShippingAddress { get; private set; } = null!;
 
     public AddressSnapshot BillingAddress { get; private set; } = null!;
@@ -69,7 +73,9 @@ public sealed class Order : BaseEntity<Guid>
         AddressSnapshot billingAddress,
         string shippingMethodId,
         Guid paymentId,
-        DateTime utcNow)
+        DateTime utcNow,
+        Guid? couponId = null,
+        IReadOnlyList<Guid>? appliedPromotionIds = null)
     {
         var items = priceSnapshot.Lines
             .Select(OrderItem.FromSnapshot)
@@ -90,6 +96,8 @@ public sealed class Order : BaseEntity<Guid>
             ShippingTotal = priceSnapshot.Totals.ShippingTotal,
             TaxTotal = priceSnapshot.Totals.TaxTotal,
             GrandTotal = priceSnapshot.Totals.GrandTotal,
+            CouponId = couponId,
+            AppliedPromotionIds = appliedPromotionIds ?? [],
             ShippingAddress = shippingAddress,
             BillingAddress = billingAddress,
             ShippingMethodId = shippingMethodId,
