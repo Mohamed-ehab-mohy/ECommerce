@@ -619,6 +619,33 @@ Codes are trimmed and normalized to uppercase. **Errors:** 404 `ERR_RES_001` (pr
 
 `DELETE /api/v1/carts/me/coupons` detaches the coupon and returns the same `CartResponse`; 409 `COUPON_NOT_APPLIED` when none is applied. The coupon is consumed **atomically at order placement** (`POST /api/v1/checkouts/{id}/place`) — the limit is never exceeded under concurrent redemptions (QAS-02).
 
+### 7.11 GET `/api/v1/payments/{id}` (owner/finance)
+
+**200 Response** (payment state incl. retry workflow, US-G-004)
+
+```json
+{
+  "paymentId": "pay_...",
+  "currency": "USD",
+  "amount": "59.0000",
+  "status": "retry_pending",
+  "providerKey": "stripe",
+  "providerReference": "pi_...",
+  "clientToken": "pm_...",
+  "authorizedAt": null,
+  "attempt": 2,
+  "retryAfterUtc": "2026-08-13T15:02:30Z"
+}
+```
+
+- `status` values: `created`, `authorized`, `failed`, `retry_pending`, `captured`, `cancelled`, `refunding`, `refunded`, `refund_failed`.
+- `attempt`: 1-based retry counter — incremented on each authorization attempt.
+- `retryAfterUtc`: set while `status == retry_pending`; the client must wait until this instant before re-submitting.
+- `attempt == maxAttempts` (default 3) with a fresh decline → terminal `failed`; a retry attempt while in cooldown is rejected 409 `ERR_PAY_006` (retry in cooldown), and exhaustion surfaces 402 `ERR_PAY_007`.
+- Retry never re-authorizes an already-authorized intent (no double charge): only `failed`/`retry_pending` payments are retryable, and successful re-authorization is idempotent on `providerReference`.
+
+**Errors:** 404 `ERR_RES_001` unknown payment; 403 not owner/`finance`.
+
 ---
 
 ## 8. Webhooks (Outbound — Partner Contract)
