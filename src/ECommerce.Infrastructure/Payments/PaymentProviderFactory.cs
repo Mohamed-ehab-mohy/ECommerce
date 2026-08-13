@@ -4,10 +4,16 @@ using Microsoft.Extensions.Options;
 
 namespace ECommerce.Infrastructure.Payments;
 
-public sealed class PaymentProviderFactory(IOptions<PaymentProviderOptions> options) : IPaymentProviderFactory
+/// <summary>
+/// Routes payment traffic to the primary PSP, failing over to the configured backup when the primary's
+/// circuit is open (health-based failover, US-G-003). Throws <see cref="PaymentProvidersUnavailableException"/>
+/// when every candidate is unavailable.
+/// </summary>
+public sealed class PaymentProviderFactory(
+    IEnumerable<IPaymentProvider> providers,
+    IPaymentProviderHealth health,
+    IOptions<PaymentProviderOptions> options) : IPaymentProviderFactory
 {
-    private readonly IPaymentProvider _mock = new MockPaymentProvider();
-
     public Task<IPaymentProvider> RouteAsync(
         string currency,
         string country,
@@ -16,13 +22,43 @@ public sealed class PaymentProviderFactory(IOptions<PaymentProviderOptions> opti
 
     public Task<IPaymentProvider> GetAsync(string providerKey, CancellationToken cancellationToken)
     {
-        var key = providerKey.ToLowerInvariant();
+        var primary = providerKey.Trim().ToLowerInvariant();
 
-        return Task.FromResult<IPaymentProvider>(
-            key == "stripe"
-            && options.Value.Stripe.Enabled
-            && !string.IsNullOrWhiteSpace(options.Value.Stripe.SecretKey)
-                ? new StripePaymentProvider(options.Value.Stripe.SecretKey)
-                : _mock);
+        foreach (var key in ResolveCandidates(primary))
+        {
+            var provider = providers.FirstOrDefault(candidate =>
+                candidate.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+
+            if (provider is null)
+            {
+                continue;
+            }
+
+            if (health.IsAvailable(provider.Key))
+            {
+                return Task.FromResult(provider);
+            }
+        }
+
+        throw new PaymentProvidersUnavailableException(primary);
     }
+
+    private IEnumerable<string> ResolveCandidates(string primary)
+    {
+        var candidates = new List<string> { primary };
+
+        var failover = options.Value.FailoverProvider?.Trim().ToLowerInvariant();
+        if (!string.IsNullOrWhiteSpace(failover) && failover != primary)
+        {
+            candidates.Add(failover);
+        }
+
+        return candidates;
+    }
+}
+
+public sealed class PaymentProvidersUnavailableException(string providerKey)
+    : Exception($"All payment providers unavailable for primary '{providerKey}'.")
+{
+    public string ProviderKey { get; } = providerKey;
 }

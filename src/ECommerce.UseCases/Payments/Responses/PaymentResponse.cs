@@ -10,7 +10,9 @@ public sealed record PaymentResponse(
     string ProviderKey,
     string ProviderReference,
     string ClientToken,
-    DateTime? AuthorizedAt)
+    DateTime? AuthorizedAt,
+    int Attempt,
+    DateTime? RetryAfterUtc)
 {
     public static PaymentResponse From(Payment payment) =>
         new(
@@ -21,5 +23,7 @@ public sealed record PaymentResponse(
             payment.ProviderKey,
             payment.ProviderReference ?? string.Empty,
             payment.ClientToken,
-            payment.AuthorizedAt);
+            payment.AuthorizedAt,
+            payment.Attempt,
+            payment.RetryAfterUtc);
 }

@@ -1,4 +1,5 @@
 using ECommerce.Domain.Events;
+using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Audit;
 using ECommerce.Infrastructure.Carts;
 using ECommerce.Infrastructure.Catalog;
@@ -26,6 +27,7 @@ using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
+using ECommerce.UseCases.Payments.Options;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
 using Microsoft.EntityFrameworkCore;
@@ -110,6 +112,19 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.Configure<PaymentProviderOptions>(configuration.GetSection(PaymentProviderOptions.SectionName));
+        services.AddOptions<PaymentRetryOptions>().BindConfiguration(PaymentRetryOptions.SectionName);
+        services.AddSingleton<IPaymentProviderHealth, PaymentCircuitBreaker>();
+        services.AddSingleton<IPaymentProvider, MockPaymentProvider>();
+
+        var paymentOptions = configuration
+            .GetSection(PaymentProviderOptions.SectionName)
+            .Get<PaymentProviderOptions>() ?? new PaymentProviderOptions();
+
+        if (paymentOptions.Stripe.Enabled && !string.IsNullOrWhiteSpace(paymentOptions.Stripe.SecretKey))
+        {
+            services.AddSingleton<IPaymentProvider>(_ => new StripePaymentProvider(paymentOptions.Stripe.SecretKey));
+        }
+
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
 

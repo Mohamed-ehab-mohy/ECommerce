@@ -9,6 +9,7 @@ using ECommerce.UseCases.Identity.Events;
 using ECommerce.UseCases.Notifications.Services;
 using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Pricing;
+using ECommerce.UseCases.Promotions.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,8 @@ public static class DependencyInjection
         services.AddScoped<PaymentIntentService>();
         services.AddScoped<CartMergeService>();
         services.AddScoped<NotificationDispatcher>();
+        services.AddScoped<PromotionScheduleEnforcer>();
+        services.AddScoped<ReconciliationService>();
 
         return services;
     }

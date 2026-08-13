@@ -3,6 +3,9 @@ using ECommerce.Domain.Payments;
 using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Payments.Commands;
 using ECommerce.UseCases.Payments.Handlers;
+using ECommerce.UseCases.Payments.Options;
+using ECommerce.UseCases.Payments.Ports;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
@@ -38,13 +41,19 @@ public sealed class AuthorizePaymentCommandHandlerTests
         return (payment, checkout);
     }
 
-    private AuthorizePaymentCommandHandler CreateHandler(FakePaymentProviderFactory factory) =>
+    private AuthorizePaymentCommandHandler CreateHandler(
+        FakePaymentProviderFactory factory,
+        IPaymentProviderHealth? health = null,
+        PaymentRetryOptions? retry = null,
+        DateTimeOffset? at = null) =>
         new(
             _payments,
             _checkouts,
             factory,
+            health ?? new FakePaymentProviderHealth(),
             _unitOfWork,
-            new FixedTimeProvider(UtcNow),
+            new FixedTimeProvider(at ?? UtcNow),
+            Options.Create(retry ?? new PaymentRetryOptions()),
             new AuthorizePaymentCommandValidator());
 
     private static AuthorizePaymentCommand CreateCommand(Guid paymentId) => new(paymentId);
@@ -99,7 +108,7 @@ public sealed class AuthorizePaymentCommandHandlerTests
         Assert.True(result.IsFailure);
         Assert.Equal(PaymentErrors.PaymentDeclined, result.Error);
         Assert.Equal(ErrorType.PaymentRequired, result.Error.Type);
-        Assert.Equal(PaymentStatus.Failed, payment.Status);
+        Assert.Equal(PaymentStatus.RetryPending, payment.Status);
         Assert.Equal(1, payment.Attempt);
         var attempt = Assert.Single(payment.Attempts);
         Assert.Equal("declined", attempt.Status);
@@ -181,6 +190,98 @@ public sealed class AuthorizePaymentCommandHandlerTests
         Assert.True(result.IsFailure);
         Assert.Equal(PaymentErrors.CaptureConflict, result.Error);
         Assert.Equal(PaymentStatus.Captured, payment.Status);
+    }
+
+    [Fact]
+    public async Task Decline_Schedules_Bounded_Retry()
+    {
+        var (payment, _) = CreateCheckoutPayment();
+        var provider = new FakePaymentProvider(
+            "mock",
+            authorization: new PaymentAuthorizationResult(false, string.Empty, "card_declined"));
+        var factory = new FakePaymentProviderFactory("mock", provider);
+
+        var result = await CreateHandler(factory).Handle(CreateCommand(payment.Id), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(PaymentErrors.PaymentDeclined, result.Error);
+        Assert.Equal(PaymentStatus.RetryPending, payment.Status);
+        Assert.Equal(1, payment.Attempt);
+        Assert.Equal(UtcNow.AddSeconds(30), payment.RetryAfterUtc);
+        Assert.Equal(1, provider.AuthorizeCallCount);
+    }
+
+    [Fact]
+    public async Task Retry_Within_Cooldown_Is_Rejected()
+    {
+        var (payment, _) = CreateCheckoutPayment();
+        var provider = new FakePaymentProvider(
+            "mock",
+            authorization: new PaymentAuthorizationResult(false, string.Empty, "card_declined"));
+        var factory = new FakePaymentProviderFactory("mock", provider);
+
+        await CreateHandler(factory).Handle(CreateCommand(payment.Id), CancellationToken.None);
+        Assert.Equal(PaymentStatus.RetryPending, payment.Status);
+
+        var retry = await CreateHandler(factory).Handle(CreateCommand(payment.Id), CancellationToken.None);
+
+        Assert.True(retry.IsFailure);
+        Assert.Equal(PaymentErrors.RetryInCooldown, retry.Error);
+        Assert.Equal(1, payment.Attempt);
+        Assert.Equal(1, provider.AuthorizeCallCount);
+    }
+
+    [Fact]
+    public async Task Retry_After_Cooldown_Authorizes()
+    {
+        var (payment, checkout) = CreateCheckoutPayment();
+        var provider = new FakePaymentProvider(
+            "mock",
+            authorization: new PaymentAuthorizationResult(false, string.Empty, "card_declined"));
+        var factory = new FakePaymentProviderFactory("mock", provider);
+
+        await CreateHandler(factory).Handle(CreateCommand(payment.Id), CancellationToken.None);
+        Assert.Equal(PaymentStatus.RetryPending, payment.Status);
+
+        provider.AuthorizationResult = new PaymentAuthorizationResult(true, "pi_retry_1", null);
+        var result = await CreateHandler(factory, at: UtcNow.AddSeconds(31))
+            .Handle(CreateCommand(payment.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(PaymentStatus.Authorized, payment.Status);
+        Assert.Equal(2, payment.Attempt);
+        Assert.Null(payment.RetryAfterUtc);
+        Assert.Equal(2, provider.AuthorizeCallCount);
+        Assert.Equal(CheckoutStatus.PaymentAuthorized, checkout.Status);
+    }
+
+    [Fact]
+    public async Task Exhausted_Retry_Budget_Is_Final()
+    {
+        var (payment, _) = CreateCheckoutPayment();
+        var provider = new FakePaymentProvider(
+            "mock",
+            authorization: new PaymentAuthorizationResult(false, string.Empty, "card_declined"));
+        var factory = new FakePaymentProviderFactory("mock", provider);
+        var retry = new PaymentRetryOptions { MaxAttempts = 2, Cooldown = TimeSpan.FromSeconds(30) };
+
+        await CreateHandler(factory, retry: retry).Handle(CreateCommand(payment.Id), CancellationToken.None);
+        Assert.Equal(PaymentStatus.RetryPending, payment.Status);
+        Assert.Equal(1, payment.Attempt);
+
+        await CreateHandler(factory, retry: retry, at: UtcNow.AddSeconds(31))
+            .Handle(CreateCommand(payment.Id), CancellationToken.None);
+
+        Assert.Equal(PaymentStatus.Failed, payment.Status);
+        Assert.Equal(3, payment.Attempt);
+        Assert.Equal("exhausted", payment.Attempts.Last().Status);
+
+        var third = await CreateHandler(factory, retry: retry, at: UtcNow.AddSeconds(62))
+            .Handle(CreateCommand(payment.Id), CancellationToken.None);
+
+        Assert.True(third.IsFailure);
+        Assert.Equal(PaymentErrors.RetryExhausted, third.Error);
+        Assert.Equal(2, provider.AuthorizeCallCount);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

@@ -29,6 +29,16 @@ public static class PaymentErrors
         "The payment has not been authorized yet.",
         ErrorType.Conflict);
 
+    public static readonly Error RetryInCooldown = new(
+        "ERR_PAY_006",
+        "This payment was declined moments ago. Please retry shortly.",
+        ErrorType.Conflict);
+
+    public static readonly Error RetryExhausted = new(
+        "ERR_PAY_007",
+        "The payment attempt limit was reached. Please use another payment method.",
+        ErrorType.PaymentRequired);
+
     public static readonly Error RefundNotAllowed = new(
         "ERR_PAY_005",
         "Only captured payments can be refunded.",

@@ -6,6 +6,7 @@ namespace ECommerce.Domain.Payments;
 public sealed class Payment : BaseEntity<Guid>
 {
     private readonly List<PaymentAttempt> _attempts = [];
+    private readonly List<PaymentLedgerEntry> _ledger = [];
 
     private Payment()
     {
@@ -45,7 +46,13 @@ public sealed class Payment : BaseEntity<Guid>
 
     public int Attempt { get; private set; }
 
+    /// <summary>Earliest time a retry of a declined payment is allowed (cooldown, US-G-004).</summary>
+    public DateTime? RetryAfterUtc { get; private set; }
+
     public IReadOnlyCollection<PaymentAttempt> Attempts => _attempts;
+
+    /// <summary>Append-only payment ledger (US-G-007); entries are never updated or deleted.</summary>
+    public IReadOnlyCollection<PaymentLedgerEntry> Ledger => _ledger;
 
     public static Payment Create(
         Guid? customerId,
@@ -58,7 +65,7 @@ public sealed class Payment : BaseEntity<Guid>
         decimal? fxRate,
         DateTime utcNow)
     {
-        return new Payment
+        var payment = new Payment
         {
             Id = Guid.NewGuid(),
             CustomerId = customerId,
@@ -74,6 +81,10 @@ public sealed class Payment : BaseEntity<Guid>
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
+
+        payment.RecordLedger("intent_created", "created", amount, providerReference, null, utcNow);
+
+        return payment;
     }
 
     public Result AttachOrder(Guid orderId, DateTime utcNow)
@@ -90,7 +101,7 @@ public sealed class Payment : BaseEntity<Guid>
 
     public Result MarkAuthorized(string providerReference, DateTime utcNow)
     {
-        if (Status is not (PaymentStatus.Created or PaymentStatus.Failed))
+        if (Status is not (PaymentStatus.Created or PaymentStatus.Failed or PaymentStatus.RetryPending))
         {
             return PaymentErrors.CaptureConflict;
         }
@@ -99,20 +110,55 @@ public sealed class Payment : BaseEntity<Guid>
         AuthorizedAmount = Amount;
         ProviderReference = providerReference;
         AuthorizedAt = utcNow;
+        RetryAfterUtc = null;
         UpdatedAt = utcNow;
+        RecordLedger("authorized", "authorized", Amount, providerReference, null, utcNow);
         return Result.Success();
     }
 
-    public Result MarkFailed(DateTime utcNow)
+    public Result MarkFailed(DateTime utcNow, string? declineCode = null)
     {
-        if (Status is PaymentStatus.Created or PaymentStatus.Failed)
+        if (Status is PaymentStatus.Created or PaymentStatus.Failed or PaymentStatus.RetryPending)
         {
             Status = PaymentStatus.Failed;
             UpdatedAt = utcNow;
+            RecordLedger("failed", "failed", Amount, null, declineCode, utcNow);
             return Result.Success();
         }
 
         return PaymentErrors.CaptureConflict;
+    }
+
+    /// <summary>Checks whether a declined payment may be retried now (bounded + cooldown, US-G-004).</summary>
+    public Result CanRetry(DateTime utcNow) =>
+        Status is not (PaymentStatus.Failed or PaymentStatus.RetryPending)
+            ? PaymentErrors.CaptureConflict
+            : _attempts.Count > 0 && _attempts[^1].Status == "exhausted"
+                ? PaymentErrors.RetryExhausted
+                : RetryAfterUtc is not null && utcNow < RetryAfterUtc.Value
+                    ? PaymentErrors.RetryInCooldown
+                    : Result.Success();
+
+    /// <summary>
+    /// Schedules a bounded retry after a decline: transitions Failed → RetryPending with a cooldown
+    /// window, refusing further retries once the attempt budget is exhausted.
+    /// </summary>
+    public Result PlanRetry(TimeSpan cooldown, int maxAttempts, DateTime utcNow)
+    {
+        if (Status != PaymentStatus.Failed)
+        {
+            return PaymentErrors.CaptureConflict;
+        }
+
+        if (Attempt >= maxAttempts)
+        {
+            return PaymentErrors.RetryExhausted;
+        }
+
+        Status = PaymentStatus.RetryPending;
+        RetryAfterUtc = utcNow + cooldown;
+        UpdatedAt = utcNow;
+        return Result.Success();
     }
 
     public Result Capture(decimal amount, DateTime utcNow)
@@ -130,6 +176,7 @@ public sealed class Payment : BaseEntity<Guid>
         Status = PaymentStatus.Captured;
         CapturedAt = utcNow;
         UpdatedAt = utcNow;
+        RecordLedger("captured", "captured", amount, ProviderReference, null, utcNow);
         return Result.Success();
     }
 
@@ -143,6 +190,7 @@ public sealed class Payment : BaseEntity<Guid>
         Status = PaymentStatus.Cancelled;
         VoidedAt = utcNow;
         UpdatedAt = utcNow;
+        RecordLedger("voided", "voided", Amount, ProviderReference, null, utcNow);
         return Result.Success();
     }
 
@@ -156,6 +204,7 @@ public sealed class Payment : BaseEntity<Guid>
         Status = PaymentStatus.Refunding;
         UpdatedAt = utcNow;
         RecordAttempt("refund_requested", Amount, "pending", null, null, utcNow);
+        RecordLedger("refund_requested", "pending", Amount, ProviderReference, null, utcNow);
         return Result.Success();
     }
 
@@ -171,4 +220,22 @@ public sealed class Payment : BaseEntity<Guid>
         _attempts.Add(PaymentAttempt.Create(Id, Attempt, action, amount, status, providerResponse, traceId, utcNow));
         UpdatedAt = utcNow;
     }
+
+    /// <summary>Appends an immutable ledger entry for a payment transition (US-G-007).</summary>
+    private void RecordLedger(
+        string eventType,
+        string status,
+        decimal amount,
+        string? providerReference,
+        string? detail,
+        DateTime utcNow) =>
+        _ledger.Add(PaymentLedgerEntry.Create(
+            Id,
+            _ledger.Count + 1,
+            eventType,
+            status,
+            amount,
+            providerReference,
+            detail,
+            utcNow));
 }

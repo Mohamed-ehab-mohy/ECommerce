@@ -338,13 +338,31 @@ internal sealed class FakePaymentRepository : IPaymentRepository
 {
     public List<Payment> Payments { get; } = [];
 
+    public List<PaymentReconciliationRecord> ReconciliationRecords { get; } = [];
+
     public Task<Payment?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Payments.FirstOrDefault(payment => payment.Id == id));
 
     public Task<Payment?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
         Task.FromResult(Payments.FirstOrDefault(payment => payment.OrderId == orderId));
 
+    public Task<IReadOnlyList<Payment>> GetUnreconciledAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Payment>>(Payments
+            .Where(payment => payment.ProviderReference != null)
+            .Where(payment => !ReconciliationRecords.Any(record => record.PaymentId == payment.Id))
+            .ToList());
+
+    public Task<IReadOnlyList<PaymentReconciliationRecord>> GetReconciliationRecordsAsync(
+        ReconciliationStatus? status,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<PaymentReconciliationRecord>>(ReconciliationRecords
+            .Where(record => status == null || record.Status == status)
+            .ToList());
+
     public void Add(Payment payment) => Payments.Add(payment);
+
+    public void AddReconciliationRecord(PaymentReconciliationRecord record) =>
+        ReconciliationRecords.Add(record);
 }
 
 internal sealed class FakePaymentProvider(
@@ -355,6 +373,8 @@ internal sealed class FakePaymentProvider(
     public PaymentIntentResult? IntentResult { get; set; } = intent;
 
     public PaymentAuthorizationResult? AuthorizationResult { get; set; } = authorization;
+
+    public int AuthorizeCallCount { get; private set; }
 
     public PaymentIntentRequest? LastIntentRequest { get; private set; }
 
@@ -370,6 +390,7 @@ internal sealed class FakePaymentProvider(
 
     public Task<PaymentAuthorizationResult> AuthorizeAsync(PaymentAuthorizationRequest request, CancellationToken cancellationToken)
     {
+        AuthorizeCallCount++;
         LastAuthorizationRequest = request;
         return Task.FromResult(AuthorizationResult ?? new PaymentAuthorizationResult(true, "pi_mock_1_auth", null));
     }
@@ -388,6 +409,23 @@ internal sealed class FakePaymentProviderFactory(
 
     public Task<IPaymentProvider> GetAsync(string providerKey, CancellationToken cancellationToken) =>
         Task.FromResult<IPaymentProvider>(MissingKey == providerKey ? null! : Provider);
+}
+
+internal sealed class FakePaymentProviderHealth : IPaymentProviderHealth
+{
+    private readonly HashSet<string> _unavailable = [];
+
+    public int FailureCount { get; private set; }
+
+    public int SuccessCount { get; private set; }
+
+    public void SetUnavailable(string providerKey) => _unavailable.Add(providerKey);
+
+    public bool IsAvailable(string providerKey) => !_unavailable.Contains(providerKey);
+
+    public void RecordSuccess(string providerKey) => SuccessCount++;
+
+    public void RecordFailure(string providerKey) => FailureCount++;
 }
 
 internal sealed class FakeShippingRateProvider(IReadOnlyList<ShippingMethod>? methods = null) : IShippingRateProvider
@@ -851,6 +889,21 @@ internal sealed class FakePromotionRepository : IPromotionRepository
 
     public Task<IReadOnlyList<Promotion>> GetAllAsync(CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Promotion>>(Promotions.ToList());
+
+    public Task<IReadOnlyList<Promotion>> GetDueForActivationAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Promotion>>(Promotions
+            .Where(promotion => promotion.State == PromotionState.Draft)
+            .Where(promotion => promotion.StartsAt != null)
+            .Where(promotion => promotion.StartsAt <= utcNow)
+            .Where(promotion => promotion.EndsAt == null || promotion.EndsAt >= utcNow)
+            .ToList());
+
+    public Task<IReadOnlyList<Promotion>> GetDueForPauseAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Promotion>>(Promotions
+            .Where(promotion => promotion.State == PromotionState.Active)
+            .Where(promotion => promotion.EndsAt != null)
+            .Where(promotion => promotion.EndsAt < utcNow)
+            .ToList());
 
     public void Add(Promotion promotion) => Promotions.Add(promotion);
 }

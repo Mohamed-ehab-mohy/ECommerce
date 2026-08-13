@@ -5,6 +5,7 @@ using ECommerce.Domain.Orders;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ECommerceDbContext))]
-    partial class ECommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260813144454_AddPaymentRetryColumn")]
+    partial class AddPaymentRetryColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1640,143 +1643,6 @@ namespace ECommerce.Infrastructure.Migrations
                     b.ToTable("payment_attempts", (string)null);
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Payments.PaymentLedgerEntry", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,4)")
-                        .HasColumnName("amount");
-
-                    b.Property<string>("Detail")
-                        .HasColumnType("text")
-                        .HasColumnName("detail");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("event_type");
-
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("occurred_at");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("payment_id");
-
-                    b.Property<string>("ProviderReference")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("provider_reference");
-
-                    b.Property<int>("Sequence")
-                        .HasColumnType("integer")
-                        .HasColumnName("sequence");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .HasDatabaseName("ix_payment_ledger_payment_id");
-
-                    b.ToTable("payment_ledger", (string)null);
-                });
-
-            modelBuilder.Entity("ECommerce.Domain.Payments.PaymentReconciliationRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,4)")
-                        .HasColumnName("amount");
-
-                    b.Property<DateTime>("CheckedAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("checked_at_utc");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasColumnName("currency");
-
-                    b.Property<string>("Detail")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("detail");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid>("PaymentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("payment_id");
-
-                    b.Property<string>("ProviderKey")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("provider_key");
-
-                    b.Property<string>("ProviderReference")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("provider_reference");
-
-                    b.Property<string>("ProviderStatus")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("provider_status");
-
-                    b.Property<string>("RecordedStatus")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("recorded_status");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_reconciliation_payment_id");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_reconciliation_status");
-
-                    b.ToTable("payment_reconciliation_records", (string)null);
-                });
-
             modelBuilder.Entity("ECommerce.Domain.Pricing.Coupon", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2168,16 +2034,6 @@ namespace ECommerce.Infrastructure.Migrations
                         .HasConstraintName("fk_payment_attempts_payments");
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Payments.PaymentLedgerEntry", b =>
-                {
-                    b.HasOne("ECommerce.Domain.Payments.Payment", null)
-                        .WithMany("Ledger")
-                        .HasForeignKey("PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_payment_ledger_payments");
-                });
-
             modelBuilder.Entity("ECommerce.Domain.Cart.Cart", b =>
                 {
                     b.Navigation("Items");
@@ -2205,8 +2061,6 @@ namespace ECommerce.Infrastructure.Migrations
             modelBuilder.Entity("ECommerce.Domain.Payments.Payment", b =>
                 {
                     b.Navigation("Attempts");
-
-                    b.Navigation("Ledger");
                 });
 #pragma warning restore 612, 618
         }

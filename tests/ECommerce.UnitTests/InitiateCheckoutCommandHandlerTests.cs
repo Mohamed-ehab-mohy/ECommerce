@@ -41,7 +41,7 @@ public sealed class InitiateCheckoutCommandHandlerTests
 
     private InitiateCheckoutCommandHandler CreateHandler()
     {
-        var paymentIntents = new PaymentIntentService(_paymentFactory, TimeProvider.System);
+        var paymentIntents = new PaymentIntentService(_paymentFactory, new FakePaymentProviderHealth(), TimeProvider.System);
         var totals = new CheckoutTotalsCalculator(new FakeShippingRateProvider(), new FakeTaxCalculator());
         var availability = new StockAvailabilityVerifier(_stock);
 

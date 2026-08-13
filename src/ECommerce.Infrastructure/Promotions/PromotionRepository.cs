@@ -29,5 +29,24 @@ public sealed class PromotionRepository(ECommerceDbContext dbContext) : IPromoti
             .ThenBy(promotion => promotion.Id)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<Promotion>> GetDueForActivationAsync(
+        DateTime utcNow,
+        CancellationToken cancellationToken) =>
+        await dbContext.Set<Promotion>()
+            .Where(promotion => promotion.State == PromotionState.Draft)
+            .Where(promotion => promotion.StartsAt != null)
+            .Where(promotion => promotion.StartsAt <= utcNow)
+            .Where(promotion => promotion.EndsAt == null || promotion.EndsAt >= utcNow)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Promotion>> GetDueForPauseAsync(
+        DateTime utcNow,
+        CancellationToken cancellationToken) =>
+        await dbContext.Set<Promotion>()
+            .Where(promotion => promotion.State == PromotionState.Active)
+            .Where(promotion => promotion.EndsAt != null)
+            .Where(promotion => promotion.EndsAt < utcNow)
+            .ToListAsync(cancellationToken);
+
     public void Add(Promotion promotion) => dbContext.Set<Promotion>().Add(promotion);
 }

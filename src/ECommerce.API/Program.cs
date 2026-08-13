@@ -90,6 +90,11 @@ if (!builder.Environment.IsDevelopment())
         "expired-cart-purge",
         job => job.ExecuteAsync(CancellationToken.None),
         ExpiredCartPurgeJob.Schedule);
+
+    RecurringJob.AddOrUpdate<PromotionScheduleEnforcerJob>(
+        "promotion-schedule-enforcer",
+        job => job.ExecuteAsync(CancellationToken.None),
+        PromotionScheduleEnforcerJob.Schedule);
 }
 
 app.MapControllers();

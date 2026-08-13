@@ -64,6 +64,7 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(payment => payment.CapturedAt).HasColumnName("captured_at");
         builder.Property(payment => payment.VoidedAt).HasColumnName("voided_at");
         builder.Property(payment => payment.Attempt).HasColumnName("attempt");
+        builder.Property(payment => payment.RetryAfterUtc).HasColumnName("retry_after_utc");
 
         builder.Property(payment => payment.CreatedAt).HasColumnName("created_at");
         builder.Property(payment => payment.UpdatedAt).HasColumnName("updated_at");
@@ -75,6 +76,11 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .WithOne()
             .HasForeignKey(attempt => attempt.PaymentId)
             .HasConstraintName("fk_payment_attempts_payments");
+
+        builder.HasMany(payment => payment.Ledger)
+            .WithOne()
+            .HasForeignKey(entry => entry.PaymentId)
+            .HasConstraintName("fk_payment_ledger_payments");
 
         builder.HasIndex(payment => payment.OrderId).HasDatabaseName("ux_payments_order_id");
         builder.HasIndex(payment => payment.ProviderReference).HasDatabaseName("ix_payments_provider_reference");

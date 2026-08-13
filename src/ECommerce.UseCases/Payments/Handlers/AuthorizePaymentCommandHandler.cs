@@ -4,10 +4,12 @@ using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Commands;
+using ECommerce.UseCases.Payments.Options;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Payments.Responses;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace ECommerce.UseCases.Payments.Handlers;
@@ -16,8 +18,10 @@ public sealed class AuthorizePaymentCommandHandler(
     IPaymentRepository payments,
     ICheckoutRepository checkouts,
     IPaymentProviderFactory providerFactory,
+    IPaymentProviderHealth health,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
+    IOptions<PaymentRetryOptions> retryOptions,
     IValidator<AuthorizePaymentCommand> validator) : IRequestHandler<AuthorizePaymentCommand, Result<PaymentResponse>>
 {
     public async Task<Result<PaymentResponse>> Handle(AuthorizePaymentCommand request, CancellationToken cancellationToken)
@@ -42,9 +46,18 @@ public sealed class AuthorizePaymentCommandHandler(
             return PaymentResponse.From(payment);
         }
 
-        if (payment.Status is not (PaymentStatus.Created or PaymentStatus.Failed))
+        if (payment.Status is not (PaymentStatus.Created or PaymentStatus.Failed or PaymentStatus.RetryPending))
         {
             return PaymentErrors.CaptureConflict;
+        }
+
+        if (payment.Status is PaymentStatus.Failed or PaymentStatus.RetryPending)
+        {
+            var canRetry = payment.CanRetry(utcNow);
+            if (canRetry.IsFailure)
+            {
+                return canRetry.Error;
+            }
         }
 
         IPaymentProvider provider;
@@ -70,18 +83,44 @@ public sealed class AuthorizePaymentCommandHandler(
         }
         catch (Exception)
         {
+            if (provider is not null)
+            {
+                health.RecordFailure(provider.Key);
+            }
+
             return PaymentErrors.ProviderUnavailable;
         }
 
         if (!authorization.IsSuccess)
         {
-            payment.MarkFailed(utcNow);
+            payment.MarkFailed(utcNow, authorization.DeclineCode);
             payment.RecordAttempt("authorize", payment.Amount, "declined", JsonSerializer.Serialize(authorization), null, utcNow);
+
+            if (authorization.DeclineCode == "provider_unavailable")
+            {
+                health.RecordFailure(provider.Key);
+            }
+            else
+            {
+                // Bounded retry: schedule a retry window unless the attempt budget is exhausted
+                // (US-G-004); a provider_unavailable signal is a transport failure, not a decline.
+                var retry = payment.PlanRetry(
+                    retryOptions.Value.Cooldown,
+                    retryOptions.Value.MaxAttempts,
+                    utcNow);
+                if (retry.IsFailure && retry.Error == PaymentErrors.RetryExhausted)
+                {
+                    payment.RecordAttempt("retry", payment.Amount, "exhausted", null, null, utcNow);
+                }
+            }
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
             return authorization.DeclineCode == "provider_unavailable"
                 ? PaymentErrors.ProviderUnavailable
                 : PaymentErrors.PaymentDeclined;
         }
+
+        health.RecordSuccess(provider.Key);
 
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 

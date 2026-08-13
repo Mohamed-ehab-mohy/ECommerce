@@ -8,6 +8,7 @@ public sealed record PaymentInitiationResult(Payment Payment, string ClientToken
 
 public sealed class PaymentIntentService(
     IPaymentProviderFactory providerFactory,
+    IPaymentProviderHealth health,
     TimeProvider timeProvider)
 {
     public async Task<Result<PaymentInitiationResult>> CreateIntentAsync(
@@ -43,6 +44,11 @@ public sealed class PaymentIntentService(
         }
         catch (Exception)
         {
+            if (provider is not null)
+            {
+                health.RecordFailure(provider.Key);
+            }
+
             return PaymentErrors.ProviderUnavailable;
         }
 
@@ -50,6 +56,8 @@ public sealed class PaymentIntentService(
         {
             return PaymentErrors.PaymentDeclined;
         }
+
+        health.RecordSuccess(provider.Key);
 
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var payment = Payment.Create(
