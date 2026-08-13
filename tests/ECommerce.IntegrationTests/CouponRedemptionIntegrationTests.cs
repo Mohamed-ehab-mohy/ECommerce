@@ -2,6 +2,7 @@ using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
+using ECommerce.Infrastructure.Catalog;
 using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Inventory;
@@ -227,6 +228,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<PostgresCon
             new StockAllocator(context, new StockRepository(context)),
             new OrderNumberGenerator(context),
             new CouponRepository(context),
+            new ProductRepository(context),
             new UnitOfWork(context),
             TimeProvider.System,
             new PlaceOrderCommandValidator());

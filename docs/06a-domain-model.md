@@ -208,8 +208,15 @@ classDiagram
 | `MarkPaid(paymentId)` | Status = Pending/AwaitingPayment | Status = Paid | `OrderPaid` |
 | `Ship(shipment)` | Status = Packed | Status = Shipped; shipment attached | `OrderShipped` |
 | `Deliver()` | Status = Shipped | Status = Delivered | `OrderDelivered` |
+| `MarkBackordered(lines)` | Status = Placed; no open backorder per product | Status = Backordered; `OrderBackorderItem`s queued | `OrderBackordered` |
+| `FillBackorderItems(sku, qty)` | Backorder items exist for sku | Filled FIFO; Status = AwaitingFulfillment when all filled | `BackorderFilled` |
 
-**Repository:** `IOrderRepository` — `GetByIdAsync`, `GetByNumberAsync`, `GetByCustomerIdAsync`, `AddAsync`, `SaveAsync`. **Read models:** separate query service (CQRS).
+**Backorder queue (US-F-007,008):** `OrderBackorderItem` (OrderId, ProductId, Sku, Quantity, FilledQuantity, Status Open/Filled). When place-order allocation has a shortfall:
+- Shortfall SKUs with `Product.Backorderable = true` → order becomes `Backordered`; the unallocated remainder (`Requested − Allocated`) is queued; the allocatable portion stays allocated to the order.
+- Shortfall SKUs that are not backorderable → order fails with `ERR_STK_001` (unchanged).
+- A stock `Receipt` raises `StockRestocked` → outbox → `BackorderFillService` re-allocates available stock and fills open backorders FIFO (oldest order first). Orders whose backorders are fully filled transition `Backordered → AwaitingFulfillment`. Customers are notified via `BackorderFilled` handlers.
+
+**Repository:** `IOrderRepository` — `GetByIdAsync`, `GetByNumberAsync`, `GetByCustomerIdAsync`, `AddAsync`, `SaveAsync`, `ListOpenBackorderItemsBySkuAsync`. **Read models:** separate query service (CQRS).
 
 ---
 
@@ -219,7 +226,7 @@ classDiagram
 
 | Item | Detail |
 |------|--------|
-| Attributes | Id, SKU (unique), Slug (unique), Name (localized), Description (localized), PictureUrls, CategoryId, BrandId, Status (Draft/Active/Inactive), IsFeatured, Attributes[] |
+| Attributes | Id, SKU (unique), Slug (unique), Name (localized), Description (localized), PictureUrls, CategoryId, BrandId, Status (Draft/Active/Inactive), IsFeatured, Backorderable, Attributes[] |
 | Pricing | `PriceList`: per-currency list price + optional offer price (`Price` value object per currency) |
 | Invariants | **P-1** SKU unique & immutable. **P-2** offer price ≤ list price per currency. **P-3** status changes are explicit (`Activate()`, `Deactivate()`). |
 | Methods | `Create(...)`, `UpdateDetails(...)`, `SetPrice(currency, list, offer)`, `Activate()`, `Deactivate()`, `SetCategory()`, `SetBrand()` |

@@ -2,6 +2,7 @@ using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Inventory.Ports;
@@ -24,6 +25,7 @@ public sealed class PlaceOrderCommandHandler(
     IStockAllocator stockAllocator,
     IOrderNumberGenerator orderNumberGenerator,
     ICouponRepository coupons,
+    IProductRepository products,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
     IValidator<PlaceOrderCommand> validator) : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
@@ -136,10 +138,38 @@ public sealed class PlaceOrderCommandHandler(
 
         if (allocation.HasShortfalls)
         {
-            return CheckoutErrors.InsufficientStock(
-                allocation.Shortfalls
-                    .Select(shortfall => new StockShortageLine(shortfall.Sku, shortfall.Requested, shortfall.Available))
-                    .ToList());
+            var shortfallBySku = allocation.Shortfalls.ToDictionary(shortfall => shortfall.Sku);
+            var catalog = await products.GetBySkusAsync(shortfallBySku.Keys, cancellationToken);
+            var catalogBySku = catalog.ToDictionary(product => product.Sku);
+
+            var notBackorderable = shortfallBySku.Keys
+                .Where(sku => !catalogBySku.TryGetValue(sku, out var product) || !product.Backorderable)
+                .ToList();
+
+            if (notBackorderable.Count > 0)
+            {
+                return CheckoutErrors.InsufficientStock(
+                    notBackorderable
+                        .Select(sku =>
+                        {
+                            var shortfall = shortfallBySku[sku];
+                            return new StockShortageLine(sku, shortfall.Requested, shortfall.Available);
+                        })
+                        .ToList());
+            }
+
+            var backorderLines = shortfallBySku.Values
+                .Select(shortfall => (
+                    ProductId: order.Items.First(item => item.Sku == shortfall.Sku).ProductId,
+                    shortfall.Sku,
+                    Quantity: shortfall.Requested - shortfall.Available))
+                .ToList();
+
+            var backorderResult = order.MarkBackordered(backorderLines, utcNow);
+            if (backorderResult.IsFailure)
+            {
+                return backorderResult.Error;
+            }
         }
 
         var attachResult = payment.AttachOrder(order.Id, utcNow);

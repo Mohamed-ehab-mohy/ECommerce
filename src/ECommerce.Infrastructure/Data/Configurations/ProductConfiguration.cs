@@ -40,6 +40,8 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(product => product.IsFeatured).HasColumnName("is_featured");
 
+        builder.Property(product => product.Backorderable).HasColumnName("backorderable");
+
         builder.Property(product => product.ImageUrls)
             .HasColumnType("jsonb")
             .HasColumnName("image_urls")

@@ -25,6 +25,11 @@ public static class OrderErrors
         "The order cannot be cancelled in its current state.",
         ErrorType.Conflict);
 
+    public static readonly Error BackorderAlreadyOpen = new(
+        "ERR_ORD_005",
+        "The order already has an open backorder for this product.",
+        ErrorType.Conflict);
+
     public static readonly Error IdempotencyKeyReuse = new(
         "ERR_IDP_001",
         "The idempotency key was already used for a different checkout.",

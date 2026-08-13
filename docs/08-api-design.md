@@ -455,6 +455,26 @@ Response body shape for lists:
 }
 ```
 
+**Backordered placement (US-F-007,008):** when an allocation shortfall occurs, each shortfall SKU whose product has `backorderable: true` does **not** fail the order. The allocatable portion stays allocated, the remainder enters the backorder queue, and the response status is `backordered` with the queue:
+
+```json
+{
+  "orderId": "ord_...",
+  "orderNumber": "E-20260731-000123",
+  "status": "backordered",
+  "paymentStatus": "authorized",
+  "allocations": [
+    { "sku": "SKU-001", "warehouseCode": "DXB01", "quantity": 1 }
+  ],
+  "backorderedItems": [
+    { "sku": "SKU-001", "quantity": 1, "filledQuantity": 0, "status": "open" }
+  ],
+  "placedAt": "2026-07-31T10:15:00Z"
+}
+```
+
+A shortfall SKU that is **not** backorderable keeps the existing `409 ERR_STK_001` failure. Backorders fill automatically (FIFO by `createdAt`) when a stock receipt makes inventory available; the order transitions `backordered → awaitingFulfillment` when all its backorder lines are filled, and the customer is notified via `order.backorderFilled`.
+
 **Errors:** 409 conflict (state/stock); 402 declined; 409 `ERR_IDP_001` (key reuse); replay returns stored 201.
 
 ### 7.5 GET `/api/v1/products?q=&categoryId=&brandId=&price.gte=&price.lte=&rating.gte=&page=1&pageSize=20&locale=en&currency=AED`

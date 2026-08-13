@@ -18,6 +18,16 @@ public sealed record OrderTimelineResponse(
     string? TraceId,
     DateTime OccurredAt);
 
+public sealed record OrderBackorderItemResponse(
+    Guid OrderBackorderItemId,
+    Guid ProductId,
+    string Sku,
+    int Quantity,
+    int FilledQuantity,
+    string Status,
+    DateTime CreatedAt,
+    DateTime? FilledAt);
+
 public sealed record OrderResponse(
     Guid OrderId,
     string OrderNumber,
@@ -35,7 +45,8 @@ public sealed record OrderResponse(
     string Status,
     DateTime? PlacedAt,
     IReadOnlyList<OrderLineResponse> Lines,
-    IReadOnlyList<OrderTimelineResponse> Timeline)
+    IReadOnlyList<OrderTimelineResponse> Timeline,
+    IReadOnlyList<OrderBackorderItemResponse> BackorderedItems)
 {
     public static OrderResponse From(Order order) =>
         new(
@@ -72,5 +83,17 @@ public sealed record OrderResponse(
                     entry.ActorId,
                     entry.TraceId,
                     entry.OccurredAt))
+                .ToList(),
+            order.BackorderItems
+                .OrderBy(item => item.CreatedAt)
+                .Select(item => new OrderBackorderItemResponse(
+                    item.Id,
+                    item.ProductId,
+                    item.Sku,
+                    item.Quantity,
+                    item.FilledQuantity,
+                    item.Status.ToString(),
+                    item.CreatedAt,
+                    item.FilledAt))
                 .ToList());
 }

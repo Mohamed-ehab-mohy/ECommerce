@@ -11,18 +11,33 @@ public sealed class OrderRepository(ECommerceDbContext dbContext) : IOrderReposi
     public Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Set<Order>()
             .Include(order => order.Items)
+            .Include(order => order.BackorderItems)
             .SingleOrDefaultAsync(order => order.Id == id, cancellationToken);
 
     public Task<Order?> GetByNumberAsync(string orderNumber, CancellationToken cancellationToken) =>
         dbContext.Set<Order>()
             .Include(order => order.Items)
+            .Include(order => order.BackorderItems)
             .SingleOrDefaultAsync(order => order.OrderNumber == orderNumber, cancellationToken);
 
     public Task<Order?> GetByNumberWithDetailsAsync(string orderNumber, CancellationToken cancellationToken) =>
         dbContext.Set<Order>()
             .Include(order => order.Items)
             .Include(order => order.StatusLogs)
+            .Include(order => order.BackorderItems)
             .SingleOrDefaultAsync(order => order.OrderNumber == orderNumber, cancellationToken);
+
+    public async Task<IReadOnlyList<OrderBackorderItem>> ListOpenBackorderItemsBySkuAsync(
+        string sku,
+        CancellationToken cancellationToken)
+    {
+        var items = await dbContext.Set<OrderBackorderItem>()
+            .Where(item => item.Sku == sku && item.Status == BackorderStatus.Open)
+            .OrderBy(item => item.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
 
     public async Task<OrderHistoryPage> ListByCustomerAsync(
         Guid customerId,

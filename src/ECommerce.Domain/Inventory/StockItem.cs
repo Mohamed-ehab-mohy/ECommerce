@@ -88,6 +88,13 @@ public sealed class StockItem : BaseEntity<Guid>
         Allocated = nextAllocated;
         UpdatedAt = utcNow;
 
+        if (movement.Type == StockMovementType.Receipt
+            && movement.OnHandDelta > 0
+            && Available > 0)
+        {
+            AddDomainEvent(new Events.StockRestocked(Sku, WarehouseId, movement.OnHandDelta));
+        }
+
         EvaluateLowStock(utcNow);
     }
 

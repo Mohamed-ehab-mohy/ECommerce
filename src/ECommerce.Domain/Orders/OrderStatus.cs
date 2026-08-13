@@ -6,6 +6,7 @@ public enum OrderStatus
     Placed,
     AwaitingPayment,
     Paid,
+    Backordered,
     AwaitingFulfillment,
     Picking,
     Packed,

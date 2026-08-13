@@ -28,6 +28,7 @@ using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
+using ECommerce.UseCases.Orders.Services;
 using ECommerce.UseCases.Payments.Options;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
@@ -92,6 +93,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationProvider, StubSmsProvider>();
         services.AddScoped<IOrderNotifier, NotificationOrderNotifier>();
         services.AddScoped<IEventHandler<LowStockAlertRaised>, LowStockAlertNotificationHandler>();
+        services.AddScoped<BackorderFillService>();
+        services.AddScoped<IEventHandler<StockRestocked>, BackorderFillHandler>();
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         services.AddScoped<ICouponRepository, CouponRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();

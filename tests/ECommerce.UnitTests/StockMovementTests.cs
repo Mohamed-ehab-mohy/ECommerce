@@ -1,3 +1,4 @@
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Exceptions;
 using ECommerce.Domain.Inventory;
 
@@ -138,5 +139,30 @@ public sealed class StockMovementTests
 
         Assert.Equal("SKU-1", item.Sku);
         Assert.Equal(0, item.Available);
+    }
+
+    [Fact]
+    public void Apply_Receipt_Raises_StockRestocked_Event()
+    {
+        var item = StockItem.Create("SKU-1", WarehouseId, Now);
+
+        item.Apply(StockMovement.Create(item.Id, StockMovementType.Receipt, 10, "RECV", null, null, Now), Now);
+
+        var evt = Assert.Single(item.DomainEvents.OfType<StockRestocked>());
+        Assert.Equal("SKU-1", evt.Sku);
+        Assert.Equal(WarehouseId, evt.WarehouseId);
+        Assert.Equal(10, evt.Quantity);
+    }
+
+    [Fact]
+    public void Apply_NonReceipt_Movement_Does_Not_Raise_StockRestocked()
+    {
+        var item = StockItem.Create("SKU-1", WarehouseId, Now);
+        item.Apply(StockMovement.Create(item.Id, StockMovementType.Receipt, 10, "RECV", null, null, Now), Now);
+
+        item.Apply(StockMovement.Create(item.Id, StockMovementType.Allocate, 4, "ORD-1", null, null, Now), Now);
+        item.Apply(StockMovement.Create(item.Id, StockMovementType.Fulfill, 4, "ORD-1", null, null, Now), Now);
+
+        Assert.Single(item.DomainEvents.OfType<StockRestocked>());
     }
 }

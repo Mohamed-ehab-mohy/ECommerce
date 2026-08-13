@@ -55,6 +55,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<Order> Orders => Set<Order>();
 
+    public DbSet<OrderBackorderItem> OrderBackorderItems => Set<OrderBackorderItem>();
+
     public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
 
     public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();

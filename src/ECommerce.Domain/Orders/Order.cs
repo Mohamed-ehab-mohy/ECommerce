@@ -8,6 +8,7 @@ public sealed class Order : BaseEntity<Guid>
 {
     private readonly List<OrderItem> _items = [];
     private readonly List<OrderStatusLog> _statusLogs = [];
+    private readonly List<OrderBackorderItem> _backorderItems = [];
 
     private Order()
     {
@@ -60,6 +61,8 @@ public sealed class Order : BaseEntity<Guid>
     public IReadOnlyCollection<OrderItem> Items => _items;
 
     public IReadOnlyCollection<OrderStatusLog> StatusLogs => _statusLogs;
+
+    public IReadOnlyCollection<OrderBackorderItem> BackorderItems => _backorderItems;
 
     public static Order Create(
         Guid checkoutId,
@@ -153,6 +156,83 @@ public sealed class Order : BaseEntity<Guid>
             reason));
 
         return Result.Success();
+    }
+
+    public Result MarkBackordered(
+        IReadOnlyList<(Guid ProductId, string Sku, int Quantity)> lines,
+        DateTime utcNow)
+    {
+        foreach (var (productId, _, _) in lines)
+        {
+            if (_backorderItems.Any(item => item.ProductId == productId && !item.IsFilled))
+            {
+                return OrderErrors.BackorderAlreadyOpen;
+            }
+        }
+
+        if (Status != OrderStatus.Placed)
+        {
+            return OrderErrors.InvalidState;
+        }
+
+        foreach (var (productId, sku, quantity) in lines)
+        {
+            _backorderItems.Add(OrderBackorderItem.Create(Id, productId, sku, quantity, utcNow));
+        }
+
+        RecordStatusChange(Status, OrderStatus.Backordered, "system", null, null, utcNow);
+        Status = OrderStatus.Backordered;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new OrderBackordered(
+            Id,
+            OrderNumber,
+            CustomerEmail,
+            lines.Select(line => new BackorderLine(line.ProductId, line.Sku, line.Quantity)).ToList()));
+
+        return Result.Success();
+    }
+
+    public int FillBackorderItems(string sku, int quantity, DateTime utcNow)
+    {
+        var filled = 0;
+        var remaining = quantity;
+
+        foreach (var item in _backorderItems
+                     .Where(item => item.Sku == sku && !item.IsFilled)
+                     .OrderBy(item => item.CreatedAt))
+        {
+            var amount = Math.Min(remaining, item.Quantity - item.FilledQuantity);
+            item.Fill(amount, utcNow);
+            filled += amount;
+            remaining -= amount;
+
+            if (remaining <= 0)
+            {
+                break;
+            }
+        }
+
+        if (filled > 0)
+        {
+            UpdatedAt = utcNow;
+
+            AddDomainEvent(new BackorderFilled(
+                Id,
+                OrderNumber,
+                CustomerEmail,
+                _backorderItems.First(item => item.Sku == sku).ProductId,
+                sku,
+                filled));
+
+            if (_backorderItems.All(item => item.IsFilled) && Status == OrderStatus.Backordered)
+            {
+                RecordStatusChange(Status, OrderStatus.AwaitingFulfillment, "system", null, null, utcNow);
+                Status = OrderStatus.AwaitingFulfillment;
+            }
+        }
+
+        return filled;
     }
 
     private void RecordStatusChange(

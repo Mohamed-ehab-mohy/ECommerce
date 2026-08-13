@@ -29,6 +29,8 @@ public sealed class Product : BaseEntity<Guid>
 
     public bool IsFeatured { get; private set; }
 
+    public bool Backorderable { get; private set; } = true;
+
     public List<string> ImageUrls { get; private set; }
 
     public Dictionary<string, string> Attributes { get; private set; }
@@ -50,7 +52,8 @@ public sealed class Product : BaseEntity<Guid>
         Guid? brandId,
         bool isFeatured,
         ProductStatus status,
-        DateTime utcNow)
+        DateTime utcNow,
+        bool backorderable = true)
     {
         var product = new Product
         {
@@ -61,6 +64,7 @@ public sealed class Product : BaseEntity<Guid>
             BrandId = brandId,
             Status = status,
             IsFeatured = isFeatured,
+            Backorderable = backorderable,
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
@@ -92,7 +96,8 @@ public sealed class Product : BaseEntity<Guid>
         string? currency,
         decimal? listAmount,
         decimal? offerAmount,
-        DateTime utcNow)
+        DateTime utcNow,
+        bool? backorderable = null)
     {
         if (!string.IsNullOrWhiteSpace(slug))
         {
@@ -117,6 +122,11 @@ public sealed class Product : BaseEntity<Guid>
         if (status is not null)
         {
             Status = status.Value;
+        }
+
+        if (backorderable is not null)
+        {
+            Backorderable = backorderable.Value;
         }
 
         if (!string.IsNullOrWhiteSpace(name))

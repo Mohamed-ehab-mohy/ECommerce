@@ -13,8 +13,8 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-C-006, US-C-007 | Wishlist + move-to-cart | 4 | [ ] |
-| US-F-007, US-F-008 | Backorder tracking + fill | 4 | [ ] |
+| US-C-006, US-C-007 | Wishlist + move-to-cart | 4 | [x] |
+| US-F-007, US-F-008 | Backorder tracking + fill | 4 | [x] |
 | US-H-001, US-H-002 | Fulfillment queues + pick lists | 5 | [ ] |
 | US-H-003 | Shipment creation + tracking | 3 | [ ] |
 | US-H-007 | Delivery confirmation | 2 | [ ] |
@@ -29,7 +29,7 @@
 - `GET/POST/DELETE /api/v1/wishlist/items`, move-to-cart re-validates availability.
 
 ### Acceptance
-- [ ] Wishlist CRUD; move validates availability.
+- [x] Wishlist CRUD; move validates availability.
 
 ### Commit
 `feat(wishlist): wishlist and move-to-cart`
@@ -42,7 +42,7 @@
 - Backorder status on orders when stock insufficient but backorderable; fill job on restock (event-driven).
 
 ### Acceptance
-- [ ] Backorder created; fills automatically when stock arrives.
+- [x] Backorder created; fills automatically when stock arrives.
 
 ### Commit
 `feat(inventory): backorder tracking and fill`

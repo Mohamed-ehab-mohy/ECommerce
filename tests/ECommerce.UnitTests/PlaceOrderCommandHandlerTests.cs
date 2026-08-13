@@ -1,3 +1,4 @@
+using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
@@ -27,6 +28,8 @@ public sealed class PlaceOrderCommandHandlerTests
 
     private readonly FakeCouponRepository _coupons = new();
 
+    private readonly FakeProductRepository _products = new();
+
     private readonly FakeUnitOfWork _unitOfWork = new();
 
     private static readonly AddressSnapshot Address = new(
@@ -45,6 +48,7 @@ public sealed class PlaceOrderCommandHandlerTests
             _allocator,
             _orderNumberGenerator,
             _coupons,
+            _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());
@@ -215,6 +219,7 @@ public sealed class PlaceOrderCommandHandlerTests
             allocator,
             _orderNumberGenerator,
             _coupons,
+            _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
             new PlaceOrderCommandValidator());
@@ -253,6 +258,86 @@ public sealed class PlaceOrderCommandHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Empty(_orders.Orders);
+    }
+
+    [Fact]
+    public async Task Place_Shortfall_On_Backorderable_Product_Creates_Backordered_Order()
+    {
+        var (checkout, _) = CreateAuthorizedCheckout();
+        var product = Product.Create(
+            "SKU-1", "widget", "en", "Widget", null, "USD", 20.00m, 15.00m, null, null, false,
+            ProductStatus.Active, UtcNow);
+        _products.Products.Add(product);
+        var allocator = new FakeStockAllocator(
+            lines: [new StockAllocationLine(Guid.NewGuid(), "SKU-1", Guid.NewGuid(), 1)],
+            shortfalls: [new StockShortfall("SKU-1", 2, 1)]);
+
+        var handler = new PlaceOrderCommandHandler(
+            _checkouts,
+            _payments,
+            _orders,
+            _idempotencyKeys,
+            allocator,
+            _orderNumberGenerator,
+            _coupons,
+            _products,
+            _unitOfWork,
+            new FixedTimeProvider(UtcNow),
+            new PlaceOrderCommandValidator());
+
+        var result = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(OrderStatus.Backordered.ToString(), result.Value.Status);
+        var backordered = Assert.Single(result.Value.BackorderedItems);
+        Assert.Equal("SKU-1", backordered.Sku);
+        Assert.Equal(1, backordered.Quantity);
+
+        var order = Assert.Single(_orders.Orders);
+        Assert.Equal(OrderStatus.Backordered, order.Status);
+        var item = Assert.Single(order.BackorderItems);
+        Assert.Equal(order.Items.Single().ProductId, item.ProductId);
+        Assert.Equal(1, item.Quantity);
+        Assert.Single(order.DomainEvents.OfType<OrderBackordered>());
+
+        var timelineEntry = order.StatusLogs.Last();
+        Assert.Equal(OrderStatus.Placed, timelineEntry.FromStatus);
+        Assert.Equal(OrderStatus.Backordered, timelineEntry.ToStatus);
+
+        Assert.Equal(1, _unitOfWork.SaveCount);
+        Assert.NotNull(_unitOfWork.LastTransaction);
+        Assert.Equal(1, _unitOfWork.LastTransaction.CommitCount);
+    }
+
+    [Fact]
+    public async Task Place_Shortfall_On_Non_Backorderable_Product_Returns_409()
+    {
+        var (checkout, _) = CreateAuthorizedCheckout();
+        var product = Product.Create(
+            "SKU-1", "widget", "en", "Widget", null, "USD", 20.00m, 15.00m, null, null, false,
+            ProductStatus.Active, UtcNow, backorderable: false);
+        _products.Products.Add(product);
+        var allocator = new FakeStockAllocator(
+            shortfalls: [new StockShortfall("SKU-1", 2, 1)]);
+
+        var handler = new PlaceOrderCommandHandler(
+            _checkouts,
+            _payments,
+            _orders,
+            _idempotencyKeys,
+            allocator,
+            _orderNumberGenerator,
+            _coupons,
+            _products,
+            _unitOfWork,
+            new FixedTimeProvider(UtcNow),
+            new PlaceOrderCommandValidator());
+
+        var result = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("ERR_STK_001", result.Error.Code);
+        Assert.Empty(_orders.Orders.SelectMany(order => order.BackorderItems));
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

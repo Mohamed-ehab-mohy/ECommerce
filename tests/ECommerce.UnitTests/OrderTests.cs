@@ -108,4 +108,113 @@ public sealed class OrderTests
         Assert.True(result.IsFailure);
         Assert.Equal(OrderErrors.CancellationNotAllowed, result.Error);
     }
+
+    [Fact]
+    public void MarkBackordered_Transitions_To_Backordered_And_Adds_Items()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+
+        var result = order.MarkBackordered([(productId, "SKU-1", 2)], Now.AddMinutes(1));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(OrderStatus.Backordered, order.Status);
+
+        var item = Assert.Single(order.BackorderItems);
+        Assert.Equal(productId, item.ProductId);
+        Assert.Equal("SKU-1", item.Sku);
+        Assert.Equal(2, item.Quantity);
+        Assert.Equal(0, item.FilledQuantity);
+        Assert.Equal(BackorderStatus.Open, item.Status);
+
+        var entry = order.StatusLogs.Last();
+        Assert.Equal(OrderStatus.Placed, entry.FromStatus);
+        Assert.Equal(OrderStatus.Backordered, entry.ToStatus);
+
+        var evt = Assert.Single(order.DomainEvents.OfType<OrderBackordered>());
+        Assert.Equal(order.Id, evt.OrderId);
+        var line = Assert.Single(evt.Lines);
+        Assert.Equal("SKU-1", line.Sku);
+        Assert.Equal(2, line.Quantity);
+    }
+
+    [Fact]
+    public void MarkBackordered_From_Non_Placed_Is_Rejected()
+    {
+        var order = CreateOrder();
+        order.Cancel("customer-request", "customer", null, null, Now);
+
+        var result = order.MarkBackordered([(order.Items.Single().ProductId, "SKU-1", 2)], Now.AddMinutes(1));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(OrderErrors.InvalidState, result.Error);
+    }
+
+    [Fact]
+    public void MarkBackordered_With_Duplicate_Open_Line_Is_Rejected()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+        order.MarkBackordered([(productId, "SKU-1", 2)], Now.AddMinutes(1));
+
+        var result = order.MarkBackordered([(productId, "SKU-1", 1)], Now.AddMinutes(2));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(OrderErrors.BackorderAlreadyOpen, result.Error);
+    }
+
+    [Fact]
+    public void FillBackorderItems_Fills_FIFO_And_Completes_When_All_Filled()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+        order.MarkBackordered([(productId, "SKU-1", 5)], Now.AddMinutes(1));
+
+        var first = order.FillBackorderItems("SKU-1", 2, Now.AddMinutes(2));
+        Assert.Equal(2, first);
+        Assert.Equal(OrderStatus.Backordered, order.Status);
+        Assert.Equal(2, order.BackorderItems.Single().FilledQuantity);
+
+        var second = order.FillBackorderItems("SKU-1", 3, Now.AddMinutes(3));
+        Assert.Equal(3, second);
+        Assert.Equal(OrderStatus.AwaitingFulfillment, order.Status);
+        Assert.Equal(BackorderStatus.Filled, order.BackorderItems.Single().Status);
+        Assert.NotNull(order.BackorderItems.Single().FilledAt);
+
+        var entry = order.StatusLogs.Last();
+        Assert.Equal(OrderStatus.Backordered, entry.FromStatus);
+        Assert.Equal(OrderStatus.AwaitingFulfillment, entry.ToStatus);
+
+        Assert.Equal(2, order.DomainEvents.OfType<BackorderFilled>().Count());
+        Assert.Contains(order.DomainEvents.OfType<BackorderFilled>(), evt => evt.Quantity == 2);
+        Assert.Contains(order.DomainEvents.OfType<BackorderFilled>(), evt => evt.Quantity == 3);
+    }
+
+    [Fact]
+    public void FillBackorderItems_Caps_At_Remaining_Quantity()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+        order.MarkBackordered([(productId, "SKU-1", 2)], Now.AddMinutes(1));
+
+        var filled = order.FillBackorderItems("SKU-1", 10, Now.AddMinutes(2));
+
+        Assert.Equal(2, filled);
+        Assert.Equal(2, order.BackorderItems.Single().FilledQuantity);
+        Assert.Equal(OrderStatus.AwaitingFulfillment, order.Status);
+    }
+
+    [Fact]
+    public void FillBackorderItems_With_Unknown_Sku_Returns_Zero()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+        order.MarkBackordered([(productId, "SKU-1", 2)], Now.AddMinutes(1));
+
+        var filled = order.FillBackorderItems("SKU-9", 2, Now.AddMinutes(2));
+
+        Assert.Equal(0, filled);
+        Assert.Equal(OrderStatus.Backordered, order.Status);
+        Assert.Empty(order.DomainEvents.OfType<BackorderFilled>());
+    }
 }

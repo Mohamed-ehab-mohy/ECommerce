@@ -102,6 +102,12 @@ internal sealed class FakeProductRepository : IProductRepository
         Task.FromResult(Products.FirstOrDefault(
             product => product.Id == id && product.Status == ProductStatus.Active && !product.IsDeleted));
 
+    public Task<IReadOnlyList<Product>> GetBySkusAsync(
+        IReadOnlyCollection<string> skus,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Product>>(
+            Products.Where(product => skus.Contains(product.Sku)).ToList());
+
     public Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken) =>
         Task.FromResult(Products.Any(product => product.Sku == sku));
 
@@ -801,6 +807,16 @@ internal sealed class FakeOrderRepository : IOrderRepository
     public Task<IReadOnlyList<Order>> FindByEmailAsync(string email, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Order>>(
             Orders.Where(order => order.CustomerEmail == email).ToList());
+
+    public Task<IReadOnlyList<OrderBackorderItem>> ListOpenBackorderItemsBySkuAsync(
+        string sku,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<OrderBackorderItem>>(
+            Orders
+                .SelectMany(order => order.BackorderItems)
+                .Where(item => item.Sku == sku && item.Status == BackorderStatus.Open)
+                .OrderBy(item => item.CreatedAt)
+                .ToList());
 
     public void Add(Order order) => Orders.Add(order);
 }

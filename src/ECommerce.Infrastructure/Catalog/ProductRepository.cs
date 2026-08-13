@@ -39,6 +39,22 @@ public sealed class ProductRepository(ECommerceDbContext dbContext) : IProductRe
         return items;
     }
 
+    public async Task<IReadOnlyList<Product>> GetBySkusAsync(
+        IReadOnlyCollection<string> skus,
+        CancellationToken cancellationToken)
+    {
+        if (skus.Count == 0)
+        {
+            return [];
+        }
+
+        var items = await dbContext.Set<Product>()
+            .Where(product => skus.Contains(product.Sku))
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
+
     public Task<bool> SkuExistsAsync(string sku, CancellationToken cancellationToken) =>
         dbContext.Set<Product>().AnyAsync(product => product.Sku == sku, cancellationToken);
 

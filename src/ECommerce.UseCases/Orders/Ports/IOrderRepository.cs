@@ -23,5 +23,7 @@ public interface IOrderRepository
 
     Task<IReadOnlyList<Order>> FindByEmailAsync(string email, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<OrderBackorderItem>> ListOpenBackorderItemsBySkuAsync(string sku, CancellationToken cancellationToken);
+
     void Add(Order order);
 }
