@@ -11,6 +11,7 @@ using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Wishlist;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -25,6 +26,7 @@ using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
+using ECommerce.UseCases.Wishlist.Ports;
 using System.Diagnostics.Metrics;
 
 namespace ECommerce.UnitTests;
@@ -57,6 +59,28 @@ internal sealed class FakeCartRepository : ICartRepository
 
         Carts.Remove(existing);
         Carts.Add(cart);
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeWishlistRepository : IWishlistRepository
+{
+    public List<Wishlist> Wishlists { get; } = [];
+
+    public Task<Wishlist?> ByOwnerKeyAsync(string ownerKey, CancellationToken cancellationToken) =>
+        Task.FromResult(Wishlists.FirstOrDefault(wishlist => wishlist.OwnerKey == ownerKey));
+
+    public Task SaveAsync(Wishlist wishlist, CancellationToken cancellationToken)
+    {
+        var existing = Wishlists.FirstOrDefault(candidate => candidate.OwnerKey == wishlist.OwnerKey);
+        if (existing is null)
+        {
+            Wishlists.Add(wishlist);
+            return Task.CompletedTask;
+        }
+
+        Wishlists.Remove(existing);
+        Wishlists.Add(wishlist);
         return Task.CompletedTask;
     }
 }

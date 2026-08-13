@@ -5,3 +5,5 @@ public sealed record AddCartItemRequest(Guid ProductId, int Quantity);
 public sealed record UpdateCartItemRequest(int Quantity);
 
 public sealed record ApplyCartCouponRequest(string Code);
+
+public sealed record AddWishlistItemRequest(Guid ProductId);
