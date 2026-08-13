@@ -235,6 +235,84 @@ public sealed class Order : BaseEntity<Guid>
         return filled;
     }
 
+    public Result StartFulfillment(
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        if (Status != OrderStatus.AwaitingFulfillment)
+        {
+            return OrderErrors.InvalidState;
+        }
+
+        RecordStatusChange(Status, OrderStatus.Picking, actorType, actorId, traceId, utcNow);
+        Status = OrderStatus.Picking;
+        UpdatedAt = utcNow;
+
+        return Result.Success();
+    }
+
+    public Result MarkPacked(
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        if (Status != OrderStatus.Picking)
+        {
+            return OrderErrors.InvalidState;
+        }
+
+        RecordStatusChange(Status, OrderStatus.Packed, actorType, actorId, traceId, utcNow);
+        Status = OrderStatus.Packed;
+        UpdatedAt = utcNow;
+
+        return Result.Success();
+    }
+
+    public Result Ship(
+        string carrierKey,
+        IReadOnlyList<string> trackingNumbers,
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        if (Status != OrderStatus.Packed)
+        {
+            return OrderErrors.InvalidState;
+        }
+
+        RecordStatusChange(Status, OrderStatus.Shipped, actorType, actorId, traceId, utcNow);
+        Status = OrderStatus.Shipped;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new OrderShipped(Id, OrderNumber, CustomerEmail, carrierKey, trackingNumbers));
+
+        return Result.Success();
+    }
+
+    public Result Deliver(
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        if (Status != OrderStatus.Shipped)
+        {
+            return OrderErrors.InvalidState;
+        }
+
+        RecordStatusChange(Status, OrderStatus.Delivered, actorType, actorId, traceId, utcNow);
+        Status = OrderStatus.Delivered;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new OrderDelivered(Id, OrderNumber, CustomerEmail));
+
+        return Result.Success();
+    }
+
     private void RecordStatusChange(
         OrderStatus? from,
         OrderStatus to,

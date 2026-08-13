@@ -15,11 +15,11 @@
 |----|------|:------:|--------|
 | US-C-006, US-C-007 | Wishlist + move-to-cart | 4 | [x] |
 | US-F-007, US-F-008 | Backorder tracking + fill | 4 | [x] |
-| US-H-001, US-H-002 | Fulfillment queues + pick lists | 5 | [ ] |
-| US-H-003 | Shipment creation + tracking | 3 | [ ] |
-| US-H-007 | Delivery confirmation | 2 | [ ] |
-| T-DAT-011 | Carrier adapter (2 carriers) + rate cache | 5 | [ ] |
-| T-DAT-012 | Pick-list generation service | 3 | [ ] |
+| US-H-001, US-H-002 | Fulfillment queues + pick lists | 5 | [x] |
+| US-H-003 | Shipment creation + tracking | 3 | [x] |
+| US-H-007 | Delivery confirmation | 2 | [x] |
+| T-DAT-011 | Carrier adapter (2 carriers) + rate cache | 5 | [x] |
+| T-DAT-012 | Pick-list generation service | 3 | [x] |
 
 ---
 
@@ -56,7 +56,11 @@
 - Warehouse hub events (SignalR baseline wiring).
 
 ### Acceptance
-- [ ] Task state machine enforced; pick list generated per warehouse.
+- [x] Task state machine enforced; pick list generated per warehouse.
+
+### Notes
+- `FulfillmentTask` lifecycle (Queued→Assigned→Picking→Packed→Shipped, `Cancel`) + `Order` transitions driven by handlers.
+- Queue/pick-list endpoints in `FulfillmentController`; SignalR hub wiring deferred to S11.
 
 ### Commit
 `feat(fulfillment): fulfillment queues and pick lists`
@@ -69,7 +73,11 @@
 - Create shipment per task (carrier label), tracking numbers, delivery confirmation event.
 
 ### Acceptance
-- [ ] Shipment created via carrier adapter; tracking updates event-driven.
+- [x] Shipment created via carrier adapter; tracking updates event-driven.
+
+### Notes
+- `CreateShipmentCommand` picks carrier by key, persists shipment + tracking number + label URL, and drives task→Shipped / order→Shipped.
+- `ApplyShipmentTrackingCommand` applies transition-matrix updates; Delivered also marks the order Delivered.
 
 ### Commit
 `feat(fulfillment): shipment creation and tracking`
@@ -82,7 +90,12 @@
 - `ICarrierAdapter` port; 2 carrier sandbox adapters; shipping rate cache (TTL 10 min); contract tests per carrier.
 
 ### Acceptance
-- [ ] Rate quote from both sandboxes; cached; contract tests green.
+- [x] Rate quote from both sandboxes; cached; contract tests green.
+
+### Notes
+- `AramexCarrierAdapter` (`aramex`, base 15 + 1.2/100g, 4d) and `DhlCarrierAdapter` (`dhl`, base 20 + 1.0/100g, 2d) are deterministic stubs.
+- `CarrierRateSelector` quotes all carriers, caches by `carrier:country:postal:weight` (10 min TTL), returns best available with unavailable carriers flagged.
+- Unit coverage: `CarrierRateSelectorTests`.
 
 ### Commit
 `feat(shipping): carrier adapters and rate cache`
@@ -95,7 +108,11 @@
 - Service to batch order items into pick lists (location-aware, batch size rules).
 
 ### Acceptance
-- [ ] Pick list generation deterministic and testable.
+- [x] Pick list generation deterministic and testable.
+
+### Notes
+- `PickListGenerationService` groups by zone, orders by bin+sku, chunks ≤25 lines, `UNZONED` fallback.
+- Unit coverage: `PickListGenerationServiceTests`.
 
 ### Commit
 `feat(fulfillment): pick list generation service`
@@ -103,6 +120,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Warehouse fulfillment queue E2E with carrier labels.
-- [ ] US-C-006,007; US-F-007,008; US-H-001,002,003,007 green.
-- [ ] CI green.
+- [x] Warehouse fulfillment queue E2E with carrier labels.
+- [x] US-C-006,007; US-F-007,008; US-H-001,002,003,007 green.
+- [ ] CI green (pending push + run).

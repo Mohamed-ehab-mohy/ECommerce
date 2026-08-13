@@ -330,8 +330,14 @@ classDiagram
 
 | Aggregate | Detail |
 |-----------|--------|
-| **FulfillmentTask** | Root. Attributes: Id, OrderId, WarehouseId, Status (Queued/Assigned/Picking/Packed/Shipped/Cancelled), AssignedPickers, Priority. Methods: `Assign(picker)`, `StartPicking()`, `MarkPacked()`, `Split(partOrder)` (for split shipments). Events: `FulfillmentTaskCreated`, `TaskPicking`, `TaskPacked`, `TaskShipped`. |
-| **Shipment** | Root. Attributes: Id, TaskId(s), CarrierKey, TrackingNumber, LabelUrl, Status (Created/InTransit/OutForDelivery/Delivered/Exception), WebhookHistory[]. Methods: `CreateShipment(carrierRef)`, `ApplyTrackingUpdate(status, timestamp)` (stale events rejected). Events: `ShipmentCreated`, `ShipmentStatusChanged`, `ShipmentDelivered`. |
+| **FulfillmentTask** | Root. Attributes: Id, OrderId, WarehouseId, Status (Queued/Assigned/Picking/Packed/Shipped/Cancelled), AssignedPickers, Priority, Zone. Methods: `Create(orderId, warehouseId, priority, utcNow, zone?)`, `Assign(pickerId, utcNow)` (Queued→Assigned), `StartPicking(utcNow)` (Assigned→Picking), `MarkPacked(utcNow)` (Picking→Packed), `MarkShipped(utcNow)` (Packed→Shipped), `Cancel(utcNow)` (non-terminal states). Events: `FulfillmentTaskCreated`, `FulfillmentTaskAssigned`, `FulfillmentTaskPicking`, `FulfillmentTaskPacked`, `FulfillmentTaskShipped`, `FulfillmentTaskCancelled`. |
+| **Shipment** | Root. Attributes: Id, OrderId, TaskId, CarrierKey, TrackingNumber, LabelUrl, Status (Created/InTransit/OutForDelivery/Delivered/Exception). Methods: `Create(orderId, taskId, carrierKey, trackingNumber, labelUrl, utcNow)`, `ApplyTrackingUpdate(status, utcNow)`. Transition matrix: Created→InTransit, InTransit→OutForDelivery/Exception, Exception→InTransit, OutForDelivery→Delivered (terminal; `AlreadyDelivered`). Invalid transitions return `ERR_SHP_003`. Events: `ShipmentCreated`, `ShipmentStatusChanged`, `ShipmentDelivered`. |
+| **FulfillmentTaskItem** | Child of FulfillmentTask. Attributes: TaskId, ProductId, Sku, Quantity, Bin. Added via `FulfillmentTask.AddItem(productId, sku, quantity, bin)`. |
+| **TrackingUpdate** | Child of Shipment. Attributes: ShipmentId, Status, Timestamp, Location, Description. Captured by `ApplyTrackingUpdate`. |
+
+Order status integration: `StartFulfillment` (AwaitingFulfillment→Picking), `MarkPacked` (Picking→Packed), `Ship` (Packed→Shipped), `Deliver` (Shipped→Delivered) — driven by the fulfillment task/shipment handlers.
+
+Carrier integration (T-DAT-011): `CarrierRateSelector` quotes all registered `ICarrierAdapter` implementations, orders by rate, caches quotes by `carrier:country:postal:weight` (10 min TTL), and degrades gracefully to available carriers when a quote fails (`ERR_FLM_010 CarrierUnavailable`). Pick lists (T-DAT-012): `PickListGenerationService` groups active task items by warehouse zone, orders by bin+sku, chunks to ≤25 lines, and falls back to an `UNZONED` group for tasks without a zone.
 
 ---
 

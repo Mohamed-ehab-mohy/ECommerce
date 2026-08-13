@@ -297,13 +297,20 @@ Response body shape for lists:
 
 | Method | Path | Perm | Description |
 |--------|------|------|-------------|
-| GET | `/api/v1/fulfillment/queue` | `fulfillment.read` | Queue by warehouse |
-| POST | `/api/v1/fulfillment/tasks/{id}/assign` | `fulfillment.write` | Assign picker |
-| POST | `/api/v1/fulfillment/tasks/{id}/picked` | `fulfillment.write` | Mark picked |
-| POST | `/api/v1/fulfillment/tasks/{id}/packed` | `fulfillment.write` | Mark packed |
-| POST | `/api/v1/fulfillment/tasks/{id}/ship` | `fulfillment.write` | Create shipment |
-| POST | `/api/v1/fulfillment/shipments/{id}/address` | `fulfillment.write` | Correct address |
-| POST | `/api/v1/webhooks/{carrier}` | carrier-signature | Carrier tracking webhook |
+| POST | `/api/v1/fulfillment/tasks` | `fulfillment.write` | Create task for an `AwaitingFulfillment` order (orderId, warehouseId, priority, zone?) |
+| GET | `/api/v1/fulfillment/tasks` | `fulfillment.read` | List/queue tasks (warehouseId, status?, assigneeId?) |
+| GET | `/api/v1/fulfillment/tasks/{taskId}` | `fulfillment.read` | Task detail with items |
+| POST | `/api/v1/fulfillment/tasks/{id}/assign` | `fulfillment.write` | Assign picker (Queued→Assigned) |
+| POST | `/api/v1/fulfillment/tasks/{id}/start-picking` | `fulfillment.write` | Start picking (Assigned→Picking; order→Picking) |
+| POST | `/api/v1/fulfillment/tasks/{id}/pack` | `fulfillment.write` | Mark packed (Picking→Packed; order→Packed) |
+| GET | `/api/v1/fulfillment/pick-lists` | `fulfillment.read` | Pick list per warehouse (grouped by zone, ≤25 lines) |
+| POST | `/api/v1/fulfillment/shipments` | `fulfillment.write` | Create shipment (taskId, carrierKey, destination, weightGrams) — task→Shipped, order→Shipped |
+| GET | `/api/v1/fulfillment/shipping-rates/quote` | `fulfillment.read` | Quote rates across carriers (country, postal, weightGrams, currency) |
+| GET | `/api/v1/shipments/{shipmentId}` | `fulfillment.read` | Shipment detail + tracking updates |
+| POST | `/api/v1/shipments/{shipmentId}/tracking` | `fulfillment.write` | Apply tracking status (InTransit/OutForDelivery/Exception/Delivered) — Delivered sets order Delivered |
+| POST | `/api/v1/webhooks/{carrier}` | carrier-signature | Carrier tracking webhook (future) |
+
+Rate quote (T-DAT-011): returns rates for all registered carriers (Aramex `aramex`, DHL `dhl`) ordered by total; carriers that fail to quote are flagged and the best available rate is returned. Carriers are deterministic stubs for now.
 
 ### 6.9 Finance (Finance/Admin)
 

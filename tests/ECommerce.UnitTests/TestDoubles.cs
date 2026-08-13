@@ -5,6 +5,7 @@ using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Flags;
+using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Notifications;
@@ -19,6 +20,8 @@ using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Flags.Ports;
+using ECommerce.UseCases.Fulfillment.Ports;
+using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Messaging.Ports;
@@ -991,4 +994,121 @@ internal sealed class FakeCouponRepository : ICouponRepository
     }
 
     public void Add(Coupon coupon) => Coupons.Add(coupon);
+}
+
+internal sealed class FakeFulfillmentTaskRepository : IFulfillmentTaskRepository
+{
+    private static readonly FulfillmentTaskStatus[] OpenStatuses =
+    [
+        FulfillmentTaskStatus.Queued,
+        FulfillmentTaskStatus.Assigned,
+        FulfillmentTaskStatus.Picking
+    ];
+
+    public List<FulfillmentTask> Tasks { get; } = [];
+
+    public Task<FulfillmentTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Tasks.FirstOrDefault(task => task.Id == id));
+
+    public Task<FulfillmentTask?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
+        Task.FromResult(Tasks.FirstOrDefault(task => task.OrderId == orderId));
+
+    public Task<bool> ExistsForOrderAsync(Guid orderId, CancellationToken cancellationToken) =>
+        Task.FromResult(Tasks.Any(task => task.OrderId == orderId));
+
+    public Task<IReadOnlyList<FulfillmentTask>> ListAsync(
+        Guid? warehouseId,
+        FulfillmentTaskStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<FulfillmentTask>>(Tasks
+            .Where(task => warehouseId == null || task.WarehouseId == warehouseId)
+            .Where(task => status == null || task.Status == status)
+            .OrderByDescending(task => task.Priority)
+            .ThenBy(task => task.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList());
+
+    public Task<int> CountAsync(
+        Guid? warehouseId,
+        FulfillmentTaskStatus? status,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Tasks.Count(task =>
+            (warehouseId == null || task.WarehouseId == warehouseId) &&
+            (status == null || task.Status == status)));
+
+    public Task<IReadOnlyList<FulfillmentTask>> ListOpenByWarehouseAsync(
+        Guid warehouseId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<FulfillmentTask>>(Tasks
+            .Where(task => task.WarehouseId == warehouseId && OpenStatuses.Contains(task.Status))
+            .OrderBy(task => task.Zone)
+            .ThenBy(task => task.CreatedAt)
+            .ToList());
+
+    public void Add(FulfillmentTask task) => Tasks.Add(task);
+}
+
+internal sealed class FakeShipmentRepository : IShipmentRepository
+{
+    public List<Shipment> Shipments { get; } = [];
+
+    public Task<Shipment?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Shipments.FirstOrDefault(shipment => shipment.Id == id));
+
+    public Task<Shipment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken) =>
+        Task.FromResult(Shipments.FirstOrDefault(shipment => shipment.TrackingNumber == trackingNumber));
+
+    public void Add(Shipment shipment) => Shipments.Add(shipment);
+}
+
+internal sealed class FakeCarrierAdapter(
+    string key,
+    CarrierQuoteResult? quote = null,
+    CarrierShipmentResult? shipment = null) : ICarrierAdapter
+{
+    public string CarrierKey => key;
+
+    public bool ThrowOnQuote { get; set; }
+
+    public bool ThrowOnCreate { get; set; }
+
+    public int QuoteCallCount { get; private set; }
+
+    public int CreateCallCount { get; private set; }
+
+    public Task<CarrierQuoteResult> QuoteAsync(CarrierShipmentRequest request, CancellationToken cancellationToken)
+    {
+        QuoteCallCount++;
+        return ThrowOnQuote
+            ? throw new InvalidOperationException("Carrier unavailable.")
+            : Task.FromResult(quote ?? new CarrierQuoteResult(
+                key,
+                10m,
+                request.Currency,
+                DateTime.UtcNow.AddDays(3)));
+    }
+
+    public Task<CarrierShipmentResult> CreateShipmentAsync(CarrierShipmentRequest request, CancellationToken cancellationToken)
+    {
+        CreateCallCount++;
+        return ThrowOnCreate
+            ? throw new InvalidOperationException("Carrier unavailable.")
+            : Task.FromResult(shipment ?? new CarrierShipmentResult(
+                key,
+                $"TRK-{key}-{CreateCallCount}",
+                $"https://example.com/labels/{key}-{CreateCallCount}.pdf"));
+    }
+}
+
+internal sealed class FakeShippingRateCache : IShippingRateCache
+{
+    public Dictionary<string, CarrierQuoteResult> Quotes { get; } = [];
+
+    public bool TryGet(string key, out CarrierQuoteResult quote) =>
+        Quotes.TryGetValue(key, out quote!);
+
+    public void Set(string key, CarrierQuoteResult quote) => Quotes[key] = quote;
 }

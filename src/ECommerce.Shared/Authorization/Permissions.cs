@@ -22,6 +22,8 @@ public static class Permissions
     public const string OrdersSupportRead = "orders.support.read";
     public const string PromotionsRead = "promotions.read";
     public const string PromotionsWrite = "promotions.write";
+    public const string FulfillmentRead = "fulfillment.read";
+    public const string FulfillmentWrite = "fulfillment.write";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -44,6 +46,8 @@ public static class Permissions
         OrdersRead,
         OrdersSupportRead,
         PromotionsRead,
-        PromotionsWrite
+        PromotionsWrite,
+        FulfillmentRead,
+        FulfillmentWrite
     ];
 }

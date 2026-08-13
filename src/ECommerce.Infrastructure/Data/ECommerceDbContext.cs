@@ -2,6 +2,7 @@ using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Flags;
+using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Notifications;
@@ -82,6 +83,14 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<Wishlist> Wishlists => Set<Wishlist>();
 
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+
+    public DbSet<FulfillmentTask> FulfillmentTasks => Set<FulfillmentTask>();
+
+    public DbSet<FulfillmentTaskItem> FulfillmentTaskItems => Set<FulfillmentTaskItem>();
+
+    public DbSet<Shipment> Shipments => Set<Shipment>();
+
+    public DbSet<TrackingUpdate> TrackingUpdates => Set<TrackingUpdate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
