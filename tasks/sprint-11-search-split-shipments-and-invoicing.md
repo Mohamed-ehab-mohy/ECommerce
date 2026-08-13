@@ -14,7 +14,7 @@
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
 | US-B-005, US-B-006 | Full-text search + filters | 8 | [ ] |
-| US-H-005, US-H-006 | Split shipments + address correction | 4 | [ ] |
+| US-H-005, US-H-006 | Split shipments + address correction | 4 | [x] |
 | US-I-001 | Invoice generation (PDF) | 3 | [ ] |
 | US-I-002 | Credit notes | 2 | [ ] |
 | US-I-003 | Tax calculation | 2 | [ ] |
@@ -56,7 +56,14 @@
 - Split order into multiple shipments (per warehouse/stock), address correction pre-shipment (audited).
 
 ### Acceptance
-- [ ] Split tracked per shipment; address corrected only before ship.
+- [x] Split tracked per shipment; address corrected only before ship.
+
+### Implementation Notes
+- Domain: `FulfillmentTask.Split(warehouseId, itemIds, priority, zone, utcNow)` (Queued only; moves a proper subset of items to a new child task with `ParentTaskId`, event `FulfillmentTaskSplit`, `ERR_FLM_011 InvalidSplit` guard); `Order.UpdateShippingAddress` (rejects once Shipped with `ERR_ORD_006 AddressCorrectionNotAllowed`, no-op on identical address, event `OrderShippingAddressUpdated`).
+- Handlers are split-safe per HS-06: order→Picking only from `AwaitingFulfillment`, order→Packed only from `Picking`; order `Ship` fires only when all tasks are Shipped/Cancelled (`IFulfillmentTaskRepository.HasUnshippedTasksAsync`); order `Deliver` fires only when all shipments are Delivered (`IShipmentRepository.HasUndeliveredShipmentsAsync`).
+- API: `POST /api/v1/fulfillment/tasks/{taskId}/split` (→ 200 child task), `PUT /api/v1/fulfillment/orders/{orderId}/shipping-address` (→ 204).
+- EF: order_id index relaxed to non-unique (`ix_fulfillment_tasks_order_id`); new `parent_task_id` column + self-FK + index; migration `20260813182913_AddFulfillmentSplitAndAddressCorrection`.
+- Tests: split/address domain tests, `SplitFulfillmentTaskCommandHandlerTests`, `CorrectShippingAddressCommandHandlerTests`, split-safe CreateShipment/ApplyTracking/state-handler tests. Unit 594 green, arch 7 green, integration 3 passed/56 skipped (Docker absent locally).
 
 ### Commit
 `feat(fulfillment): split shipments and address correction`

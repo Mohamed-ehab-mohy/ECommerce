@@ -53,3 +53,13 @@ public sealed record FulfillmentTaskCancelled(
 {
     public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
 }
+
+public sealed record FulfillmentTaskSplit(
+    Guid TaskId,
+    Guid NewTaskId,
+    Guid OrderId,
+    Guid WarehouseId,
+    IReadOnlyList<string> Skus) : IDomainEvent
+{
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+}

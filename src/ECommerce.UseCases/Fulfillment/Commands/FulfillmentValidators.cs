@@ -62,3 +62,30 @@ public sealed class ApplyShipmentTrackingCommandValidator : AbstractValidator<Ap
             .WithMessage("The shipment status is not valid.");
     }
 }
+
+public sealed class SplitFulfillmentTaskCommandValidator : AbstractValidator<SplitFulfillmentTaskCommand>
+{
+    public SplitFulfillmentTaskCommandValidator()
+    {
+        RuleFor(x => x.TaskId).NotEmpty();
+        RuleFor(x => x.WarehouseId).NotEmpty();
+        RuleFor(x => x.ItemIds).NotEmpty();
+        RuleFor(x => x.Priority).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.Zone).MaximumLength(64);
+    }
+}
+
+public sealed class CorrectShippingAddressCommandValidator : AbstractValidator<CorrectShippingAddressCommand>
+{
+    public CorrectShippingAddressCommandValidator()
+    {
+        RuleFor(x => x.OrderId).NotEmpty();
+        RuleFor(x => x.FullName).NotEmpty().MaximumLength(160);
+        RuleFor(x => x.Phone).MaximumLength(24);
+        RuleFor(x => x.Street).NotEmpty().MaximumLength(256);
+        RuleFor(x => x.City).NotEmpty().MaximumLength(96);
+        RuleFor(x => x.Region).MaximumLength(96);
+        RuleFor(x => x.Country).NotEmpty().Length(2);
+        RuleFor(x => x.PostalCode).NotEmpty().MaximumLength(16);
+    }
+}

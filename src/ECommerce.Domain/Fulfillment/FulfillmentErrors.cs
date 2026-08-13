@@ -53,4 +53,9 @@ public static class FulfillmentErrors
         "ERR_FLM_010",
         "The carrier is unavailable. Try again later.",
         ErrorType.BadGateway);
+
+    public static readonly Error InvalidSplit = new(
+        "ERR_FLM_011",
+        "The split must move at least one item and leave at least one item on the original task.",
+        ErrorType.Conflict);
 }

@@ -217,4 +217,57 @@ public sealed class OrderTests
         Assert.Equal(OrderStatus.Backordered, order.Status);
         Assert.Empty(order.DomainEvents.OfType<BackorderFilled>());
     }
+
+    [Fact]
+    public void UpdateShippingAddress_Changes_Address_And_Raises_Event()
+    {
+        var order = CreateOrder();
+        var corrected = new AddressSnapshot(
+            "Mona Ali", "0507654321", "2 Marina Walk", "Abu Dhabi", null, "AE", "00001");
+
+        var result = order.UpdateShippingAddress(corrected, "user", null, "trace-1", Now.AddMinutes(1));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(corrected, order.ShippingAddress);
+        Assert.NotEqual(Address, order.ShippingAddress);
+
+        var evt = Assert.Single(order.DomainEvents.OfType<OrderShippingAddressUpdated>());
+        Assert.Equal(order.Id, evt.OrderId);
+        Assert.Equal(Address, evt.PreviousAddress);
+        Assert.Equal(corrected, evt.NewAddress);
+    }
+
+    [Fact]
+    public void UpdateShippingAddress_After_Shipping_Is_Rejected()
+    {
+        var order = CreateOrder();
+        var productId = order.Items.Single().ProductId;
+        order.MarkBackordered([(productId, "SKU-1", 2)], Now.AddMinutes(1));
+        order.FillBackorderItems("SKU-1", 2, Now.AddMinutes(2));
+        order.StartFulfillment("user", null, null, Now.AddMinutes(3));
+        order.MarkPacked("user", null, null, Now.AddMinutes(4));
+        order.Ship("dhl", ["TRK-1"], "user", null, null, Now.AddMinutes(5));
+
+        var result = order.UpdateShippingAddress(
+            new AddressSnapshot("Mona Ali", null, "2 Marina Walk", "Abu Dhabi", null, "AE", "00001"),
+            "user",
+            null,
+            null,
+            Now.AddMinutes(6));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(OrderErrors.AddressCorrectionNotAllowed, result.Error);
+        Assert.Equal(Address, order.ShippingAddress);
+    }
+
+    [Fact]
+    public void UpdateShippingAddress_With_Identical_Address_Is_Noop()
+    {
+        var order = CreateOrder();
+
+        var result = order.UpdateShippingAddress(Address, "user", null, null, Now.AddMinutes(1));
+
+        Assert.True(result.IsSuccess);
+        Assert.Empty(order.DomainEvents.OfType<OrderShippingAddressUpdated>());
+    }
 }

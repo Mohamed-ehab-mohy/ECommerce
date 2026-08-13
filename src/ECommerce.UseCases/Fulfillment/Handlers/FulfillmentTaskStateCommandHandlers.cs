@@ -75,7 +75,7 @@ public sealed class StartPickingFulfillmentTaskCommandHandler(
         }
 
         var order = await orders.GetByIdAsync(task.OrderId, cancellationToken);
-        if (order is not null)
+        if (order is not null && order.Status == OrderStatus.AwaitingFulfillment)
         {
             var start = order.StartFulfillment("user", null, null, utcNow);
             if (start.IsFailure)
@@ -120,7 +120,7 @@ public sealed class MarkFulfillmentTaskPackedCommandHandler(
         }
 
         var order = await orders.GetByIdAsync(task.OrderId, cancellationToken);
-        if (order is not null)
+        if (order is not null && order.Status == OrderStatus.Picking)
         {
             var packed = order.MarkPacked("user", null, null, utcNow);
             if (packed.IsFailure)

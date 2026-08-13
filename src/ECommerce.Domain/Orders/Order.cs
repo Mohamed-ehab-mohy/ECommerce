@@ -293,6 +293,40 @@ public sealed class Order : BaseEntity<Guid>
         return Result.Success();
     }
 
+    public Result UpdateShippingAddress(
+        AddressSnapshot newAddress,
+        string actorType,
+        Guid? actorId,
+        string? traceId,
+        DateTime utcNow)
+    {
+        if (Status is OrderStatus.Shipped
+            or OrderStatus.Delivered
+            or OrderStatus.Completed
+            or OrderStatus.Cancelled)
+        {
+            return OrderErrors.AddressCorrectionNotAllowed;
+        }
+
+        if (ShippingAddress == newAddress)
+        {
+            return Result.Success();
+        }
+
+        var previous = ShippingAddress;
+        ShippingAddress = newAddress;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new OrderShippingAddressUpdated(
+            Id,
+            OrderNumber,
+            CustomerEmail,
+            previous,
+            newAddress));
+
+        return Result.Success();
+    }
+
     public Result Deliver(
         string actorType,
         Guid? actorId,

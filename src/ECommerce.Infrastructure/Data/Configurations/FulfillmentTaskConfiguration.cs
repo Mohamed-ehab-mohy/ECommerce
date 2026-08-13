@@ -22,12 +22,20 @@ public sealed class FulfillmentTaskConfiguration : IEntityTypeConfiguration<Fulf
             .HasForeignKey(task => task.OrderId)
             .HasConstraintName("fk_fulfillment_tasks_orders");
         builder.HasIndex(task => task.OrderId)
-            .IsUnique()
-            .HasDatabaseName("ux_fulfillment_tasks_order_id");
+            .HasDatabaseName("ix_fulfillment_tasks_order_id");
 
         builder.Property(task => task.WarehouseId)
             .IsRequired()
             .HasColumnName("warehouse_id");
+
+        builder.Property(task => task.ParentTaskId)
+            .HasColumnName("parent_task_id");
+        builder.HasOne<FulfillmentTask>()
+            .WithMany()
+            .HasForeignKey(task => task.ParentTaskId)
+            .HasConstraintName("fk_fulfillment_tasks_parent");
+        builder.HasIndex(task => task.ParentTaskId)
+            .HasDatabaseName("ix_fulfillment_tasks_parent_task_id");
 
         builder.Property(task => task.Zone)
             .HasMaxLength(64)

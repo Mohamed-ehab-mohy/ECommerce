@@ -17,5 +17,11 @@ public sealed class ShipmentRepository(ECommerceDbContext dbContext) : IShipment
             .Include(shipment => shipment.Updates)
             .SingleOrDefaultAsync(shipment => shipment.TrackingNumber == trackingNumber, cancellationToken);
 
+    public Task<bool> HasUndeliveredShipmentsAsync(Guid orderId, CancellationToken cancellationToken) =>
+        dbContext.Set<Shipment>()
+            .AnyAsync(
+                shipment => shipment.OrderId == orderId && shipment.Status != ShipmentStatus.Delivered,
+                cancellationToken);
+
     public void Add(Shipment shipment) => dbContext.Set<Shipment>().Add(shipment);
 }

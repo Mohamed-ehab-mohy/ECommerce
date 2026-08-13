@@ -72,6 +72,42 @@ public sealed class FulfillmentController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
+    [HttpPost("tasks/{taskId:guid}/split")]
+    public async Task<IActionResult> Split(Guid taskId, SplitFulfillmentTaskRequest request, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new SplitFulfillmentTaskCommand(
+            taskId,
+            request.WarehouseId,
+            request.ItemIds,
+            request.Priority,
+            request.Zone), cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : Ok(result.Value);
+    }
+
+    [HttpPut("orders/{orderId:guid}/shipping-address")]
+    public async Task<IActionResult> CorrectShippingAddress(
+        Guid orderId,
+        CorrectShippingAddressRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new CorrectShippingAddressCommand(
+            orderId,
+            request.FullName,
+            request.Phone,
+            request.Street,
+            request.City,
+            request.Region,
+            request.Country,
+            request.PostalCode), cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : NoContent();
+    }
+
     [HttpPost("tasks/{taskId:guid}/pack")]
     public async Task<IActionResult> Pack(Guid taskId, CancellationToken cancellationToken)
     {

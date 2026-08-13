@@ -10,6 +10,8 @@ public interface IFulfillmentTaskRepository
 
     Task<bool> ExistsForOrderAsync(Guid orderId, CancellationToken cancellationToken);
 
+    Task<bool> HasUnshippedTasksAsync(Guid orderId, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<FulfillmentTask>> ListAsync(
         Guid? warehouseId,
         FulfillmentTaskStatus? status,

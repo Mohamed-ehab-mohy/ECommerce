@@ -1,7 +1,9 @@
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Orders;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Fulfillment.Commands;
 using ECommerce.UseCases.Fulfillment.Handlers;
+using ECommerce.UseCases.Fulfillment.Responses;
 
 namespace ECommerce.UnitTests;
 
@@ -103,6 +105,54 @@ public sealed class ApplyShipmentTrackingCommandHandlerTests
 
         Assert.True(result.IsFailure);
         Assert.Equal(ShipmentErrors.ShipmentNotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task Apply_Delivered_First_Of_Split_Shipments_Keeps_Order_Shipped()
+    {
+        var order = CreateShippedOrder();
+        _orders.Add(order);
+
+        var first = Shipment.Create(order.Id, Guid.NewGuid(), "dhl", "TRK-1", null, UtcNow);
+        var second = Shipment.Create(order.Id, Guid.NewGuid(), "aramex", "TRK-2", null, UtcNow);
+        _shipments.Add(first);
+        _shipments.Add(second);
+
+        var delivered = await DeliverAsync(first);
+
+        Assert.True(delivered.IsSuccess, delivered.Error.Description);
+        Assert.Equal(ShipmentStatus.Delivered, first.Status);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+    }
+
+    [Fact]
+    public async Task Apply_Delivered_Last_Of_Split_Shipments_Transitions_Order_To_Delivered()
+    {
+        var order = CreateShippedOrder();
+        _orders.Add(order);
+
+        var first = Shipment.Create(order.Id, Guid.NewGuid(), "dhl", "TRK-1", null, UtcNow);
+        var second = Shipment.Create(order.Id, Guid.NewGuid(), "aramex", "TRK-2", null, UtcNow);
+        _shipments.Add(first);
+        _shipments.Add(second);
+
+        await DeliverAsync(first);
+
+        var result = await DeliverAsync(second);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(ShipmentStatus.Delivered, second.Status);
+        Assert.Equal(OrderStatus.Delivered, order.Status);
+    }
+
+    private async Task<Result<ShipmentResponse>> DeliverAsync(Shipment shipment)
+    {
+        shipment.ApplyTrackingUpdate(ShipmentStatus.InTransit, UtcNow);
+        shipment.ApplyTrackingUpdate(ShipmentStatus.OutForDelivery, UtcNow);
+
+        return await Handler.Handle(
+            new ApplyShipmentTrackingCommand(shipment.Id, "Delivered"),
+            CancellationToken.None);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

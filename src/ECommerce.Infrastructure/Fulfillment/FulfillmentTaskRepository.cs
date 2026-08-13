@@ -28,6 +28,14 @@ public sealed class FulfillmentTaskRepository(ECommerceDbContext dbContext) : IF
         dbContext.Set<FulfillmentTask>()
             .AnyAsync(task => task.OrderId == orderId, cancellationToken);
 
+    public Task<bool> HasUnshippedTasksAsync(Guid orderId, CancellationToken cancellationToken) =>
+        dbContext.Set<FulfillmentTask>()
+            .AnyAsync(
+                task => task.OrderId == orderId
+                    && task.Status != FulfillmentTaskStatus.Shipped
+                    && task.Status != FulfillmentTaskStatus.Cancelled,
+                cancellationToken);
+
     public async Task<IReadOnlyList<FulfillmentTask>> ListAsync(
         Guid? warehouseId,
         FulfillmentTaskStatus? status,

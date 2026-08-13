@@ -34,4 +34,9 @@ public static class OrderErrors
         "ERR_IDP_001",
         "The idempotency key was already used for a different checkout.",
         ErrorType.Conflict);
+
+    public static readonly Error AddressCorrectionNotAllowed = new(
+        "ERR_ORD_006",
+        "The shipping address can only be corrected before the order ships.",
+        ErrorType.Conflict);
 }

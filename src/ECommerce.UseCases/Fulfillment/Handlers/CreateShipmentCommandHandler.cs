@@ -91,16 +91,20 @@ public sealed class CreateShipmentCommandHandler(
             return shipped.Error;
         }
 
-        var orderShip = order.Ship(
-            carrier.CarrierKey,
-            [shipment.TrackingNumber],
-            "user",
-            null,
-            null,
-            utcNow);
-        if (orderShip.IsFailure)
+        var allTasksShipped = !await tasks.HasUnshippedTasksAsync(order.Id, cancellationToken);
+        if (allTasksShipped)
         {
-            return orderShip.Error;
+            var orderShip = order.Ship(
+                carrier.CarrierKey,
+                [shipment.TrackingNumber],
+                "user",
+                null,
+                null,
+                utcNow);
+            if (orderShip.IsFailure)
+            {
+                return orderShip.Error;
+            }
         }
 
         shipments.Add(shipment);

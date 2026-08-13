@@ -131,6 +131,50 @@ public sealed class FulfillmentTaskStateCommandHandlerTests
         Assert.Equal(FulfillmentErrors.NotPicking, result.Error);
     }
 
+    [Fact]
+    public async Task StartPicking_Second_Split_Task_When_Order_Already_Picking_Succeeds()
+    {
+        var (firstTask, order) = SeedQueuedTask();
+        firstTask.Assign(PickerId, UtcNow);
+        await StartPickingHandler.Handle(new StartPickingFulfillmentTaskCommand(firstTask.Id), CancellationToken.None);
+
+        var secondTask = FulfillmentTask.Create(order.Id, WarehouseId, 1, UtcNow, "A");
+        secondTask.AddItem(Guid.NewGuid(), "SKU-2", 1, null);
+        secondTask.Assign(PickerId, UtcNow);
+        _tasks.Add(secondTask);
+
+        var result = await StartPickingHandler.Handle(
+            new StartPickingFulfillmentTaskCommand(secondTask.Id),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(FulfillmentTaskStatus.Picking, secondTask.Status);
+        Assert.Equal(OrderStatus.Picking, order.Status);
+    }
+
+    [Fact]
+    public async Task Pack_Second_Split_Task_When_Order_Already_Packed_Succeeds()
+    {
+        var (firstTask, order) = SeedQueuedTask();
+        firstTask.Assign(PickerId, UtcNow);
+        await StartPickingHandler.Handle(new StartPickingFulfillmentTaskCommand(firstTask.Id), CancellationToken.None);
+        await PackHandler.Handle(new MarkFulfillmentTaskPackedCommand(firstTask.Id), CancellationToken.None);
+
+        var secondTask = FulfillmentTask.Create(order.Id, WarehouseId, 1, UtcNow, "A");
+        secondTask.AddItem(Guid.NewGuid(), "SKU-2", 1, null);
+        secondTask.Assign(PickerId, UtcNow);
+        _tasks.Add(secondTask);
+        await StartPickingHandler.Handle(new StartPickingFulfillmentTaskCommand(secondTask.Id), CancellationToken.None);
+
+        var result = await PackHandler.Handle(
+            new MarkFulfillmentTaskPackedCommand(secondTask.Id),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(FulfillmentTaskStatus.Packed, secondTask.Status);
+        Assert.Equal(OrderStatus.Packed, order.Status);
+    }
+
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;

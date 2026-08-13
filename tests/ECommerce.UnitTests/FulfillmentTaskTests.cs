@@ -178,4 +178,75 @@ public sealed class FulfillmentTaskTests
         Assert.True(result.IsFailure);
         Assert.Equal(FulfillmentErrors.InvalidState, result.Error);
     }
+
+    [Fact]
+    public void Split_Moves_Items_To_New_Task_With_Parent_Link()
+    {
+        var task = CreateTask();
+        var firstProduct = Guid.NewGuid();
+        var secondProduct = Guid.NewGuid();
+        task.AddItem(firstProduct, "SKU-1", 2, "A-01");
+        task.AddItem(secondProduct, "SKU-2", 1, "A-02");
+        var movingId = task.Items.First(item => item.Sku == "SKU-2").Id;
+        var newWarehouse = Guid.NewGuid();
+
+        var result = task.Split(newWarehouse, [movingId], 3, "B", UtcNow);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        var part = result.Value;
+        Assert.Equal(task.OrderId, part.OrderId);
+        Assert.Equal(newWarehouse, part.WarehouseId);
+        Assert.Equal(task.Id, part.ParentTaskId);
+        Assert.Equal("B", part.Zone);
+        Assert.Equal(3, part.Priority);
+        Assert.Equal(FulfillmentTaskStatus.Queued, part.Status);
+
+        Assert.Equal(firstProduct, Assert.Single(task.Items).ProductId);
+        var moved = Assert.Single(part.Items);
+        Assert.Equal(secondProduct, moved.ProductId);
+        Assert.Equal(part.Id, moved.TaskId);
+
+        Assert.Contains(task.DomainEvents, domainEvent =>
+            domainEvent is FulfillmentTaskSplit split && split.NewTaskId == part.Id);
+    }
+
+    [Fact]
+    public void Split_With_Unknown_Item_Ids_Returns_InvalidSplit()
+    {
+        var task = CreateTask();
+        task.AddItem(Guid.NewGuid(), "SKU-1", 2, "A-01");
+
+        var result = task.Split(Guid.NewGuid(), [Guid.NewGuid()], 1, null, UtcNow);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(FulfillmentErrors.InvalidSplit, result.Error);
+    }
+
+    [Fact]
+    public void Split_All_Items_Returns_InvalidSplit()
+    {
+        var task = CreateTask();
+        task.AddItem(Guid.NewGuid(), "SKU-1", 2, "A-01");
+        var itemId = task.Items.Single().Id;
+
+        var result = task.Split(Guid.NewGuid(), [itemId], 1, null, UtcNow);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(FulfillmentErrors.InvalidSplit, result.Error);
+        Assert.Single(task.Items);
+    }
+
+    [Fact]
+    public void Split_NonQueued_Task_Returns_NotQueued()
+    {
+        var task = CreateTask();
+        task.AddItem(Guid.NewGuid(), "SKU-1", 2, "A-01");
+        var itemId = task.Items.Single().Id;
+        task.Assign(Guid.NewGuid(), UtcNow);
+
+        var result = task.Split(Guid.NewGuid(), [itemId], 1, null, UtcNow);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(FulfillmentErrors.NotQueued, result.Error);
+    }
 }

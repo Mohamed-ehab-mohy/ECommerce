@@ -46,4 +46,9 @@ public sealed class FulfillmentTaskItem
 
         return new FulfillmentTaskItem(taskId, productId, sku, quantity, string.IsNullOrWhiteSpace(binLocation) ? null : binLocation.Trim());
     }
+
+    public void MoveTo(Guid taskId)
+    {
+        TaskId = taskId;
+    }
 }

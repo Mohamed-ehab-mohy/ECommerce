@@ -157,6 +157,60 @@ public sealed class CreateShipmentCommandHandlerTests
         Assert.Equal(1, _aramex.CreateCallCount);
     }
 
+    [Fact]
+    public async Task Ship_First_Of_Split_Tasks_Keeps_Order_Packed()
+    {
+        var (task, order) = SeedPackedTask();
+        var secondTask = FulfillmentTask.Create(order.Id, WarehouseId, 1, UtcNow, "A");
+        secondTask.AddItem(Guid.NewGuid(), "SKU-2", 1, null);
+        secondTask.Assign(Guid.NewGuid(), UtcNow);
+        secondTask.StartPicking(UtcNow);
+        secondTask.MarkPacked(UtcNow);
+        _tasks.Add(secondTask);
+
+        var result = await Handler.Handle(CreateCommand(task.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(FulfillmentTaskStatus.Shipped, task.Status);
+        Assert.Equal(OrderStatus.Packed, order.Status);
+    }
+
+    [Fact]
+    public async Task Ship_Last_Of_Split_Tasks_Transitions_Order_To_Shipped()
+    {
+        var (task, order) = SeedPackedTask();
+        var secondTask = FulfillmentTask.Create(order.Id, WarehouseId, 1, UtcNow, "A");
+        secondTask.AddItem(Guid.NewGuid(), "SKU-2", 1, null);
+        secondTask.Assign(Guid.NewGuid(), UtcNow);
+        secondTask.StartPicking(UtcNow);
+        secondTask.MarkPacked(UtcNow);
+        _tasks.Add(secondTask);
+
+        await Handler.Handle(CreateCommand(task.Id), CancellationToken.None);
+
+        var result = await Handler.Handle(CreateCommand(secondTask.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(FulfillmentTaskStatus.Shipped, secondTask.Status);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+        Assert.Equal(2, _shipments.Shipments.Count);
+    }
+
+    [Fact]
+    public async Task Ship_Cancelled_Sibling_Task_Does_Not_Block_Order_Ship()
+    {
+        var (task, order) = SeedPackedTask();
+        var cancelledTask = FulfillmentTask.Create(order.Id, WarehouseId, 1, UtcNow, "A");
+        cancelledTask.AddItem(Guid.NewGuid(), "SKU-2", 1, null);
+        cancelledTask.Cancel("no stock", UtcNow);
+        _tasks.Add(cancelledTask);
+
+        var result = await Handler.Handle(CreateCommand(task.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+    }
+
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;

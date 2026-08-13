@@ -300,14 +300,16 @@ Response body shape for lists:
 | POST | `/api/v1/fulfillment/tasks` | `fulfillment.write` | Create task for an `AwaitingFulfillment` order (orderId, warehouseId, priority, zone?) |
 | GET | `/api/v1/fulfillment/tasks` | `fulfillment.read` | List/queue tasks (warehouseId, status?, assigneeId?) |
 | GET | `/api/v1/fulfillment/tasks/{taskId}` | `fulfillment.read` | Task detail with items |
+| POST | `/api/v1/fulfillment/tasks/{taskId}/split` | `fulfillment.write` | Split task (warehouseId, itemIds, priority, zone?) — moves items to a new child task; parent stays Queued |
 | POST | `/api/v1/fulfillment/tasks/{id}/assign` | `fulfillment.write` | Assign picker (Queued→Assigned) |
-| POST | `/api/v1/fulfillment/tasks/{id}/start-picking` | `fulfillment.write` | Start picking (Assigned→Picking; order→Picking) |
-| POST | `/api/v1/fulfillment/tasks/{id}/pack` | `fulfillment.write` | Mark packed (Picking→Packed; order→Packed) |
+| POST | `/api/v1/fulfillment/tasks/{id}/start-picking` | `fulfillment.write` | Start picking (Assigned→Picking; order→Picking on first task) |
+| POST | `/api/v1/fulfillment/tasks/{id}/pack` | `fulfillment.write` | Mark packed (Picking→Packed; order→Packed on first packed task) |
 | GET | `/api/v1/fulfillment/pick-lists` | `fulfillment.read` | Pick list per warehouse (grouped by zone, ≤25 lines) |
-| POST | `/api/v1/fulfillment/shipments` | `fulfillment.write` | Create shipment (taskId, carrierKey, destination, weightGrams) — task→Shipped, order→Shipped |
+| POST | `/api/v1/fulfillment/shipments` | `fulfillment.write` | Create shipment (taskId, carrierKey, destination, weightGrams) — task→Shipped, order→Shipped only when **all** tasks Shipped/Cancelled |
 | GET | `/api/v1/fulfillment/shipping-rates/quote` | `fulfillment.read` | Quote rates across carriers (country, postal, weightGrams, currency) |
+| PUT | `/api/v1/fulfillment/orders/{orderId}/shipping-address` | `fulfillment.write` | Correct shipping address pre-shipment (BR-1507) — rejected with `ERR_ORD_006` once Shipped |
 | GET | `/api/v1/shipments/{shipmentId}` | `fulfillment.read` | Shipment detail + tracking updates |
-| POST | `/api/v1/shipments/{shipmentId}/tracking` | `fulfillment.write` | Apply tracking status (InTransit/OutForDelivery/Exception/Delivered) — Delivered sets order Delivered |
+| POST | `/api/v1/shipments/{shipmentId}/tracking` | `fulfillment.write` | Apply tracking status (InTransit/OutForDelivery/Exception/Delivered) — Delivered sets order Delivered only when **all** shipments Delivered |
 | POST | `/api/v1/webhooks/{carrier}` | carrier-signature | Carrier tracking webhook (future) |
 
 Rate quote (T-DAT-011): returns rates for all registered carriers (Aramex `aramex`, DHL `dhl`) ordered by total; carriers that fail to quote are flagged and the best available rate is returned. Carriers are deterministic stubs for now.

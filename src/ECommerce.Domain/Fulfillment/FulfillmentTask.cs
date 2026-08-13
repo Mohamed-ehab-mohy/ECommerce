@@ -16,6 +16,8 @@ public sealed class FulfillmentTask : BaseEntity<Guid>
 
     public Guid WarehouseId { get; private set; }
 
+    public Guid? ParentTaskId { get; private set; }
+
     public string? Zone { get; private set; }
 
     public int Priority { get; private set; }
@@ -83,6 +85,63 @@ public sealed class FulfillmentTask : BaseEntity<Guid>
         AddDomainEvent(new FulfillmentTaskAssigned(Id, OrderId, WarehouseId, pickerId));
 
         return Result.Success();
+    }
+
+    public Result<FulfillmentTask> Split(
+        Guid warehouseId,
+        IReadOnlyCollection<Guid> itemIds,
+        int priority,
+        string? zone,
+        DateTime utcNow)
+    {
+        if (Status != FulfillmentTaskStatus.Queued)
+        {
+            return FulfillmentErrors.NotQueued;
+        }
+
+        var moving = _items.Where(item => itemIds.Contains(item.Id)).ToList();
+        if (moving.Count == 0)
+        {
+            return FulfillmentErrors.InvalidSplit;
+        }
+
+        if (moving.Count == _items.Count)
+        {
+            return FulfillmentErrors.InvalidSplit;
+        }
+
+        var part = new FulfillmentTask
+        {
+            Id = Guid.NewGuid(),
+            OrderId = OrderId,
+            WarehouseId = warehouseId,
+            ParentTaskId = Id,
+            Zone = string.IsNullOrWhiteSpace(zone) ? null : zone.Trim(),
+            Priority = priority,
+            Status = FulfillmentTaskStatus.Queued,
+            Version = 1,
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
+        };
+
+        foreach (var item in moving)
+        {
+            _items.Remove(item);
+            item.MoveTo(part.Id);
+            part._items.Add(item);
+        }
+
+        Version++;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new FulfillmentTaskSplit(
+            Id,
+            part.Id,
+            OrderId,
+            WarehouseId,
+            moving.Select(item => item.Sku).ToList()));
+
+        return Result<FulfillmentTask>.Success(part);
     }
 
     public Result StartPicking(DateTime utcNow)
