@@ -503,6 +503,122 @@ Response body shape for lists:
 
 **Errors:** 409 `ERR_PAY_003` (exceeds refundable); 422; replay returns stored response.
 
+### 7.7 POST `/api/v1/promotions` (Admin)
+
+**Request** (requires `promotions.write`)
+
+```json
+{
+  "name": "Summer Sale 2026",
+  "conditions": [
+    { "type": "min_amount", "minAmount": 300.00 }
+  ],
+  "actions": [
+    { "type": "Order", "basis": "Percent", "value": 15.00, "cap": 100.00 }
+  ],
+  "allowStack": false,
+  "allowStackWith": [],
+  "eligibleCountries": ["AE", "EG"],
+  "eligibleCurrencies": ["AED", "EGP"],
+  "startsAt": "2026-08-01T00:00:00Z",
+  "endsAt": "2026-08-31T23:59:59Z"
+}
+```
+
+`conditions[].type` selects the condition: `product` (`productIds`), `category` (`categoryIds`), `brand` (`brandIds`), `min_qty` (`minQuantity`), `min_amount` (`minAmount`), `segment` (`segment`). `actions[].type` is `Product`/`Order`/`Shipping`; `basis` is `Amount`/`Percent`. Percent values are capped at 100 and caps cannot be negative.
+
+**201 Response** (promotion starts in `Draft`)
+
+```json
+{
+  "id": "3f2a1b...",
+  "name": "Summer Sale 2026",
+  "state": "Draft",
+  "startsAt": "2026-08-01T00:00:00Z",
+  "endsAt": "2026-08-31T23:59:59Z",
+  "allowStack": false,
+  "allowStackWith": [],
+  "conditions": [ { "minAmount": 300.00 } ],
+  "actions": [ { "type": "Order", "basis": "Percent", "value": 15.00, "cap": 100.00 } ],
+  "eligibleCountries": ["AE", "EG"],
+  "eligibleCurrencies": ["AED", "EGP"],
+  "createdAt": "2026-08-13T09:00:00Z",
+  "updatedAt": "2026-08-13T09:00:00Z"
+}
+```
+
+> Enum fields (`type`, `basis`, `state`) serialize as strings in this spec; the default wire format is integer unless a string-enum converter is registered. Enum inputs accept either form.
+
+**Errors:** 422 validation (name required, ≥1 action, value/cap rules, invalid schedule); 400 unknown condition type.
+
+### 7.8 POST `/api/v1/promotions/{id}/activate | pause | schedule`
+
+- `activate` (no body): `Draft`/`Paused` → `Active`. **Errors:** 409 `ERR_PROMO_006` when `Ended`.
+- `pause` (no body): `Active` → `Paused`. **Errors:** 409 `ERR_PROMO_006` unless `Active`.
+- `schedule` body: `{ "startsAt": "2026-09-01T00:00:00Z", "endsAt": "2026-09-30T23:59:59Z" }` → updates dates. **Errors:** 422 `ERR_PROMO_005` on inverted range.
+- All return 200 with the updated `PromotionResponse`; 404 `ERR_RES_001` when unknown.
+
+### 7.9 POST `/api/v1/coupons` (Admin)
+
+**Request** (requires `promotions.write`)
+
+```json
+{
+  "code": "SAVE20",
+  "promotionId": "3f2a1b...",
+  "totalUses": 1000,
+  "perCustomerLimit": 1,
+  "startsAt": "2026-08-01T00:00:00Z",
+  "endsAt": "2026-12-31T23:59:59Z"
+}
+```
+
+**201 Response**
+
+```json
+{
+  "id": "7c0e...",
+  "code": "SAVE20",
+  "promotionId": "3f2a1b...",
+  "totalUses": 1000,
+  "usedCount": 0,
+  "perCustomerLimit": 1,
+  "startsAt": "2026-08-01T00:00:00Z",
+  "endsAt": "2026-12-31T23:59:59Z",
+  "createdAt": "2026-08-13T09:05:00Z",
+  "updatedAt": "2026-08-13T09:05:00Z"
+}
+```
+
+Codes are trimmed and normalized to uppercase. **Errors:** 404 `ERR_RES_001` (promotion not found); 422 (code, `totalUses > 0`, `perCustomerLimit ≥ 1`, schedule).
+
+### 7.10 POST `/api/v1/carts/me/coupons` (auth)
+
+**Request**
+
+```json
+{ "code": "SAVE20" }
+```
+
+**200 Response** (cart with coupon attached; header `X-Cart-Key` re-issued for anonymous carts)
+
+```json
+{
+  "id": "cart-1",
+  "currency": "USD",
+  "version": 4,
+  "expiresAt": "2026-08-23T09:00:00Z",
+  "updatedAt": "2026-08-13T09:10:00Z",
+  "appliedCouponCode": "SAVE20",
+  "items": [ ],
+  "totals": { "subtotal": "0.00", "itemDiscount": "0.00", "shipping": "9.90", "tax": "0.00", "total": "9.90" }
+}
+```
+
+**Errors:** 403 `COUPON_CUSTOMER_REQUIRED` (anonymous cart); 404 `ERR_RES_001` (unknown code); 409 `COUPON_INACTIVE` (out of schedule); 409 `COUPON_EXHAUSTED` (usage limit reached); 409 concurrency conflict on concurrent cart mutation.
+
+`DELETE /api/v1/carts/me/coupons` detaches the coupon and returns the same `CartResponse`; 409 `COUPON_NOT_APPLIED` when none is applied. The coupon is consumed **atomically at order placement** (`POST /api/v1/checkouts/{id}/place`) — the limit is never exceeded under concurrent redemptions (QAS-02).
+
 ---
 
 ## 8. Webhooks (Outbound — Partner Contract)

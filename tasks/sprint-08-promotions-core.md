@@ -13,11 +13,11 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-E-001, US-E-005 | Discount types + caps + non-negative invariant | 4 | [ ] |
-| US-E-002 | Promotion campaigns with conditions | 4 | [ ] |
-| US-E-003 | Coupon lifecycle + atomic redemption | 3 | [ ] |
-| US-E-004 | Stacking matrix + priority | 3 | [ ] |
-| T-DAT-009 | Pricing pipeline refactor (snapshot-aware) | 5 | [ ] |
+| US-E-001, US-E-005 | Discount types + caps + non-negative invariant | 4 | [x] |
+| US-E-002 | Promotion campaigns with conditions | 4 | [x] |
+| US-E-003 | Coupon lifecycle + atomic redemption | 3 | [x] |
+| US-E-004 | Stacking matrix + priority | 3 | [x] |
+| T-DAT-009 | Pricing pipeline refactor (snapshot-aware) | 5 | [x] |
 
 ---
 
@@ -28,7 +28,7 @@
 - Caps (max discount amount), non-negative totals invariant (total ≥ 0).
 
 ### Acceptance
-- [ ] Discount never yields negative total; caps enforced.
+- [x] Discount never yields negative total; caps enforced.
 
 ### Commit
 `feat(promotions): discount types, caps and non-negative invariant`
@@ -42,7 +42,7 @@
 - CRUD + activation state machine (draft/active/paused/ended).
 
 ### Acceptance
-- [ ] Eligibility evaluated; inactive campaign never applies.
+- [x] Eligibility evaluated; inactive campaign never applies.
 
 ### Commit
 `feat(promotions): campaign engine with conditions`
@@ -56,7 +56,7 @@
 - Atomic claim (`UPDATE ... WHERE usage_left > 0` or row lock) to prevent overuse; dedupe per order.
 
 ### Acceptance
-- [ ] QAS-02 race test: N concurrent redemptions never exceed limit.
+- [x] QAS-02 race test: N concurrent redemptions never exceed limit.
 
 ### Commit
 `feat(promotions): atomic coupon lifecycle`
@@ -69,7 +69,7 @@
 - Stacking rules per promotion type + priority ordering; document matrix in code.
 
 ### Acceptance
-- [ ] Stacking order deterministic; conflicts resolved by priority.
+- [x] Stacking order deterministic; conflicts resolved by priority.
 
 ### Commit
 `feat(promotions): stacking matrix and priority`
@@ -83,7 +83,7 @@
 - Order pricing snapshot immutability after placement.
 
 ### Acceptance
-- [ ] Order holds snapshot; later promotion changes don't affect placed order.
+- [x] Order holds snapshot; later promotion changes don't affect placed order.
 
 ### Commit
 `refactor(pricing): snapshot-aware pricing pipeline`
@@ -91,6 +91,16 @@
 ---
 
 ## Sprint Exit
-- [ ] Coupon redemption race test passes; pricing snapshot holds order immutability.
-- [ ] US-E-001..005 green.
-- [ ] CI green.
+- [x] Coupon redemption race test passes; pricing snapshot holds order immutability.
+- [x] US-E-001..005 green.
+- [x] CI green.
+
+## Close-out (2026-08-13)
+
+- **Implementation:** `832529f feat(promotions): sprint 8 promotions core with atomic coupon redemption` (81 files).
+- **Docs:** `docs/08-api-design.md` §6.5/§7.7–7.10 (promotions/coupons/cart-coupon contracts).
+- **Verification:**
+  - Unit suite: 462/462 passing (incl. pricing engine, stacking, coupon lifecycle, handlers).
+  - Integration (real Postgres): QAS-02 `CouponRedemptionIntegrationTests` 2/2 — 20 concurrent redemptions against a 10-use coupon yield exactly 10 successes + 10 `COUPON_EXHAUSTED`; per-customer limit (1) enforced atomically.
+  - `dotnet build` 0 warnings/errors; `dotnet format --verify-no-changes` clean.
+- **Deviations:** promotion conditions/actions/eligibility persisted as JSONB on `promotions` (not child tables); FRS-E-004 "priority" implemented as evaluation order item → cart → shipping with deterministic best-of/additive stacking (ties by `CreatedAt`, then `Id`).
