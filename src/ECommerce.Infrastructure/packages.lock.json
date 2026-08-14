@@ -20,11 +20,11 @@
       },
       "Hangfire.AspNetCore": {
         "type": "Direct",
-        "requested": "[1.8.18, )",
-        "resolved": "1.8.18",
-        "contentHash": "5D6Do0qgoAnakvh4KnKwhIoUzFU84Z0sCYMB+Sit+ygkpL1P6JGYDcd/9vDBcfr5K3JqBxD4Zh2IK2LOXuuiaw==",
+        "requested": "[1.8.24, )",
+        "resolved": "1.8.24",
+        "contentHash": "K7eugZIFcBgGI+lI6Z3H9a7Ax6ZkauWjOUJxE5xawu5UQmH+WS7gXBlar1zGUqLTWqWxNAMj+K95OE0zvAtHNg==",
         "dependencies": {
-          "Hangfire.NetCore": "[1.8.18]"
+          "Hangfire.NetCore": "[1.8.24]"
         }
       },
       "Hangfire.PostgreSql": {
@@ -199,18 +199,18 @@
       },
       "Hangfire.Core": {
         "type": "Transitive",
-        "resolved": "1.8.18",
-        "contentHash": "oNAkV8QQoYg5+vM2M024NBk49EhTO2BmKDLuQaKNew23RpH9OUGtKDl1KldBdDJrD8TMFzjhWCArol3igd2i2w==",
+        "resolved": "1.8.24",
+        "contentHash": "XhiE55abcXXw4jEe0EClnU1fainkfi7ZVINbcCB+Se6ZatfVAglLsvNc6wtTMq5aZz0tv2DuW+U5lx1R0DcWOg==",
         "dependencies": {
           "Newtonsoft.Json": "11.0.1"
         }
       },
       "Hangfire.NetCore": {
         "type": "Transitive",
-        "resolved": "1.8.18",
-        "contentHash": "3KAV9AZ1nqQHC54qR4buNEEKRmQJfq+lODtZxUk5cdi68lV8+9K2f4H1/mIfDlPpgjPFjEfCobNoi2+TIpKySw==",
+        "resolved": "1.8.24",
+        "contentHash": "iKRSO7gzMq4KhI+px98OtRubI5FaDHJgHvhLqlILvsuCPVFraTdVWdRgwjIS4bIyahl/3RaiGhFOqlpwgU724Q==",
         "dependencies": {
-          "Hangfire.Core": "[1.8.18]",
+          "Hangfire.Core": "[1.8.24]",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "3.0.0",
           "Microsoft.Extensions.Hosting.Abstractions": "3.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "3.0.0"
