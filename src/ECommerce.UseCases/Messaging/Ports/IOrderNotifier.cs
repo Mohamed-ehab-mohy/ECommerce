@@ -7,4 +7,6 @@ public interface IOrderNotifier
     Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken);
 
     Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken);
+
+    Task NotifyShippedAsync(OrderShipped orderShipped, CancellationToken cancellationToken);
 }

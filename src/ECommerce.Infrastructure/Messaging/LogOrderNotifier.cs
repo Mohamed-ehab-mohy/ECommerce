@@ -30,4 +30,17 @@ public sealed class LogOrderNotifier(ILogger<LogOrderNotifier> logger) : IOrderN
 
         return Task.CompletedTask;
     }
+
+    public Task NotifyShippedAsync(OrderShipped orderShipped, CancellationToken cancellationToken)
+    {
+        logger.LogInformation(
+            "Order {OrderId} ({OrderNumber}) shipped for customer {CustomerEmail} via {Carrier}: tracking {TrackingNumbers}.",
+            orderShipped.OrderId,
+            orderShipped.OrderNumber,
+            orderShipped.CustomerEmail,
+            orderShipped.CarrierKey,
+            string.Join(", ", orderShipped.TrackingNumbers));
+
+        return Task.CompletedTask;
+    }
 }

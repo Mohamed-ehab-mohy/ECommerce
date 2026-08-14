@@ -174,6 +174,11 @@ public sealed class MessagingIntegrationTests :
             Cancelled.Add(orderCancelled);
             return Task.CompletedTask;
         }
+
+        public Task NotifyShippedAsync(OrderShipped orderShipped, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class NoopEventDispatcher : IEventDispatcher

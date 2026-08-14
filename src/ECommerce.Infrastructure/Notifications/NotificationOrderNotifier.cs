@@ -19,6 +19,8 @@ public sealed class NotificationOrderNotifier(
 
     public const string OrderCancellationFlag = "notifications.order-cancelled.enabled";
 
+    public const string OrderShippedFlag = "notifications.order-shipped.enabled";
+
     public async Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
     {
         if (!await flags.IsEnabledAsync(OrderConfirmationFlag, cancellationToken))
@@ -70,6 +72,37 @@ public sealed class NotificationOrderNotifier(
                 ["Total"] = orderCancelled.Total.ToString("0.00", CultureInfo.InvariantCulture),
                 ["Currency"] = orderCancelled.Currency,
                 ["Reason"] = orderCancelled.Reason
+            },
+            Transactional: true), cancellationToken);
+    }
+
+    public async Task NotifyShippedAsync(OrderShipped orderShipped, CancellationToken cancellationToken)
+    {
+        if (!await flags.IsEnabledAsync(OrderShippedFlag, cancellationToken))
+        {
+            logger.LogInformation(
+                "Order shipped notifications disabled by flag for order {OrderId}.",
+                orderShipped.OrderId);
+            return;
+        }
+
+        var tracking = orderShipped.TrackingNumbers.Count > 0
+            ? string.Join(", ", orderShipped.TrackingNumbers)
+            : "—";
+
+        await dispatcher.DispatchAsync(new NotificationRequest(
+            CustomerId: null,
+            Channel: NotificationChannel.Email,
+            Kind: NotificationKind.OrderStatusUpdate,
+            TemplateKey: "order.shipped",
+            Locale: "en",
+            Recipient: orderShipped.CustomerEmail,
+            ReferenceId: orderShipped.OrderId.ToString("N"),
+            Placeholders: new Dictionary<string, string>
+            {
+                ["OrderNumber"] = orderShipped.OrderNumber,
+                ["Carrier"] = orderShipped.CarrierKey,
+                ["TrackingNumbers"] = tracking
             },
             Transactional: true), cancellationToken);
     }

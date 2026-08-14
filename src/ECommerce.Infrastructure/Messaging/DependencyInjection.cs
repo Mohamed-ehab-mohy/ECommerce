@@ -23,6 +23,7 @@ public static class DependencyInjection
         {
             bus.AddConsumer<OrderPlacedConsumer>();
             bus.AddConsumer<OrderCancelledConsumer>();
+            bus.AddConsumer<OrderShippedConsumer>();
 
             bus.UsingRabbitMq((context, cfg) =>
             {
@@ -33,6 +34,7 @@ public static class DependencyInjection
                     endpoint.SetQuorumQueue();
                     endpoint.ConfigureConsumer<OrderPlacedConsumer>(context);
                     endpoint.ConfigureConsumer<OrderCancelledConsumer>(context);
+                    endpoint.ConfigureConsumer<OrderShippedConsumer>(context);
                 });
             });
         });

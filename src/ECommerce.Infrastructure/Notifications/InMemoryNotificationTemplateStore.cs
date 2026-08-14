@@ -46,7 +46,7 @@ public sealed class InMemoryNotificationTemplateStore : INotificationTemplateSto
 
         foreach (var (key, value) in placeholders)
         {
-            result = result.Replace("{{" + key + "}}", value, StringComparison.Ordinal);
+            result = result.Replace("{" + key + "}", value, StringComparison.Ordinal);
         }
 
         return result;
@@ -64,7 +64,16 @@ public sealed class InMemoryNotificationTemplateStore : INotificationTemplateSto
                 "<p>شكراً لطلبك <strong>{OrderNumber}</strong>.</p><p>الإجمالي: {Total} {Currency}</p>"),
             ["order.shipped.en"] = new(
                 "Order {OrderNumber} shipped",
-                "<p>Your order <strong>{OrderNumber}</strong> is on its way.</p>"),
+                "<p>Your order <strong>{OrderNumber}</strong> is on its way.</p><p>Carrier: {Carrier}</p><p>Tracking: {TrackingNumbers}</p>"),
+            ["order.shipped.ar"] = new(
+                "تم شحن الطلب {OrderNumber}",
+                "<p>طلبك <strong>{OrderNumber}</strong> في الطريق إليك.</p><p>شركة الشحن: {Carrier}</p><p>رقم التتبع: {TrackingNumbers}</p>"),
+            ["order.cancelled.en"] = new(
+                "Order {OrderNumber} cancelled",
+                "<p>Your order <strong>{OrderNumber}</strong> has been cancelled.</p><p>Reason: {Reason}</p>"),
+            ["order.cancelled.ar"] = new(
+                "تم إلغاء الطلب {OrderNumber}",
+                "<p>تم إلغاء طلبك <strong>{OrderNumber}</strong>.</p><p>السبب: {Reason}</p>"),
             ["low.stock.alert.en"] = new(
                 "Low stock alert: {Sku}",
                 "<p>Stock item <strong>{Sku}</strong> (warehouse {WarehouseId}) has {Available} units available, below the threshold of {Threshold}.</p>")

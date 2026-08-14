@@ -889,6 +889,8 @@ internal sealed class CapturingOrderNotifier : IOrderNotifier
 
     public List<OrderCancelled> Cancelled { get; } = [];
 
+    public List<OrderShipped> Shipped { get; } = [];
+
     public Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
     {
         Notified.Add(orderPlaced);
@@ -898,6 +900,12 @@ internal sealed class CapturingOrderNotifier : IOrderNotifier
     public Task NotifyCancelledAsync(OrderCancelled orderCancelled, CancellationToken cancellationToken)
     {
         Cancelled.Add(orderCancelled);
+        return Task.CompletedTask;
+    }
+
+    public Task NotifyShippedAsync(OrderShipped orderShipped, CancellationToken cancellationToken)
+    {
+        Shipped.Add(orderShipped);
         return Task.CompletedTask;
     }
 }
