@@ -177,24 +177,24 @@
       },
       "MassTransit": {
         "type": "Transitive",
-        "resolved": "8.3.0",
-        "contentHash": "LZbHqGeP+enkeidjyLeAFQjOFyc5eCJmc5Wru/9Xv1dtcfI2wT+Ga5OQqUCJsqIQzcV1yfumRtbMnAVxwxB/4g==",
+        "resolved": "9.2.0",
+        "contentHash": "jPzXSKh1h+zSLHNoI2EadZuqml+pSk2B7pB4S7ylaCdLRqYlImBgZNyzkTNK1PGeP4/w0LGTjNY6q0r4rd+bzA==",
         "dependencies": {
-          "MassTransit.Abstractions": "8.3.0"
+          "MassTransit.Abstractions": "9.2.0"
         }
       },
       "MassTransit.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.3.0",
-        "contentHash": "smYAGbCnHXl927Xvr2nzxtQAhfJfRSnVZAcIHGMI3QQq/aK3KvsCqgail1bw7acw0NkEhw8yv7cnKBGYKKFXPQ=="
+        "resolved": "9.2.0",
+        "contentHash": "9nMSgeU4sH/1P1MZFQiZ78K/DNk9l1iSCMJi+iH1JNFMuNkvr1xpSc5HkmbARK+dyFe6yUJkD8o16T+UoM+VyA=="
       },
       "MassTransit.RabbitMQ": {
         "type": "Transitive",
-        "resolved": "8.3.0",
-        "contentHash": "P8bUlGKWFS+7VNPGlanVK44/I8sDVARvpyfk3lDOI9vAIDytLNIgi8evMT2YmXxeyjFDIzLEM/VSJO4L+jIddw==",
+        "resolved": "9.2.0",
+        "contentHash": "cMrX2qKKhOGy0KclDoHOofvr/Mr0x0Rp1tA0NovexUzMRysCSaE5+OVXBxx57K0Xb4zX782X72l34lDTPul4tw==",
         "dependencies": {
-          "MassTransit": "8.3.0",
-          "RabbitMQ.Client": "6.8.1"
+          "MassTransit": "9.2.0",
+          "RabbitMQ.Client": "7.2.1"
         }
       },
       "MediatR": {
@@ -344,8 +344,8 @@
       },
       "RabbitMQ.Client": {
         "type": "Transitive",
-        "resolved": "6.8.1",
-        "contentHash": "jNsmGgmCNw2S/NzskeN2ijtGywtH4Sk/G6jWUTD5sY9SrC27Xz6BsLIiB8hdsfjeyWCa4j4GvCIGkpE8wrjU1Q=="
+        "resolved": "7.2.1",
+        "contentHash": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg=="
       },
       "RESPite": {
         "type": "Transitive",
@@ -481,7 +481,7 @@
           "Hangfire.AspNetCore": "[1.8.24, )",
           "Hangfire.PostgreSql": "[1.21.1, )",
           "MailKit": "[4.17.0, )",
-          "MassTransit.RabbitMQ": "[8.3.0, )",
+          "MassTransit.RabbitMQ": "[9.2.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.11, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "QuestPDF": "[2026.7.3, )",
@@ -500,7 +500,7 @@
           "ECommerce.Shared": "[1.0.0, )",
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
-          "MassTransit.Abstractions": "[8.3.0, )",
+          "MassTransit.Abstractions": "[9.2.0, )",
           "MediatR": "[14.2.0, )"
         }
       }

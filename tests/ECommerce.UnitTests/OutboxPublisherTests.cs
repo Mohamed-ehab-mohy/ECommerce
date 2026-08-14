@@ -57,7 +57,7 @@ public sealed class OutboxPublisherTests
 
             Assert.True(await harness.Consumed.Any<OrderPlaced>());
             var consumed = await harness.Consumed.SelectAsync<OrderPlaced>().First();
-            Assert.Equal(messageId, consumed.Context.MessageId);
+            Assert.Equal(messageId, consumed.Context!.MessageId);
             Assert.Single(dispatcher.Dispatched);
             Assert.Single(notifier.Notified);
         }
