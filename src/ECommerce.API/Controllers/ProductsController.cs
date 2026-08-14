@@ -16,15 +16,40 @@ public sealed class ProductsController(ISender sender) : ControllerBase
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] string? q = null,
+        [FromQuery] Guid? categoryId = null,
+        [FromQuery] Guid? brandId = null,
+        [FromQuery(Name = "price.gte")] decimal? priceGte = null,
+        [FromQuery(Name = "price.lte")] decimal? priceLte = null,
+        [FromQuery(Name = "rating.gte")] decimal? ratingGte = null,
         [FromQuery] string? locale = null,
         [FromQuery] string? currency = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(new ListProductsQuery(page, pageSize, locale, currency), cancellationToken);
+        var hasSearch = !string.IsNullOrWhiteSpace(q)
+            || categoryId is not null
+            || brandId is not null
+            || priceGte is not null
+            || priceLte is not null
+            || ratingGte is not null;
 
-        return result.IsFailure
-            ? ToProblem(result.ToOperationError())
-            : Ok(result.Value);
+        if (hasSearch)
+        {
+            var result = await sender.Send(
+                new SearchProductsQuery(
+                    q, categoryId, brandId, priceGte, priceLte, ratingGte, page, pageSize, locale, currency),
+                cancellationToken);
+
+            return result.IsFailure
+                ? ToProblem(result.ToOperationError())
+                : Ok(result.Value);
+        }
+
+        var listResult = await sender.Send(new ListProductsQuery(page, pageSize, locale, currency), cancellationToken);
+
+        return listResult.IsFailure
+            ? ToProblem(listResult.ToOperationError())
+            : Ok(listResult.Value);
     }
 
     [HttpGet("{productId:guid}")]

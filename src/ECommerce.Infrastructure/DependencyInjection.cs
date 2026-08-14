@@ -16,6 +16,7 @@ using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
+using ECommerce.Infrastructure.Search;
 using ECommerce.Infrastructure.Shipping;
 using ECommerce.Infrastructure.Wishlists;
 using ECommerce.UseCases.Audit.Ports;
@@ -70,6 +71,10 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IBrandRepository, BrandRepository>();
+        services.AddScoped<IProductSearchRepository, ProductSearchRepository>();
+        services.AddScoped<IEventHandler<ProductCreated>, ProductSearchIndexSynchronizer>();
+        services.AddScoped<IEventHandler<ProductUpdated>, ProductSearchIndexSynchronizer>();
+        services.AddScoped<IEventHandler<ProductDeactivated>, ProductSearchIndexSynchronizer>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IStockRepository, StockRepository>();
         services.AddScoped<IStockAllocator, StockAllocator>();

@@ -391,6 +391,16 @@ Carrier integration (T-DAT-011): `CarrierRateSelector` quotes all registered `IC
 
 ---
 
+### 5.13 ProductSearchDocument (Catalog — Search Read Model, T-DAT-013)
+
+| Read Model | Detail |
+|-----------|--------|
+| **ProductSearchDocument** | Read model (not an aggregate). Keyed by `(ProductId, Locale)` in table `product_search_documents`. Denormalized fields: Name, Description, Sku, Brand (name+id), Category (name+id), default-currency ListAmount, RatingAverage, RatingCount, and a **generated stored** `search_vector` (`tsvector`): `setweight(to_tsvector('simple', name), 'A') || … 'B' (description) … 'C' (brand) … 'D' (sku)`, indexed with GIN. A GIN `gin_trgm_ops` index on `name` powers typo tolerance. |
+| Synchronization | `ProductSearchIndexSynchronizer` consumes `ProductCreated`/`ProductUpdated`/`ProductDeactivated` via the outbox: upserts all locale rows per product (delete + reinsert), removes rows on deactivation. Initial backfill runs in the `AddProductSearchDocuments` migration. |
+| Querying | `ProductSearchRepository.SearchAsync` joins active products, filters by locale/category/brand/price/rating, ranks by `0.7 × ts_rank_cd + 0.3 × trigram similarity`, and derives facets (category/brand buckets, 5 price ranges, rating stars 1–5) from the filtered set. |
+
+---
+
 ## 6. Value Objects
 
 | Value Object | Context | Fields | Rules |
@@ -432,7 +442,8 @@ Carrier integration (T-DAT-011): `CarrierRateSelector` quotes all registered `IC
 | `PaymentAuthorized/Captured/Failed/Refunded` | Payment | Payment | Ordering, Finance, Notification, Audit |
 | `RefundRequested/Completed/Failed` | Payment/Finance | Refund | Finance (credit note), Notification |
 | `StockReserved/Released/Adjusted/Low/Transferred` | Inventory | StockItem | Ordering, Notification, Reporting |
-| `ProductUpdated` / `PriceChanged` | Catalog | Product | Search index, Cart (price-change warnings), Reporting |
+| `ProductCreated` / `ProductUpdated` / `ProductDeactivated` | Catalog | Product | Search index (`product_search_documents`), Cart (price-change warnings), Reporting |
+| `PriceChanged` | Catalog | Product | Cart (price-change warnings), Reporting |
 | `CartMerged` | Cart | Cart | (internal) |
 | `ReviewPublished/Removed` | Review | Review | Catalog read model (rating recompute) |
 | `InvoiceIssued` / `CreditNoteIssued` | Finance | Invoice/CreditNote | Notification, Reporting |

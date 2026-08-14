@@ -1122,3 +1122,30 @@ internal sealed class FakeShippingRateCache : IShippingRateCache
 
     public void Set(string key, CarrierQuoteResult quote) => Quotes[key] = quote;
 }
+
+internal sealed class FakeProductSearchRepository : IProductSearchRepository
+{
+    public List<Product> Products { get; } = [];
+
+    public int TotalCount { get; set; } = 0;
+
+    public ProductSearchFacets Facets { get; set; } = new([], [], [], []);
+
+    public List<ProductSearchCriteria> ReceivedCriteria { get; } = [];
+
+    public Task<ProductSearchPage> SearchAsync(ProductSearchCriteria criteria, CancellationToken cancellationToken)
+    {
+        ReceivedCriteria.Add(criteria);
+
+        var items = Products
+            .OrderBy(product => product.Slug)
+            .Skip((criteria.Page - 1) * criteria.PageSize)
+            .Take(criteria.PageSize)
+            .ToList();
+
+        return Task.FromResult(new ProductSearchPage(
+            items,
+            TotalCount == 0 ? items.Count : TotalCount,
+            Facets));
+    }
+}

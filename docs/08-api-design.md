@@ -488,25 +488,50 @@ A shortfall SKU that is **not** backorderable keeps the existing `409 ERR_STK_00
 
 ### 7.5 GET `/api/v1/products?q=&categoryId=&brandId=&price.gte=&price.lte=&rating.gte=&page=1&pageSize=20&locale=en&currency=AED`
 
+Full-text search with faceting (US-B-005,006 / T-DAT-013). When no search/filter parameter is present (`q`, `categoryId`, `brandId`, `price.gte`, `price.lte`, `rating.gte`) the endpoint falls back to the plain active-product listing. Query parameters:
+
+- `q` — free-text query (≤200 chars). Ranked by `0.7 × ts_rank_cd(search_vector) + 0.3 × trigram similarity(name)`, typo-tolerant via `pg_trgm`; empty/blank `q` acts as no filter.
+- `categoryId` / `brandId` — exact facet filters.
+- `price.gte` / `price.lte` — inclusive price range on the default-currency list price.
+- `rating.gte` — minimum average rating (0–5).
+- `page` (≥1), `pageSize` (1–100); `locale` (falls back to `en`, then source translation), `currency` (price conversion).
+
 **200 Response**
 ```json
 {
   "items": [
     {
-      "id": "prd_...",
+      "id": "3f2a1b...",
       "sku": "SKU-001",
-      "name": "Wireless Headphones",
       "slug": "wireless-headphones",
-      "price": { "list": "349.0000", "offer": "299.0000", "currency": "AED" },
-      "rating": { "average": 4.6, "count": 218 },
-      "available": true,
-      "isFeatured": false
+      "name": "Wireless Headphones",
+      "description": "...",
+      "currency": "AED",
+      "listAmount": 349.0000,
+      "offerAmount": 299.0000,
+      "status": 1,
+      "isFeatured": false,
+      "categoryId": "...",
+      "brandId": "..."
     }
   ],
-  "facets": { "categories": [...], "brands": [...], "priceRanges": [...], "ratings": [...] },
+  "facets": {
+    "categories": [ { "id": "...", "name": "Audio", "count": 12 } ],
+    "brands": [ { "id": "...", "name": "Sony", "count": 8 } ],
+    "priceRanges": [
+      { "key": "under-50", "label": "Under 50", "min": null, "max": 50.0000, "count": 0 },
+      { "key": "50-100", "label": "50 - 100", "min": 50.0000, "max": 100.0000, "count": 2 },
+      { "key": "100-250", "label": "100 - 250", "min": 100.0000, "max": 250.0000, "count": 6 },
+      { "key": "250-500", "label": "250 - 500", "min": 250.0000, "max": 500.0000, "count": 3 },
+      { "key": "over-500", "label": "Over 500", "min": 500.0000, "max": null, "count": 1 }
+    ],
+    "ratings": [ { "stars": 4, "count": 5 } ]
+  },
   "page": 1, "pageSize": 20, "totalCount": 12, "hasNext": false
 }
 ```
+
+Facet counts are computed over the filtered result set; ranking is deterministic (rank tiebreak by product id). `rating.average`/`rating.count` are populated on the search document as ratings become available.
 
 ### 7.6 POST `/api/v1/orders/{orderNumber}/refunds`
 
