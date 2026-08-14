@@ -124,7 +124,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
 
             var snapshot = new PriceSnapshot(
                 [new PriceSnapshotItem(product.Id, Sku, "Fulfillment Widget", 20.00m, 15.00m, 1, null)],
-                new TotalsSnapshot(15.00m, 0m, 0m, 9.90m, 0m, 24.90m));
+                new TotalsSnapshot(15.00m, 0m, 0m, 9.90m, 0m, 24.90m, 0m));
             var address = new AddressSnapshot(
                 "Mona Ali", "0501234567", "1 Marina Walk", "Dubai", "Dubai", "AE", "00000");
             var order = Order.Create(

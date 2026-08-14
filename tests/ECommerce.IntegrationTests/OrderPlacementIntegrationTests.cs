@@ -60,7 +60,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
 
             var payment = await verify.Payments.SingleAsync();
             Assert.Equal(order.Id, payment.OrderId);
-            Assert.Equal(PaymentStatus.Authorized, payment.Status);
+            Assert.Equal(PaymentStatus.Captured, payment.Status);
 
             var stockItem = await verify.StockItems.SingleAsync(candidate => candidate.Sku == Sku);
             Assert.Equal(1, stockItem.Allocated);
@@ -154,7 +154,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
 
             var snapshot = new PriceSnapshot(
                 [new PriceSnapshotItem(Guid.NewGuid(), Sku, "Widget", 20.00m, 15.00m, 1, null)],
-                new TotalsSnapshot(15.00m, 0m, 0m, 9.90m, 0m, 24.90m));
+                new TotalsSnapshot(15.00m, 0m, 0m, 9.90m, 0m, 24.90m, 0m));
             var address = new AddressSnapshot(
                 "Ahmed Hassan", "0501234567", "1 Sheikh Zayed Rd", "Dubai", "Dubai", "AE", "00000");
             var checkout = CheckoutAggregate.Create(

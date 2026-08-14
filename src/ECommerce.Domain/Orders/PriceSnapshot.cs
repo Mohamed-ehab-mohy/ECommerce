@@ -15,13 +15,14 @@ public sealed record TotalsSnapshot(
     decimal CartDiscount,
     decimal ShippingTotal,
     decimal TaxTotal,
-    decimal GrandTotal);
+    decimal GrandTotal,
+    decimal TaxRate);
 
 public sealed record PriceSnapshot(
     IReadOnlyList<PriceSnapshotItem> Lines,
     TotalsSnapshot Totals)
 {
-    public static readonly PriceSnapshot Empty = new([], new TotalsSnapshot(0m, 0m, 0m, 0m, 0m, 0m));
+    public static readonly PriceSnapshot Empty = new([], new TotalsSnapshot(0m, 0m, 0m, 0m, 0m, 0m, 0m));
 
     public bool IsEmpty => Lines.Count == 0;
 }

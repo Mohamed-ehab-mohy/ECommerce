@@ -40,6 +40,9 @@ public sealed class Order : BaseEntity<Guid>
 
     public decimal TaxTotal { get; private set; }
 
+    /// <summary>Effective tax rate (0..1) applied to the taxable base, snapshot at order time (FR-09-003).</summary>
+    public decimal TaxRate { get; private set; }
+
     public decimal GrandTotal { get; private set; }
 
     public Guid? CouponId { get; private set; }
@@ -98,6 +101,7 @@ public sealed class Order : BaseEntity<Guid>
             CartDiscount = priceSnapshot.Totals.CartDiscount,
             ShippingTotal = priceSnapshot.Totals.ShippingTotal,
             TaxTotal = priceSnapshot.Totals.TaxTotal,
+            TaxRate = priceSnapshot.Totals.TaxRate,
             GrandTotal = priceSnapshot.Totals.GrandTotal,
             CouponId = couponId,
             AppliedPromotionIds = appliedPromotionIds ?? [],

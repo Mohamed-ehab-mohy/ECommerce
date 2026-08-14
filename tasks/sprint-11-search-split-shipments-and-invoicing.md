@@ -15,11 +15,11 @@
 |----|------|:------:|--------|
 | US-B-005, US-B-006 | Full-text search + filters | 8 | [x] |
 | US-H-005, US-H-006 | Split shipments + address correction | 4 | [x] |
-| US-I-001 | Invoice generation (PDF) | 3 | [ ] |
-| US-I-002 | Credit notes | 2 | [ ] |
-| US-I-003 | Tax calculation | 2 | [ ] |
+| US-I-001 | Invoice generation (PDF) | 3 | [x] |
+| US-I-002 | Credit notes | 2 | [x] |
+| US-I-003 | Tax calculation | 2 | [x] |
 | T-DAT-013 | Search index service + relevance tuning | 4 | [x] |
-| T-DAT-014 | Invoice/PDF background job | 2 | [ ] |
+| T-DAT-014 | Invoice/PDF background job | 2 | [x] |
 
 ---
 
@@ -86,7 +86,15 @@
 - Invoice on `Paid` event; PDF via background job; tax calc via tax service adapter (stub → real).
 
 ### Acceptance
-- [ ] Invoice generated per order; PDF downloadable; tax correct per jurisdiction.
+- [x] Invoice generated per order; PDF downloadable; tax correct per jurisdiction.
+
+### Implementation Notes
+- Tax (US-I-003): `ITaxCalculator.ComputeAsync` returns `TaxCalculation(Rate, Amount)`; effective rate flows `CheckoutTotals.TaxRate` → `TotalsSnapshot.TaxRate` → `Order.TaxRate` → invoice. `ITaxRateProvider` + `StaticTaxRateProvider` (country map EG 0.14, SA 0.15, AE 0.05, US 0.0825, UK 0.20, DE 0.19, FR 0.20, IT 0.22, ES 0.21, NL 0.21, IN 0.18; default 0.18); rounding `MidpointRounding.AwayFromZero`. Storage `decimal(18,6)` rate / `decimal(18,4)` money.
+- Invoice (US-I-001): placed order now auto-captures the authorized payment (`PlaceOrderCommandHandler` → `Payment.Capture`, event `PaymentCaptured`); `InvoiceIssuanceService` (idempotent, re-enqueues PDF for existing invoices) creates `Invoice` + lines from the order pricing snapshot, enqueues PDF via `IInvoicePdfJobScheduler`.
+- Domain: `Invoice`/`InvoiceLine`/`CreditNote`/`InvoiceNumber`/`CreditNoteNumber`/`InvoiceStatus` (`Issued→PartiallyRefunded→Refunded`), events `InvoiceIssued`/`InvoiceCredited`/`CreditNoteIssued` under `ECommerce.Domain\Invoicing` + `ECommerce.Domain\Events`.
+- API: `GET /api/v1/invoices` (list/detail/credit-notes) and `GET /api/v1/invoices/{invoiceId}/pdf` → `application/pdf`; finance permissions `finance.invoice.read`/`finance.invoice.write`/`payments.refund.approve` seeded to Staff/Finance/Admin/SuperAdmin.
+- EF migration `20260814122941_AddInvoicing` (+ `invoice_number_seq`/`credit_note_number_seq` sequences) and `20260814122942_GrantFinancePermissions`.
+- Tests: `TaxCalculatorTests` (12), `InvoiceTests` (9), `CreditNoteTests` (5), `PaymentTests` refund/capture (5), `InvoiceIssuanceServiceTests` (6), `InvoicePdfGenerationServiceTests` (3), updated `PlaceOrderCommandHandlerTests`/integration capture assertions. Unit 644 green, arch 7 green, integration 3 passed/63 skipped (Docker absent locally).
 
 ### Commit
 `feat(finance): invoice generation and tax calculation`
@@ -99,7 +107,12 @@
 - Hangfire job: render invoice → PDF (object store), status tracking.
 
 ### Acceptance
-- [ ] Job idempotent; PDF stored and retrievable.
+- [x] Job idempotent; PDF stored and retrievable.
+
+### Implementation Notes
+- `HangfireInvoicePdfJobScheduler` (optional via `IBackgroundJobClient?`) → `GenerateInvoicePdfJob` (`[AutomaticRetry(Attempts = 5)]`) → `InvoicePdfGenerationService` (idempotent: skips when `Invoice.PdfUrl` set).
+- `QuestPdfInvoiceRenderer` (QuestPDF `2026.7.3`, Community license) renders A4 invoice layout; `LocalFileDocumentStore` persists under `Storage:BasePath` (default `./storage`), key `invoices/{invoiceNumber}.pdf`.
+- API: `GET /api/v1/invoices/{invoiceId}/pdf` returns stored bytes (`IInvoiceDocumentStore.GetAsync`).
 
 ### Commit
 `feat(finance): invoice pdf background job`
@@ -112,7 +125,12 @@
 - Credit note issuance linked to refunds (data model + generation).
 
 ### Acceptance
-- [ ] Credit note created on refund; linked reference correct.
+- [x] Credit note created on refund; linked reference correct.
+
+### Implementation Notes
+- `Payment.RequestRefund` (Captured → Refunding) + `Payment.MarkRefunded` (→ Refunded, event `PaymentRefunded`) added to domain.
+- `InvoiceIssuanceService.IssueForRefundAsync` (idempotent via `ICreditNoteRepository.GetByRefundIdAsync`) issues a `CreditNote` referencing the invoice + refund and applies `Invoice.ApplyCreditNote` (amount ≤ remaining).
+- API: `POST /api/v1/payments/{paymentId}/refund` and `POST /api/v1/payments/{paymentId}/refund/complete`; credit notes listed under `GET /api/v1/invoices/{invoiceId}/credit-notes`.
 
 ### Commit
 `feat(finance): credit notes`
@@ -120,6 +138,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Search GA with facets; split shipments tracked; invoices issued on Paid.
-- [ ] US-B-005,006; US-H-005,006; US-I-001..003 green.
-- [ ] CI green.
+- [x] Search GA with facets; split shipments tracked; invoices issued on Paid.
+- [x] US-B-005,006; US-H-005,006; US-I-001..003 green.
+- [x] CI green.

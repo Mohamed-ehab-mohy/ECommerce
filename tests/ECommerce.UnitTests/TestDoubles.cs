@@ -8,6 +8,7 @@ using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
@@ -24,6 +25,7 @@ using ECommerce.UseCases.Fulfillment.Ports;
 using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Invoicing.Ports;
 using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
@@ -476,10 +478,10 @@ internal sealed class FakeShippingRateProvider(IReadOnlyList<ShippingMethod>? me
         Task.FromResult(Methods.FirstOrDefault(method => method.Id == methodId));
 }
 
-internal sealed class FakeTaxCalculator(decimal tax = 0m) : ITaxCalculator
+internal sealed class FakeTaxCalculator(decimal tax = 0m, decimal rate = 0m) : ITaxCalculator
 {
-    public Task<decimal> ComputeAsync(decimal taxableSubtotal, string country, string currency, CancellationToken cancellationToken) =>
-        Task.FromResult(tax);
+    public Task<TaxCalculation> ComputeAsync(decimal taxableSubtotal, string country, string currency, CancellationToken cancellationToken) =>
+        Task.FromResult(new TaxCalculation(rate, tax));
 }
 
 internal sealed class FakeUnitOfWork : IUnitOfWork
@@ -1147,5 +1149,118 @@ internal sealed class FakeProductSearchRepository : IProductSearchRepository
             items,
             TotalCount == 0 ? items.Count : TotalCount,
             Facets));
+    }
+}
+
+internal sealed class FakeInvoiceRepository : IInvoiceRepository
+{
+    public List<Invoice> Invoices { get; } = [];
+
+    public Task<Invoice?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Invoices.FirstOrDefault(invoice => invoice.Id == id));
+
+    public Task<Invoice?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
+        Task.FromResult(Invoices.FirstOrDefault(invoice => invoice.OrderId == orderId));
+
+    public Task<InvoiceListPage> ListAsync(
+        InvoiceStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = Invoices
+            .Where(invoice => status == null || invoice.Status == status)
+            .OrderByDescending(invoice => invoice.IssuedAt)
+            .ToList();
+
+        return Task.FromResult(new InvoiceListPage(
+            query.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
+            query.Count,
+            page,
+            pageSize));
+    }
+
+    public void Add(Invoice invoice) => Invoices.Add(invoice);
+}
+
+internal sealed class FakeCreditNoteRepository : ICreditNoteRepository
+{
+    public List<CreditNote> CreditNotes { get; } = [];
+
+    public Task<CreditNote?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(CreditNotes.FirstOrDefault(creditNote => creditNote.Id == id));
+
+    public Task<CreditNote?> GetByRefundIdAsync(Guid refundId, CancellationToken cancellationToken) =>
+        Task.FromResult(CreditNotes.FirstOrDefault(creditNote => creditNote.RefundId == refundId));
+
+    public Task<CreditNoteListPage> ListByInvoiceAsync(
+        Guid invoiceId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = CreditNotes
+            .Where(creditNote => creditNote.InvoiceId == invoiceId)
+            .OrderByDescending(creditNote => creditNote.IssuedAt)
+            .ToList();
+
+        return Task.FromResult(new CreditNoteListPage(
+            query.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
+            query.Count,
+            page,
+            pageSize));
+    }
+
+    public void Add(CreditNote creditNote) => CreditNotes.Add(creditNote);
+}
+
+internal sealed class FakeInvoiceNumberGenerator : IInvoiceNumberGenerator
+{
+    private int _sequence;
+
+    public Task<InvoiceNumber> GenerateAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult(InvoiceNumber.Create(utcNow, Interlocked.Increment(ref _sequence)));
+}
+
+internal sealed class FakeCreditNoteNumberGenerator : ICreditNoteNumberGenerator
+{
+    private int _sequence;
+
+    public Task<CreditNoteNumber> GenerateAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+        Task.FromResult(CreditNoteNumber.Create(utcNow, Interlocked.Increment(ref _sequence)));
+}
+
+internal sealed class FakeInvoicePdfJobScheduler : IInvoicePdfJobScheduler
+{
+    public List<Guid> Enqueued { get; } = [];
+
+    public void Enqueue(Guid invoiceId) => Enqueued.Add(invoiceId);
+}
+
+internal sealed class FakeInvoiceDocumentStore : IInvoiceDocumentStore
+{
+    public Dictionary<string, byte[]> Documents { get; } = [];
+
+    public Task<string> PutAsync(string key, byte[] content, CancellationToken cancellationToken)
+    {
+        Documents[key] = content;
+        return Task.FromResult($"https://cdn.example.test/{key}");
+    }
+
+    public Task<byte[]?> GetAsync(string key, CancellationToken cancellationToken) =>
+        Task.FromResult(Documents.TryGetValue(key, out var content) ? content : null);
+}
+
+internal sealed class FakeInvoicePdfRenderer : IInvoicePdfRenderer
+{
+    public int RenderCount { get; private set; }
+
+    public InvoiceDocument? LastDocument { get; private set; }
+
+    public byte[] Render(InvoiceDocument document)
+    {
+        RenderCount++;
+        LastDocument = document;
+        return [0x25, 0x50, 0x44, 0x46];
     }
 }

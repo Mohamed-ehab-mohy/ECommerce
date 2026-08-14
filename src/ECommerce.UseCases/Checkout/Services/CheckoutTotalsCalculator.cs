@@ -11,7 +11,8 @@ public sealed record CheckoutTotals(
     decimal CartDiscount,
     decimal ShippingTotal,
     decimal TaxTotal,
-    decimal GrandTotal);
+    decimal GrandTotal,
+    decimal TaxRate);
 
 /// <summary>Promotion-aware totals with the applied rule ids snapshot (T-DAT-009).</summary>
 public sealed record PromotionAwareTotals(
@@ -45,9 +46,9 @@ public sealed class CheckoutTotalsCalculator(IShippingRateProvider shippingRates
 
         var taxable = subtotal - itemDiscount - cartDiscount;
         var tax = await taxCalculator.ComputeAsync(taxable, country, currency, cancellationToken);
-        var grandTotal = taxable + shipping.Rate + tax;
+        var grandTotal = taxable + shipping.Rate + tax.Amount;
 
-        return new CheckoutTotals(subtotal, itemDiscount, cartDiscount, shipping.Rate, tax, grandTotal);
+        return new CheckoutTotals(subtotal, itemDiscount, cartDiscount, shipping.Rate, tax.Amount, grandTotal, tax.Rate);
     }
 
     /// <summary>
@@ -105,12 +106,12 @@ public sealed class CheckoutTotalsCalculator(IShippingRateProvider shippingRates
 
         var taxable = Math.Max(subtotal - itemDiscount - cartDiscount, 0m);
         var tax = await taxCalculator.ComputeAsync(taxable, country, currency, cancellationToken);
-        var grandTotal = taxable + shippingTotal + tax;
+        var grandTotal = taxable + shippingTotal + tax.Amount;
 
         var appliedCouponId = coupon is null ? null : result.AppliedRuleIds.Contains(coupon.PromotionId) ? coupon.Id : (Guid?)null;
 
         return new PromotionAwareTotals(
-            new CheckoutTotals(subtotal, itemDiscount, cartDiscount, shippingTotal, tax, grandTotal),
+            new CheckoutTotals(subtotal, itemDiscount, cartDiscount, shippingTotal, tax.Amount, grandTotal, tax.Rate),
             result.AppliedRuleIds,
             appliedCouponId);
     }

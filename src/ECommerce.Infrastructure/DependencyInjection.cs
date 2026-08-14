@@ -9,6 +9,8 @@ using ECommerce.Infrastructure.Flags;
 using ECommerce.Infrastructure.Fulfillment;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Inventory;
+using ECommerce.Infrastructure.Invoicing;
+using ECommerce.Infrastructure.Jobs;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Orders;
@@ -18,6 +20,7 @@ using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
 using ECommerce.Infrastructure.Search;
 using ECommerce.Infrastructure.Shipping;
+using ECommerce.Infrastructure.Storage;
 using ECommerce.Infrastructure.Wishlists;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -31,6 +34,7 @@ using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
+using ECommerce.UseCases.Invoicing.Ports;
 using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
@@ -42,6 +46,7 @@ using ECommerce.UseCases.Wishlist.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using StackExchange.Redis;
 
@@ -84,7 +89,8 @@ public static class DependencyInjection
         services.AddScoped<IOrderNumberGenerator, OrderNumberGenerator>();
         services.AddScoped<IIdempotencyKeyRepository, IdempotencyKeyRepository>();
         services.AddScoped<IShippingRateProvider, ShippingRateStubProvider>();
-        services.AddScoped<ITaxCalculator, FlatTaxCalculator>();
+        services.AddScoped<ITaxRateProvider, StaticTaxRateProvider>();
+        services.AddScoped<ITaxCalculator, TaxCalculator>();
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<IEmailSender, LogEmailSender>();
         services.AddScoped<IAccessTokenIssuer, JwtAccessTokenIssuer>();
@@ -117,6 +123,19 @@ public static class DependencyInjection
         services.AddScoped<PickListGenerationService>();
         services.AddSingleton<OutboxMetrics>();
         services.AddScoped<OutboxPublisher>();
+
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<ICreditNoteRepository, CreditNoteRepository>();
+        services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
+        services.AddScoped<ICreditNoteNumberGenerator, CreditNoteNumberGenerator>();
+        services.AddScoped<IInvoiceDocumentStore>(sp =>
+            new LocalFileDocumentStore(
+                sp.GetRequiredService<ILogger<LocalFileDocumentStore>>(),
+                sp.GetRequiredService<IConfiguration>().GetValue("Storage:BasePath", "./storage")));
+        services.AddSingleton<IInvoicePdfRenderer, QuestPdfInvoiceRenderer>();
+        services.AddScoped<IInvoicePdfJobScheduler, HangfireInvoicePdfJobScheduler>();
+        services.AddScoped<IEventHandler<PaymentCaptured>, InvoiceOnPaymentCapturedHandler>();
+        services.AddScoped<IEventHandler<PaymentRefunded>, CreditNoteOnPaymentRefundedHandler>();
 
         services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis");

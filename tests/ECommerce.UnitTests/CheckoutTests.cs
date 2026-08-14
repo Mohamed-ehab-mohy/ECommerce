@@ -9,7 +9,7 @@ public sealed class CheckoutTests
 
     private static readonly PriceSnapshot Snapshot = new(
         [new PriceSnapshotItem(Guid.NewGuid(), "SKU-1", "Widget", 20.00m, 15.00m, 2, null)],
-        new TotalsSnapshot(30.00m, 10.00m, 0m, 9.90m, 0m, 39.90m));
+        new TotalsSnapshot(30.00m, 10.00m, 0m, 9.90m, 0m, 39.90m, 0m));
 
     private static readonly AddressSnapshot Address = new(
         "Ahmed Hassan", "0501234567", "1 Sheikh Zayed Rd", "Dubai", "Dubai", "AE", "00000");

@@ -1,3 +1,4 @@
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Payments;
 
 namespace ECommerce.UnitTests;
@@ -126,5 +127,81 @@ public sealed class PaymentTests
         Assert.True(payment.AttachOrder(orderId, Now).IsSuccess);
         Assert.True(payment.AttachOrder(orderId, Now).IsSuccess);
         Assert.Equal(orderId, payment.OrderId);
+    }
+
+    [Fact]
+    public void Capture_Emits_PaymentCaptured_Event()
+    {
+        var payment = CreatePayment();
+        payment.MarkAuthorized("mock_auth_1", Now);
+
+        var result = payment.Capture(100m, Now.AddMinutes(1));
+
+        Assert.True(result.IsSuccess);
+        var evt = Assert.Single(payment.DomainEvents.OfType<PaymentCaptured>());
+        Assert.Equal(payment.Id, evt.PaymentId);
+        Assert.Equal(payment.OrderId, evt.OrderId);
+        Assert.Equal(100m, evt.Amount);
+        Assert.Equal("USD", evt.Currency);
+    }
+
+    [Fact]
+    public void RequestRefund_On_Captured_Payment_Succeeds()
+    {
+        var payment = CreatePayment();
+        payment.MarkAuthorized("mock_auth_1", Now);
+        payment.Capture(100m, Now.AddMinutes(1));
+
+        var result = payment.RequestRefund("Customer changed mind", Now.AddMinutes(2));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(PaymentStatus.Refunding, payment.Status);
+        Assert.Single(payment.Attempts);
+    }
+
+    [Fact]
+    public void RequestRefund_Without_Capture_Is_Rejected()
+    {
+        var payment = CreatePayment();
+        payment.MarkAuthorized("mock_auth_1", Now);
+
+        var result = payment.RequestRefund("Too early", Now.AddMinutes(1));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(PaymentErrors.RefundNotAllowed, result.Error);
+    }
+
+    [Fact]
+    public void MarkRefunded_Completes_Refund_And_Emits_Event()
+    {
+        var payment = CreatePayment();
+        var orderId = Guid.NewGuid();
+        payment.AttachOrder(orderId, Now);
+        payment.MarkAuthorized("mock_auth_1", Now);
+        payment.Capture(100m, Now.AddMinutes(1));
+        payment.RequestRefund("Customer changed mind", Now.AddMinutes(2));
+
+        var result = payment.MarkRefunded(Now.AddMinutes(3), "ref_mock_1");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(PaymentStatus.Refunded, payment.Status);
+        Assert.Equal("ref_mock_1", payment.ProviderReference);
+        var evt = Assert.Single(payment.DomainEvents.OfType<PaymentRefunded>());
+        Assert.Equal(orderId, evt.OrderId);
+        Assert.Equal(100m, evt.Amount);
+        Assert.Equal("ref_mock_1", evt.ProviderReference);
+    }
+
+    [Fact]
+    public void MarkRefunded_Without_Request_Is_Rejected()
+    {
+        var payment = CreatePayment();
+        payment.MarkAuthorized("mock_auth_1", Now);
+        payment.Capture(100m, Now.AddMinutes(1));
+
+        var result = payment.MarkRefunded(Now.AddMinutes(2));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(PaymentErrors.CaptureConflict, result.Error);
     }
 }

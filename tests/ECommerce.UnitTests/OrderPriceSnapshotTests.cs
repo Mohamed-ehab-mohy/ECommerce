@@ -47,7 +47,7 @@ public sealed class OrderPriceSnapshotTests
             Now).Value;
         promotion.Activate(Now);
 
-        var order = PlaceOrder(new TotalsSnapshot(100.00m, 0m, 10.00m, 9.90m, 5.00m, 104.90m));
+        var order = PlaceOrder(new TotalsSnapshot(100.00m, 0m, 10.00m, 9.90m, 5.00m, 104.90m, 0.05m));
         var grandTotalBefore = order.GrandTotal;
 
         promotion.Update(

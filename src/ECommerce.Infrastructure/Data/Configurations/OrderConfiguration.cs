@@ -57,6 +57,11 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired()
             .HasColumnName("tax_total");
 
+        builder.Property(order => order.TaxRate)
+            .HasColumnType("decimal(18,6)")
+            .IsRequired()
+            .HasColumnName("tax_rate");
+
         builder.Property(order => order.GrandTotal)
             .HasColumnType("decimal(18,4)")
             .IsRequired()

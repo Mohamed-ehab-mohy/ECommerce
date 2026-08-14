@@ -23,7 +23,7 @@ public sealed class CorrectShippingAddressCommandHandlerTests
     {
         var snapshot = new PriceSnapshot(
             [new PriceSnapshotItem(Guid.NewGuid(), "SKU-1", "Widget", 20.00m, 15.00m, 2, null)],
-            new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m));
+            new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m, 0m));
 
         var order = Order.Create(
             Guid.NewGuid(), Guid.NewGuid(), null, "ahmed@example.com", "USD",

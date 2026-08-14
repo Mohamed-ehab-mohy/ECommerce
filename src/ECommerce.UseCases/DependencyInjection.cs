@@ -6,6 +6,7 @@ using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
+using ECommerce.UseCases.Invoicing.Services;
 using ECommerce.UseCases.Notifications.Services;
 using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Pricing;
@@ -43,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<NotificationDispatcher>();
         services.AddScoped<PromotionScheduleEnforcer>();
         services.AddScoped<ReconciliationService>();
+        services.AddScoped<InvoiceIssuanceService>();
+        services.AddScoped<InvoicePdfGenerationService>();
 
         return services;
     }

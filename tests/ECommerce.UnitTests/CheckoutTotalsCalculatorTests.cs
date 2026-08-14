@@ -12,7 +12,7 @@ public sealed class CheckoutTotalsCalculatorTests
     {
         var calculator = new CheckoutTotalsCalculator(
             new FakeShippingRateProvider(),
-            new FakeTaxCalculator(3.00m));
+            new FakeTaxCalculator(3.00m, 0.05m));
 
         var result = await calculator.ComputeAsync([Widget], "standard", "AE", "USD", CancellationToken.None);
 
@@ -22,6 +22,7 @@ public sealed class CheckoutTotalsCalculatorTests
         Assert.Equal(0m, result.Value.CartDiscount);
         Assert.Equal(9.90m, result.Value.ShippingTotal);
         Assert.Equal(3.00m, result.Value.TaxTotal);
+        Assert.Equal(0.05m, result.Value.TaxRate);
         Assert.Equal(42.90m, result.Value.GrandTotal);
     }
 

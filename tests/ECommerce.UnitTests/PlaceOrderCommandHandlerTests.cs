@@ -37,7 +37,7 @@ public sealed class PlaceOrderCommandHandlerTests
 
     private static readonly PriceSnapshot Snapshot = new(
         [new PriceSnapshotItem(Guid.NewGuid(), "SKU-1", "Widget", 20.00m, 15.00m, 2, null)],
-        new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m));
+        new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m, 0m));
 
     private PlaceOrderCommandHandler CreateHandler() =>
         new(
@@ -113,7 +113,9 @@ public sealed class PlaceOrderCommandHandlerTests
         Assert.Equal(CheckoutStatus.Placed, checkout.Status);
         Assert.NotNull(checkout.PlacedAt);
         Assert.Equal(order.Id, payment.OrderId);
-        Assert.Equal(PaymentStatus.Authorized, payment.Status);
+        Assert.Equal(PaymentStatus.Captured, payment.Status);
+        Assert.NotNull(payment.CapturedAt);
+        Assert.Single(payment.DomainEvents.OfType<PaymentCaptured>());
 
         Assert.Equal(1, _allocator.AllocateCount);
         Assert.Equal("ORDER", _allocator.LastReason);

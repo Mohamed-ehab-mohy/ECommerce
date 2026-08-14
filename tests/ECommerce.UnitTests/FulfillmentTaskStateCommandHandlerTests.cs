@@ -38,7 +38,7 @@ public sealed class FulfillmentTaskStateCommandHandlerTests
 
         var snapshot = new PriceSnapshot(
             [new PriceSnapshotItem(product.Id, product.Sku, "Widget", 20.00m, 15.00m, 2, null)],
-            new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m));
+            new TotalsSnapshot(30.00m, 0m, 0m, 9.90m, 0m, 39.90m, 0m));
 
         var order = Order.Create(
             Guid.NewGuid(), Guid.NewGuid(), null, "ahmed@example.com", "USD",

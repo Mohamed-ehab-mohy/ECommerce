@@ -1,4 +1,5 @@
 using ECommerce.Domain.Common;
+using ECommerce.Domain.Events;
 using ECommerce.Shared.Primitives;
 
 namespace ECommerce.Domain.Payments;
@@ -177,6 +178,9 @@ public sealed class Payment : BaseEntity<Guid>
         CapturedAt = utcNow;
         UpdatedAt = utcNow;
         RecordLedger("captured", "captured", amount, ProviderReference, null, utcNow);
+
+        AddDomainEvent(new PaymentCaptured(Id, OrderId, amount, Currency));
+
         return Result.Success();
     }
 
@@ -205,6 +209,25 @@ public sealed class Payment : BaseEntity<Guid>
         UpdatedAt = utcNow;
         RecordAttempt("refund_requested", Amount, "pending", null, null, utcNow);
         RecordLedger("refund_requested", "pending", Amount, ProviderReference, null, utcNow);
+        return Result.Success();
+    }
+
+    /// <summary>Completes a refund for a payment in <see cref="PaymentStatus.Refunding"/> (US-I-002).</summary>
+    public Result MarkRefunded(DateTime utcNow, string? providerReference = null)
+    {
+        if (Status != PaymentStatus.Refunding)
+        {
+            return PaymentErrors.CaptureConflict;
+        }
+
+        Status = PaymentStatus.Refunded;
+        ProviderReference = providerReference ?? ProviderReference;
+        UpdatedAt = utcNow;
+        RecordAttempt("refund_completed", Amount, "refunded", providerReference, null, utcNow);
+        RecordLedger("refunded", "refunded", Amount, ProviderReference, null, utcNow);
+
+        AddDomainEvent(new PaymentRefunded(Id, OrderId, Amount, Currency, ProviderReference));
+
         return Result.Success();
     }
 

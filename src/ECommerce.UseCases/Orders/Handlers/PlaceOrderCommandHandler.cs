@@ -178,6 +178,14 @@ public sealed class PlaceOrderCommandHandler(
             return attachResult.Error;
         }
 
+        // Capturing the authorized payment is the "paid" moment (US-I-001): it emits
+        // PaymentCaptured, which triggers invoice issuance.
+        var captureResult = payment.Capture(payment.Amount, utcNow);
+        if (captureResult.IsFailure)
+        {
+            return captureResult.Error;
+        }
+
         var markPlacedResult = checkout.MarkPlaced(utcNow);
         if (markPlacedResult.IsFailure)
         {

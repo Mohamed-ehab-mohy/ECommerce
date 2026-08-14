@@ -5,6 +5,7 @@ using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
 using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
@@ -91,6 +92,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<Shipment> Shipments => Set<Shipment>();
 
     public DbSet<TrackingUpdate> TrackingUpdates => Set<TrackingUpdate>();
+
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+
+    public DbSet<CreditNote> CreditNotes => Set<CreditNote>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
