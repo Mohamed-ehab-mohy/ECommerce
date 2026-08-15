@@ -1,0 +1,14 @@
+using ECommerce.Shared.Authorization;
+using ECommerce.Shared.Primitives;
+using ECommerce.UseCases.Catalog.Responses;
+using ECommerce.UseCases.Common;
+using MediatR;
+
+namespace ECommerce.UseCases.Catalog.Queries;
+
+/// <summary>Returns the status and per-row error report of an import (US-B-007).</summary>
+public sealed record GetProductImportQuery(Guid ImportId)
+    : IRequest<Result<ProductImportStatusResponse>>, IRequirePermission
+{
+    public string Permission => Permissions.CatalogProductWrite;
+}

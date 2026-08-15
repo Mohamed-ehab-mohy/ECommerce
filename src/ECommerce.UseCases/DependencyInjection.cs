@@ -2,6 +2,7 @@ using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Services;
+using ECommerce.UseCases.Catalog.Services;
 using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
@@ -44,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<NotificationDispatcher>();
         services.AddScoped<PromotionScheduleEnforcer>();
         services.AddScoped<ReconciliationService>();
+        services.AddScoped<ProductImportService>();
         services.AddScoped<InvoiceIssuanceService>();
         services.AddScoped<InvoicePdfGenerationService>();
 

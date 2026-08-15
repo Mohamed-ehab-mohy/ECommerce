@@ -137,6 +137,23 @@ internal sealed class FakeProductRepository : IProductRepository
     public void Add(Product product) => Products.Add(product);
 }
 
+internal sealed class FakeProductImportRepository : IProductImportRepository
+{
+    public List<ProductImport> Imports { get; } = [];
+
+    public Task<ProductImport?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Imports.FirstOrDefault(import => import.Id == id));
+
+    public void Add(ProductImport import) => Imports.Add(import);
+}
+
+internal sealed class FakeProductImportJobScheduler : IProductImportJobScheduler
+{
+    public List<Guid> Enqueued { get; } = [];
+
+    public void Enqueue(Guid importId) => Enqueued.Add(importId);
+}
+
 internal sealed class FakeCategoryRepository : ICategoryRepository
 {
     public List<Category> Categories { get; } = [];

@@ -27,6 +27,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<Product> Products => Set<Product>();
 
+    public DbSet<ProductImport> ProductImports => Set<ProductImport>();
+
+    public DbSet<ProductImportError> ProductImportErrors => Set<ProductImportError>();
+
     public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
 
     public DbSet<ProductTranslation> ProductTranslations => Set<ProductTranslation>();
