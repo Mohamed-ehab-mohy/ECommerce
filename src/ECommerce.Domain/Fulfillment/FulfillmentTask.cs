@@ -49,7 +49,7 @@ public sealed class FulfillmentTask : BaseEntity<Guid>
         DateTime utcNow,
         string? zone = null)
     {
-        return new FulfillmentTask
+        var task = new FulfillmentTask
         {
             Id = Guid.NewGuid(),
             OrderId = orderId,
@@ -61,6 +61,10 @@ public sealed class FulfillmentTask : BaseEntity<Guid>
             CreatedAt = utcNow,
             UpdatedAt = utcNow
         };
+
+        task.AddDomainEvent(new FulfillmentTaskCreated(task.Id, orderId, warehouseId, task.Zone, priority));
+
+        return task;
     }
 
     public void AddItem(Guid productId, string sku, int quantity, string? binLocation)
@@ -140,6 +144,13 @@ public sealed class FulfillmentTask : BaseEntity<Guid>
             OrderId,
             WarehouseId,
             moving.Select(item => item.Sku).ToList()));
+
+        part.AddDomainEvent(new FulfillmentTaskCreated(
+            part.Id,
+            part.OrderId,
+            part.WarehouseId,
+            part.Zone,
+            part.Priority));
 
         return Result<FulfillmentTask>.Success(part);
     }

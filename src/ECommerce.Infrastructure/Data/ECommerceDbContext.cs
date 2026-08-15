@@ -14,6 +14,7 @@ using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Outbox;
+using ECommerce.Infrastructure.Realtime;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Data;
@@ -109,6 +110,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
 
     public DbSet<ReviewVote> ReviewVotes => Set<ReviewVote>();
+
+    public DbSet<RealtimeEvent> RealtimeEvents => Set<RealtimeEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

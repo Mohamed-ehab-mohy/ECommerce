@@ -1,4 +1,5 @@
 using ECommerce.Domain.Common;
+using ECommerce.Domain.Events;
 
 namespace ECommerce.Domain.Payments;
 
@@ -87,6 +88,15 @@ public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
         Status = ReconciliationStatus.Drift;
         Detail = detail;
         UpdatedAt = utcNow;
+
+        AddDomainEvent(new ReconciliationDriftDetected(
+            Id,
+            PaymentId,
+            ProviderReference,
+            Amount,
+            Currency,
+            ReconciliationStatus.Drift,
+            detail));
     }
 
     public void MarkMatched(string providerStatus, DateTime utcNow)
@@ -102,5 +112,14 @@ public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
         Status = ReconciliationStatus.Unmatched;
         Detail = detail;
         UpdatedAt = utcNow;
+
+        AddDomainEvent(new ReconciliationDriftDetected(
+            Id,
+            PaymentId,
+            ProviderReference,
+            Amount,
+            Currency,
+            ReconciliationStatus.Unmatched,
+            detail));
     }
 }

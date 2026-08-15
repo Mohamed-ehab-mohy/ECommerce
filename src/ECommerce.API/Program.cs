@@ -1,5 +1,6 @@
 using ECommerce.API;
 using ECommerce.API.Common;
+using ECommerce.API.Hubs;
 using ECommerce.API.Jobs;
 using ECommerce.Infrastructure.Jobs;
 using Hangfire;
@@ -100,9 +101,18 @@ if (!builder.Environment.IsDevelopment())
         "nightly-reconciliation",
         job => job.ExecuteAsync(CancellationToken.None),
         NightlyReconciliationJob.Schedule);
+
+    RecurringJob.AddOrUpdate<LiveOpsMetricsJob>(
+        "live-ops-metrics",
+        job => job.ExecuteAsync(CancellationToken.None),
+        LiveOpsMetricsJob.Schedule);
 }
 
 app.MapControllers();
+
+app.MapHub<OrderHub>("/hubs/orders");
+app.MapHub<WarehouseHub>("/hubs/warehouse");
+app.MapHub<AdminHub>("/hubs/admin");
 
 app.Run();
 

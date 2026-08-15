@@ -328,6 +328,8 @@ public sealed class Order : BaseEntity<Guid>
             previous,
             newAddress));
 
+        AddDomainEvent(new OrderTimelineUpdated(Id, OrderNumber, CustomerId));
+
         return Result.Success();
     }
 
@@ -360,5 +362,8 @@ public sealed class Order : BaseEntity<Guid>
         DateTime utcNow)
     {
         _statusLogs.Add(OrderStatusLog.Create(Id, from, to, actorType, actorId, traceId, utcNow));
+
+        AddDomainEvent(new OrderStatusChanged(Id, OrderNumber, CustomerId, from ?? to, to));
+        AddDomainEvent(new OrderTimelineUpdated(Id, OrderNumber, CustomerId));
     }
 }

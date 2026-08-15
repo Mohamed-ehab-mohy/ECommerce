@@ -1,10 +1,12 @@
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
+using ECommerce.API.Hubs;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Jobs;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Notifications;
+using ECommerce.Infrastructure.Realtime;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 
 namespace ECommerce.API;
 
@@ -37,6 +40,16 @@ public static class DependencyInjection
 
         services.AddScoped<IAuditContextProvider, AuditContextProvider>();
         services.AddScoped<ICurrentUser, CurrentUser>();
+
+        services.AddSignalR()
+            .AddStackExchangeRedis(configuration.GetConnectionString("Redis")!, options =>
+            {
+                options.Configuration.ChannelPrefix = RedisChannel.Literal("signalr:");
+            });
+
+        services.AddScoped<IOrderRealtimeHubContext, OrderRealtimeHubContext>();
+        services.AddScoped<IWarehouseRealtimeHubContext, WarehouseRealtimeHubContext>();
+        services.AddScoped<IAdminRealtimeHubContext, AdminRealtimeHubContext>();
 
         services.AddAuthorization(options =>
         {

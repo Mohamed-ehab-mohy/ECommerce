@@ -15,6 +15,7 @@ using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
 using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
+using ECommerce.Infrastructure.Realtime;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -1392,4 +1393,40 @@ internal sealed class FakeVerifiedPurchaseChecker : IVerifiedPurchaseChecker
 
     public Task<bool> HasPurchasedAsync(Guid customerId, Guid productId, CancellationToken cancellationToken) =>
         Task.FromResult(Purchases.Contains((customerId, productId)));
+}
+
+internal sealed class FakeRealtimeEventStore : IRealtimeEventStore
+{
+    private long _nextId;
+
+    public List<RealtimeEvent> Events { get; } = [];
+
+    public Task<long> AppendAsync(RealtimeEvent realtimeEvent, CancellationToken cancellationToken)
+    {
+        realtimeEvent.Id = ++_nextId;
+        Events.Add(realtimeEvent);
+        return Task.FromResult(realtimeEvent.Id);
+    }
+
+    public Task<IReadOnlyList<RealtimeEvent>> GetAfterAsync(
+        string groupKey,
+        long lastEventId,
+        int take,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<RealtimeEvent>>(Events
+            .Where(realtimeEvent => realtimeEvent.GroupKey == groupKey && realtimeEvent.Id > lastEventId)
+            .OrderBy(realtimeEvent => realtimeEvent.Id)
+            .Take(take)
+            .ToList());
+}
+
+internal sealed class FakeRealtimeHubContext : IOrderRealtimeHubContext, IWarehouseRealtimeHubContext, IAdminRealtimeHubContext
+{
+    public List<(string GroupKey, RealtimeEnvelope Envelope)> Sent { get; } = [];
+
+    public Task SendAsync(string groupKey, RealtimeEnvelope envelope, CancellationToken cancellationToken)
+    {
+        Sent.Add((groupKey, envelope));
+        return Task.CompletedTask;
+    }
 }

@@ -13,12 +13,12 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-N-001 | Customer order hub | 3 | [ ] |
-| US-N-002, US-N-004 | Warehouse hub + resume on reconnect | 4 | [ ] |
-| US-N-003 | Live operational tiles | 2 | [ ] |
-| US-K-005 | Review voting | 1 | [ ] |
-| T-DAT-016 | Redis backplane + hub auth + replay | 4 | [ ] |
-| T-TST-002 | v1.1 staging deploy + load test (1,000 orders/min) | 5 | [ ] |
+| US-N-001 | Customer order hub | 3 | [x] |
+| US-N-002, US-N-004 | Warehouse hub + resume on reconnect | 4 | [x] |
+| US-N-003 | Live operational tiles | 2 | [x] |
+| US-K-005 | Review voting | 1 | [x] |
+| T-DAT-016 | Redis backplane + hub auth + replay | 4 | [x] |
+| T-TST-002 | v1.1 staging deploy + load test (1,000 orders/min) | 5 | [ ] (deferred: staging env) |
 
 ---
 

@@ -18,6 +18,7 @@ using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
+using ECommerce.Infrastructure.Realtime;
 using ECommerce.Infrastructure.Reviews;
 using ECommerce.Infrastructure.Search;
 using ECommerce.Infrastructure.Shipping;
@@ -145,6 +146,22 @@ public static class DependencyInjection
         services.AddScoped<IInvoicePdfJobScheduler, HangfireInvoicePdfJobScheduler>();
         services.AddScoped<IEventHandler<PaymentCaptured>, InvoiceOnPaymentCapturedHandler>();
         services.AddScoped<IEventHandler<PaymentRefunded>, CreditNoteOnPaymentRefundedHandler>();
+
+        services.AddScoped<IRealtimeEventStore, RealtimeEventStore>();
+        services.AddScoped<IRealtimeEventForwarder, RealtimeEventForwarder>();
+        services.AddScoped<IEventHandler<OrderStatusChanged>, OrderRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<OrderTimelineUpdated>, OrderRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskCreated>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskAssigned>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskPicking>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskPacked>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskShipped>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskCancelled>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<FulfillmentTaskSplit>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<LowStockAlertRaised>, WarehouseRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<LowStockAlertRaised>, AdminRealtimeBroadcaster>();
+        services.AddScoped<IEventHandler<ReconciliationDriftDetected>, AdminRealtimeBroadcaster>();
+        services.AddScoped<LiveOpsMetricsJob>();
 
         services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis");
