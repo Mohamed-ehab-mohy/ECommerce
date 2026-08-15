@@ -1,5 +1,6 @@
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
+using ECommerce.Domain.Reviews;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Common;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,8 @@ public sealed class ProductSearchIndexSynchronizer(ECommerceDbContext dbContext)
             return;
         }
 
+        var (ratingAverage, ratingCount) = await GetRatingAsync(productId, cancellationToken);
+
         var documents = product.Translations.Select(translation => new ProductSearchDocument
         {
             ProductId = product.Id,
@@ -69,7 +72,9 @@ public sealed class ProductSearchIndexSynchronizer(ECommerceDbContext dbContext)
             Category = category?.Name,
             CategoryId = product.CategoryId,
             ListAmount = defaultPrice.ListAmount,
-            Currency = defaultPrice.Currency
+            Currency = defaultPrice.Currency,
+            RatingAverage = ratingAverage,
+            RatingCount = ratingCount
         }).ToList();
 
         var existing = await dbContext.Set<ProductSearchDocument>()
@@ -94,5 +99,17 @@ public sealed class ProductSearchIndexSynchronizer(ECommerceDbContext dbContext)
 
         dbContext.Set<ProductSearchDocument>().RemoveRange(existing);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<(decimal Average, int Count)> GetRatingAsync(Guid productId, CancellationToken cancellationToken)
+    {
+        var published = await dbContext.Set<ProductReview>()
+            .Where(review => review.ProductId == productId && review.Status == ProductReviewStatus.Published)
+            .Select(review => review.Rating)
+            .ToListAsync(cancellationToken);
+
+        return published.Count == 0
+            ? (0m, 0)
+            : (Math.Round((decimal)published.Average(rating => rating), 2, MidpointRounding.AwayFromZero), published.Count);
     }
 }

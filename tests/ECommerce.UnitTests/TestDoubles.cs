@@ -13,6 +13,7 @@ using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Shared.Audit;
 using ECommerce.UseCases.Audit.Ports;
@@ -31,6 +32,7 @@ using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
+using ECommerce.UseCases.Reviews.Ports;
 using ECommerce.UseCases.Wishlist.Ports;
 using System.Diagnostics.Metrics;
 
@@ -1341,4 +1343,53 @@ internal sealed class FakeInvoicePdfRenderer : IInvoicePdfRenderer
         LastDocument = document;
         return [0x25, 0x50, 0x44, 0x46];
     }
+}
+
+internal sealed class FakeProductReviewRepository : IProductReviewRepository
+{
+    public List<ProductReview> Reviews { get; } = [];
+
+    public Task<ProductReview?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Reviews.FirstOrDefault(review => review.Id == id));
+
+    public Task<IReadOnlyList<ProductReview>> ListPublishedByProductAsync(
+        Guid productId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ProductReview>>(Reviews
+            .Where(review => review.ProductId == productId && review.Status == ProductReviewStatus.Published)
+            .ToList());
+
+    public Task<IReadOnlyList<ProductReview>> ListPendingAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ProductReview>>(Reviews
+            .Where(review => review.Status == ProductReviewStatus.Pending)
+            .ToList());
+
+    public Task<bool> ExistsAsync(Guid productId, Guid customerId, CancellationToken cancellationToken) =>
+        Task.FromResult(Reviews.Any(
+            review => review.ProductId == productId && review.CustomerId == customerId));
+
+    public void Add(ProductReview review) => Reviews.Add(review);
+}
+
+internal sealed class FakeReviewVoteRepository : IReviewVoteRepository
+{
+    public List<ReviewVote> Votes { get; } = [];
+
+    public Task<ReviewVote?> GetAsync(Guid reviewId, Guid customerId, CancellationToken cancellationToken) =>
+        Task.FromResult(Votes.FirstOrDefault(
+            vote => vote.ReviewId == reviewId && vote.CustomerId == customerId));
+
+    public Task<int> CountHelpfulAsync(Guid reviewId, CancellationToken cancellationToken) =>
+        Task.FromResult(Votes.Count(
+            vote => vote.ReviewId == reviewId && vote.Value == ReviewVoteValue.Helpful));
+
+    public void Add(ReviewVote vote) => Votes.Add(vote);
+}
+
+internal sealed class FakeVerifiedPurchaseChecker : IVerifiedPurchaseChecker
+{
+    public HashSet<(Guid CustomerId, Guid ProductId)> Purchases { get; } = [];
+
+    public Task<bool> HasPurchasedAsync(Guid customerId, Guid productId, CancellationToken cancellationToken) =>
+        Task.FromResult(Purchases.Contains((customerId, productId)));
 }

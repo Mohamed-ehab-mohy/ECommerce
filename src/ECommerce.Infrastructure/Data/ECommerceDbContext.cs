@@ -10,6 +10,7 @@ using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Outbox;
@@ -104,6 +105,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<Invoice> Invoices => Set<Invoice>();
 
     public DbSet<CreditNote> CreditNotes => Set<CreditNote>();
+
+    public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
+
+    public DbSet<ReviewVote> ReviewVotes => Set<ReviewVote>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
