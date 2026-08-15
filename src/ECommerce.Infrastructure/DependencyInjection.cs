@@ -155,6 +155,7 @@ public static class DependencyInjection
     {
         services.Configure<PaymentProviderOptions>(configuration.GetSection(PaymentProviderOptions.SectionName));
         services.AddOptions<PaymentRetryOptions>().BindConfiguration(PaymentRetryOptions.SectionName);
+        services.AddOptions<RefundRetryOptions>().BindConfiguration(RefundRetryOptions.SectionName);
         services.AddSingleton<IPaymentProviderHealth, PaymentCircuitBreaker>();
         services.AddSingleton<IPaymentProvider, MockPaymentProvider>();
 
@@ -169,6 +170,8 @@ public static class DependencyInjection
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IRefundRepository, RefundRepository>();
+        services.AddScoped<IRefundRetryJobScheduler, HangfireRefundRetryJobScheduler>();
 
         return services;
     }

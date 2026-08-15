@@ -6,8 +6,8 @@ using MediatR;
 
 namespace ECommerce.UseCases.Payments.Commands;
 
-public sealed record CompleteRefundCommand(Guid PaymentId, string? ProviderReference = null)
-    : IRequest<Result<PaymentResponse>>, IRequirePermission
+public sealed record ApproveRefundCommand(Guid RefundId, Guid? ApprovedBy)
+    : IRequest<Result<RefundResponse>>, IRequirePermission
 {
     public string Permission => Permissions.PaymentsRefundApprove;
 }

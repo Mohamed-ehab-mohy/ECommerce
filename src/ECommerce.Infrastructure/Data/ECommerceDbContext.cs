@@ -53,6 +53,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<PaymentReconciliationRecord> PaymentReconciliationRecords => Set<PaymentReconciliationRecord>();
 
+    public DbSet<Refund> Refunds => Set<Refund>();
+
+    public DbSet<RefundItem> RefundItems => Set<RefundItem>();
+
     public DbSet<Checkout> Checkouts => Set<Checkout>();
 
     public DbSet<Order> Orders => Set<Order>();

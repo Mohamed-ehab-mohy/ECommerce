@@ -409,11 +409,19 @@ internal sealed class FakePaymentProvider(
 
     public PaymentAuthorizationResult? AuthorizationResult { get; set; } = authorization;
 
+    public PaymentRefundResult? RefundResult { get; set; }
+
     public int AuthorizeCallCount { get; private set; }
+
+    public int RefundCallCount { get; private set; }
 
     public PaymentIntentRequest? LastIntentRequest { get; private set; }
 
     public PaymentAuthorizationRequest? LastAuthorizationRequest { get; private set; }
+
+    public PaymentRefundRequest? LastRefundRequest { get; private set; }
+
+    public List<ProviderTransaction> Transactions { get; } = [];
 
     public string Key => key;
 
@@ -429,6 +437,44 @@ internal sealed class FakePaymentProvider(
         LastAuthorizationRequest = request;
         return Task.FromResult(AuthorizationResult ?? new PaymentAuthorizationResult(true, "pi_mock_1_auth", null));
     }
+
+    public Task<PaymentRefundResult> RefundAsync(PaymentRefundRequest request, CancellationToken cancellationToken)
+    {
+        RefundCallCount++;
+        LastRefundRequest = request;
+        return Task.FromResult(RefundResult ?? new PaymentRefundResult(true, $"mock_refund_{Guid.NewGuid():N}", null));
+    }
+
+    public Task<IReadOnlyList<ProviderTransaction>> ListTransactionsAsync(
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ProviderTransaction>>(Transactions
+            .Where(transaction => transaction.OccurredAt >= fromUtc && transaction.OccurredAt <= toUtc)
+            .ToList());
+}
+
+internal sealed class FakeRefundRepository : IRefundRepository
+{
+    public List<Refund> Refunds { get; } = [];
+
+    public Task<Refund?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Refunds.FirstOrDefault(refund => refund.Id == id));
+
+    public Task<Refund?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken) =>
+        Task.FromResult(Refunds.FirstOrDefault(refund => refund.IdempotencyKey == idempotencyKey));
+
+    public Task<IReadOnlyList<Refund>> GetByPaymentIdAsync(Guid paymentId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Refund>>(Refunds
+            .Where(refund => refund.PaymentId == paymentId)
+            .ToList());
+
+    public Task<IReadOnlyList<Refund>> ListFailedAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Refund>>(Refunds
+            .Where(refund => refund.Status == RefundStatus.Failed)
+            .ToList());
+
+    public void Add(Refund refund) => Refunds.Add(refund);
 }
 
 internal sealed class FakePaymentProviderFactory(
@@ -1243,6 +1289,13 @@ internal sealed class FakeInvoicePdfJobScheduler : IInvoicePdfJobScheduler
     public List<Guid> Enqueued { get; } = [];
 
     public void Enqueue(Guid invoiceId) => Enqueued.Add(invoiceId);
+}
+
+internal sealed class FakeRefundRetryJobScheduler : IRefundRetryJobScheduler
+{
+    public List<Guid> Enqueued { get; } = [];
+
+    public void EnqueueRetry(Guid refundId) => Enqueued.Add(refundId);
 }
 
 internal sealed class FakeInvoiceDocumentStore : IInvoiceDocumentStore

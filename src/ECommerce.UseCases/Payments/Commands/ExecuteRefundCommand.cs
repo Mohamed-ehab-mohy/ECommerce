@@ -6,15 +6,10 @@ using MediatR;
 
 namespace ECommerce.UseCases.Payments.Commands;
 
-public sealed record RefundItemRequest(Guid ProductId, int Quantity);
-
-public sealed record RequestRefundCommand(
-    string OrderNumber,
-    decimal Amount,
-    string Reason,
-    IReadOnlyCollection<RefundItemRequest>? Items,
-    bool Restock,
-    string IdempotencyKey)
+/// <summary>
+/// Executes an approved refund idempotently through the originating provider (key = refund id, QAS-04).
+/// </summary>
+public sealed record ExecuteRefundCommand(Guid RefundId)
     : IRequest<Result<RefundResponse>>, IRequirePermission
 {
     public string Permission => Permissions.PaymentsRefundApprove;

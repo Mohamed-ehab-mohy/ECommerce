@@ -25,6 +25,25 @@ public sealed record PaymentAuthorizationResult(
     string ProviderReference,
     string? DeclineCode);
 
+public sealed record PaymentRefundRequest(
+    decimal Amount,
+    string Currency,
+    string ProviderReference,
+    string IdempotencyKey);
+
+public sealed record PaymentRefundResult(
+    bool IsSuccess,
+    string? ProviderReference,
+    string? ErrorCode);
+
+public sealed record ProviderTransaction(
+    string ProviderReference,
+    string EventType,
+    decimal Amount,
+    string Currency,
+    string Status,
+    DateTime OccurredAt);
+
 public interface IPaymentProvider
 {
     string Key { get; }
@@ -35,5 +54,22 @@ public interface IPaymentProvider
 
     Task<PaymentAuthorizationResult> AuthorizeAsync(
         PaymentAuthorizationRequest request,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Executes a refund through the provider. The provider must treat <paramref name="request.IdempotencyKey"/>
+    /// (the refund id) as idempotent: replaying the same key returns the original result (FRS-G-008, QAS-04).
+    /// </summary>
+    Task<PaymentRefundResult> RefundAsync(
+        PaymentRefundRequest request,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns the provider-side transactions (authorize/capture/refund) within the given window
+    /// for nightly reconciliation (T-DAT-015).
+    /// </summary>
+    Task<IReadOnlyList<ProviderTransaction>> ListTransactionsAsync(
+        DateTime fromUtc,
+        DateTime toUtc,
         CancellationToken cancellationToken);
 }

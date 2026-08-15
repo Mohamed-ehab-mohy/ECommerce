@@ -28,4 +28,14 @@ public static class AuditActions
     public const string PromotionPaused = "promotions.promotion.paused";
     public const string PromotionScheduled = "promotions.promotion.scheduled";
     public const string CouponCreated = "promotions.coupon.created";
+    public const string RefundCreated = "payments.refund.created";
+    public const string RefundApprovedAction = "payments.refund.approved";
+    public const string RefundExecuted = "payments.refund.executed";
+    public const string RefundFailedAction = "payments.refund.failed";
+    public const string ReconciliationRun = "finance.reconciliation.run";
+    public const string ReconciliationDrift = "finance.reconciliation.drift";
+    public const string ProductImportRun = "catalog.import.run";
+    public const string ReviewSubmitted = "reviews.review.submitted";
+    public const string ReviewModerated = "reviews.review.moderated";
+    public const string ReviewRemovedAction = "reviews.review.removed";
 }
