@@ -95,4 +95,12 @@ public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
         ProviderStatus = providerStatus;
         UpdatedAt = utcNow;
     }
+
+    /// <summary>Marks a provider transaction that has no matching platform record (T-DAT-015).</summary>
+    public void MarkUnmatched(string detail, DateTime utcNow)
+    {
+        Status = ReconciliationStatus.Unmatched;
+        Detail = detail;
+        UpdatedAt = utcNow;
+    }
 }

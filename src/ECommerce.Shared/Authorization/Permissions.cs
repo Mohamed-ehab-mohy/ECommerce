@@ -27,6 +27,7 @@ public static class Permissions
     public const string FinanceInvoiceRead = "finance.invoice.read";
     public const string FinanceInvoiceWrite = "finance.invoice.write";
     public const string PaymentsRefundApprove = "payments.refund.approve";
+    public const string FinanceReconcile = "finance.reconcile";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -54,6 +55,7 @@ public static class Permissions
         FulfillmentWrite,
         FinanceInvoiceRead,
         FinanceInvoiceWrite,
-        PaymentsRefundApprove
+        PaymentsRefundApprove,
+        FinanceReconcile
     ];
 }

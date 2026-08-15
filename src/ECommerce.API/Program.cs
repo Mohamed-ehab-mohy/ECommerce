@@ -95,6 +95,11 @@ if (!builder.Environment.IsDevelopment())
         "promotion-schedule-enforcer",
         job => job.ExecuteAsync(CancellationToken.None),
         PromotionScheduleEnforcerJob.Schedule);
+
+    RecurringJob.AddOrUpdate<NightlyReconciliationJob>(
+        "nightly-reconciliation",
+        job => job.ExecuteAsync(CancellationToken.None),
+        NightlyReconciliationJob.Schedule);
 }
 
 app.MapControllers();
