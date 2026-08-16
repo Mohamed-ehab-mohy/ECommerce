@@ -43,5 +43,6 @@ public sealed class PaymentLedgerConfiguration : IEntityTypeConfiguration<Paymen
         builder.Property(entry => entry.OccurredAt).HasColumnName("occurred_at");
 
         builder.HasIndex(entry => entry.PaymentId).HasDatabaseName("ix_payment_ledger_payment_id");
+        builder.HasIndex(entry => new { entry.OccurredAt, entry.EventType }).HasDatabaseName("ix_payment_ledger_occurred_at_event_type");
     }
 }
