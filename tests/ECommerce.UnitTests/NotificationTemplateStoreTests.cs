@@ -14,6 +14,7 @@ public sealed class NotificationTemplateStoreTests
     [InlineData("order.cancelled", "en")]
     [InlineData("order.cancelled", "ar")]
     [InlineData("low.stock.alert", "en")]
+    [InlineData("integrations.webhook.suspended", "en")]
     public async Task All_Order_Notification_Templates_Render_Without_Error(
         string templateKey,
         string locale)
@@ -29,7 +30,11 @@ public sealed class NotificationTemplateStoreTests
             ["Sku"] = "SKU-1",
             ["WarehouseId"] = "00000000000000000000000000000001",
             ["Available"] = "3",
-            ["Threshold"] = "5"
+            ["Threshold"] = "5",
+            ["EndpointName"] = "Partner",
+            ["Url"] = "https://partner.test/hook",
+            ["SuspendedAt"] = "2026-08-15T12:00:00.0000000Z",
+            ["EventType"] = "order.placed"
         };
 
         var content = await _store.RenderAsync(templateKey, locale, placeholders, CancellationToken.None);

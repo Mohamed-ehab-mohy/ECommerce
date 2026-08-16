@@ -76,7 +76,10 @@ public sealed class InMemoryNotificationTemplateStore : INotificationTemplateSto
                 "<p>تم إلغاء طلبك <strong>{OrderNumber}</strong>.</p><p>السبب: {Reason}</p>"),
             ["low.stock.alert.en"] = new(
                 "Low stock alert: {Sku}",
-                "<p>Stock item <strong>{Sku}</strong> (warehouse {WarehouseId}) has {Available} units available, below the threshold of {Threshold}.</p>")
+                "<p>Stock item <strong>{Sku}</strong> (warehouse {WarehouseId}) has {Available} units available, below the threshold of {Threshold}.</p>"),
+            ["integrations.webhook.suspended.en"] = new(
+                "Webhook endpoint suspended: {EndpointName}",
+                "<p>Webhook endpoint <strong>{EndpointName}</strong> ({Url}) was suspended at {SuspendedAt} after repeated failures for event <strong>{EventType}</strong>.</p><p>Review the endpoint and resume it when ready.</p>")
         };
     }
 

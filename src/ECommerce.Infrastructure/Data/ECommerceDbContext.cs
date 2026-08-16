@@ -4,12 +4,14 @@ using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
+using ECommerce.Domain.Integrations;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Reporting;
 using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Infrastructure.Messaging;
@@ -112,6 +114,12 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<ReviewVote> ReviewVotes => Set<ReviewVote>();
 
     public DbSet<RealtimeEvent> RealtimeEvents => Set<RealtimeEvent>();
+
+    public DbSet<WebhookEndpoint> WebhookEndpoints => Set<WebhookEndpoint>();
+
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+
+    public DbSet<ExportJob> ExportJobs => Set<ExportJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

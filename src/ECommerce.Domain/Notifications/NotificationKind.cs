@@ -4,5 +4,6 @@ public enum NotificationKind
 {
     OrderConfirmation,
     OrderStatusUpdate,
-    LowStockAlert
+    LowStockAlert,
+    WebhookSuspended
 }

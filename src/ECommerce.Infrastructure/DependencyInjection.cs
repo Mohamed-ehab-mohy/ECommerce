@@ -8,6 +8,7 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Flags;
 using ECommerce.Infrastructure.Fulfillment;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Integrations;
 using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Invoicing;
 using ECommerce.Infrastructure.Jobs;
@@ -19,6 +20,7 @@ using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
 using ECommerce.Infrastructure.Realtime;
+using ECommerce.Infrastructure.Reports;
 using ECommerce.Infrastructure.Reviews;
 using ECommerce.Infrastructure.Search;
 using ECommerce.Infrastructure.Shipping;
@@ -37,6 +39,8 @@ using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Invoicing.Ports;
+using ECommerce.UseCases.Integrations.Ports;
+using ECommerce.UseCases.Integrations.Services;
 using ECommerce.UseCases.Messaging.Ports;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Orders.Ports;
@@ -45,6 +49,7 @@ using ECommerce.UseCases.Payments.Options;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
 using ECommerce.UseCases.Reviews.Ports;
+using ECommerce.UseCases.Reports.Ports;
 using ECommerce.UseCases.Wishlist.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -162,6 +167,32 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<LowStockAlertRaised>, AdminRealtimeBroadcaster>();
         services.AddScoped<IEventHandler<ReconciliationDriftDetected>, AdminRealtimeBroadcaster>();
         services.AddScoped<LiveOpsMetricsJob>();
+
+        services.AddScoped<IReportingQueryService, ReportingQueryService>();
+        services.AddScoped<IExportJobRepository, ExportJobRepository>();
+        services.AddScoped<IExportJobScheduler, HangfireExportJobScheduler>();
+        services.AddScoped<IExportFileStore>(sp =>
+            new LocalExportFileStore(
+                sp.GetRequiredService<ILogger<LocalExportFileStore>>(),
+                sp.GetRequiredService<IConfiguration>().GetValue("Storage:BasePath", "./storage")));
+        services.AddScoped<GenerateExportJob>();
+
+        services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
+        services.AddScoped<IWebhookDeliveryRepository, WebhookDeliveryRepository>();
+        services.AddScoped<IWebhookSigner, HmacWebhookSigner>();
+        services.AddScoped<IWebhookHttpDeliverer, HttpWebhookDeliverer>();
+        services.AddScoped<IWebhookDeliveryJobScheduler, HangfireWebhookDeliveryJobScheduler>();
+        services.AddScoped<DeliverWebhookJob>();
+        services.AddScoped<WebhookDeliveryService>();
+        services.AddOptions<WebhookOptions>().BindConfiguration(WebhookOptions.SectionName);
+        services.AddScoped<IEventHandler<OrderPlaced>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<PaymentCaptured>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<OrderShipped>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<OrderCancelled>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<RefundCompleted>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<ProductUpdated>, WebhookEventDispatcher>();
+        services.AddScoped<IEventHandler<LowStockAlertRaised>, WebhookEventDispatcher>();
+        services.AddHttpClient("webhooks", client => client.Timeout = TimeSpan.FromSeconds(30));
 
         services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis");

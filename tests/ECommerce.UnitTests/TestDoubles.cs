@@ -7,6 +7,7 @@ using ECommerce.Domain.Events;
 using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
+using ECommerce.Domain.Integrations;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Notifications;
@@ -26,6 +27,7 @@ using ECommerce.UseCases.Flags.Ports;
 using ECommerce.UseCases.Fulfillment.Ports;
 using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Identity.Ports;
+using ECommerce.UseCases.Integrations.Ports;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Invoicing.Ports;
 using ECommerce.UseCases.Messaging.Ports;
@@ -1427,6 +1429,101 @@ internal sealed class FakeRealtimeHubContext : IOrderRealtimeHubContext, IWareho
     public Task SendAsync(string groupKey, RealtimeEnvelope envelope, CancellationToken cancellationToken)
     {
         Sent.Add((groupKey, envelope));
+        return Task.CompletedTask;
+    }
+}
+
+internal sealed class FakeWebhookEndpointRepository : IWebhookEndpointRepository
+{
+    public List<WebhookEndpoint> Endpoints { get; } = [];
+
+    public Task<WebhookEndpoint?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Endpoints.FirstOrDefault(endpoint => endpoint.Id == id));
+
+    public Task<IReadOnlyList<WebhookEndpoint>> GetActiveByEventTypeAsync(
+        string eventType,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<WebhookEndpoint>>(Endpoints
+            .Where(endpoint => endpoint.IsSubscribedTo(eventType))
+            .ToList());
+
+    public Task<IReadOnlyList<WebhookEndpoint>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<WebhookEndpoint>>(Endpoints.ToList());
+
+    public void Add(WebhookEndpoint endpoint) => Endpoints.Add(endpoint);
+}
+
+internal sealed class FakeWebhookDeliveryRepository : IWebhookDeliveryRepository
+{
+    public List<WebhookDelivery> Deliveries { get; } = [];
+
+    public Task<WebhookDelivery?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Deliveries.FirstOrDefault(delivery => delivery.Id == id));
+
+    public Task<IReadOnlyList<WebhookDelivery>> ListByEndpointAsync(
+        Guid endpointId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<WebhookDelivery>>(Deliveries
+            .Where(delivery => delivery.EndpointId == endpointId)
+            .OrderByDescending(delivery => delivery.CreatedAt)
+            .ToList());
+
+    public void Add(WebhookDelivery delivery) => Deliveries.Add(delivery);
+}
+
+internal sealed class FakeWebhookDeliveryJobScheduler : IWebhookDeliveryJobScheduler
+{
+    public List<Guid> Enqueued { get; } = [];
+
+    public List<(Guid DeliveryId, TimeSpan Delay)> Scheduled { get; } = [];
+
+    public void Enqueue(Guid deliveryId) => Enqueued.Add(deliveryId);
+
+    public void Schedule(Guid deliveryId, TimeSpan delay) => Scheduled.Add((deliveryId, delay));
+}
+
+internal sealed class FakeWebhookSigner : IWebhookSigner
+{
+    public List<(string Secret, string Payload)> Calls { get; } = [];
+
+    public string ComputeSignature(string secret, string payload)
+    {
+        Calls.Add((secret, payload));
+        return $"sha256=test-{Calls.Count}";
+    }
+}
+
+internal sealed class FakeWebhookHttpDeliverer : IWebhookHttpDeliverer
+{
+    public List<(string Url, string Signature, string EventId, string EventType, string PayloadJson)> Calls { get; } = [];
+
+    public WebhookDeliveryResult? Result { get; set; }
+
+    public Exception? Exception { get; set; }
+
+    public Task<WebhookDeliveryResult> PostAsync(
+        string url,
+        string signature,
+        string eventId,
+        string eventType,
+        string payloadJson,
+        CancellationToken cancellationToken)
+    {
+        Calls.Add((url, signature, eventId, eventType, payloadJson));
+
+        return Task.FromResult(Exception is not null
+            ? throw Exception
+            : Result ?? new WebhookDeliveryResult(true, 200, null));
+    }
+}
+
+internal sealed class FakeNotificationQueue : INotificationQueue
+{
+    public List<NotificationEnvelope> Envelopes { get; } = [];
+
+    public Task EnqueueAsync(NotificationEnvelope envelope, CancellationToken cancellationToken)
+    {
+        Envelopes.Add(envelope);
         return Task.CompletedTask;
     }
 }
