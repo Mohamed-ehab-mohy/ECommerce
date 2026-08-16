@@ -28,10 +28,11 @@ public sealed class FulfillmentTaskRepository(ECommerceDbContext dbContext) : IF
         dbContext.Set<FulfillmentTask>()
             .AnyAsync(task => task.OrderId == orderId, cancellationToken);
 
-    public Task<bool> HasUnshippedTasksAsync(Guid orderId, CancellationToken cancellationToken) =>
+    public Task<bool> HasUnshippedTasksAsync(Guid orderId, Guid excludedTaskId, CancellationToken cancellationToken) =>
         dbContext.Set<FulfillmentTask>()
             .AnyAsync(
                 task => task.OrderId == orderId
+                    && task.Id != excludedTaskId
                     && task.Status != FulfillmentTaskStatus.Shipped
                     && task.Status != FulfillmentTaskStatus.Cancelled,
                 cancellationToken);

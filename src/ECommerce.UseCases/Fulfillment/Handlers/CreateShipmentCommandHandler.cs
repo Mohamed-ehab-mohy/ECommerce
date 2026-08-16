@@ -91,7 +91,7 @@ public sealed class CreateShipmentCommandHandler(
             return shipped.Error;
         }
 
-        var allTasksShipped = !await tasks.HasUnshippedTasksAsync(order.Id, cancellationToken);
+        var allTasksShipped = !await tasks.HasUnshippedTasksAsync(order.Id, task.Id, cancellationToken);
         if (allTasksShipped)
         {
             var orderShip = order.Ship(

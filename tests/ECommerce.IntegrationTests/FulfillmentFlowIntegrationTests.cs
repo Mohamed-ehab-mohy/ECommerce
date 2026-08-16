@@ -60,12 +60,20 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
         var shipmentId = shipmentResult.Value.ShipmentId;
         var trackingNumber = shipmentResult.Value.TrackingNumber;
 
+        var inTransitResult = await ApplyTrackingAsync(shipmentId, "InTransit");
+        Assert.True(inTransitResult.IsSuccess, inTransitResult.Error.Description);
+
+        var outForDeliveryResult = await ApplyTrackingAsync(shipmentId, "OutForDelivery");
+        Assert.True(outForDeliveryResult.IsSuccess, outForDeliveryResult.Error.Description);
+
         var deliveredResult = await ApplyTrackingAsync(shipmentId, "Delivered");
         Assert.True(deliveredResult.IsSuccess, deliveredResult.Error.Description);
 
         await using (var verify = CreateContext())
         {
-            var task = await verify.FulfillmentTasks.SingleAsync(candidate => candidate.Id == taskId);
+            var task = await verify.FulfillmentTasks
+                .Include(candidate => candidate.Items)
+                .SingleAsync(candidate => candidate.Id == taskId);
             Assert.Equal(FulfillmentTaskStatus.Shipped, task.Status);
             Assert.NotNull(task.AssignedTo);
             Assert.NotEmpty(task.Items);
@@ -104,7 +112,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
                     fulfillment_task_items,
                     shipments,
                     tracking_updates,
-                    outbox_messages
+                    outbox_events
                 CASCADE;
                 """);
 

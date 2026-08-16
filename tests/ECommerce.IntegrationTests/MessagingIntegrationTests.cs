@@ -96,7 +96,8 @@ public sealed class MessagingIntegrationTests :
             await publisher.PublishAsync(outboxMessage, orderPlaced, CancellationToken.None);
             await publisher.PublishAsync(outboxMessage, orderPlaced, CancellationToken.None);
 
-            await WaitUntilAsync(() => CountingInboxRepository.TotalCalls >= 2);
+            await WaitUntilAsync(
+                () => CountingInboxRepository.TotalCalls >= 2 && notifier.Notified.Count == 1);
 
             Assert.Single(notifier.Notified);
 
@@ -159,13 +160,30 @@ public sealed class MessagingIntegrationTests :
 
     private sealed class CapturingNotifier : IOrderNotifier
     {
-        public List<OrderPlaced> Notified { get; } = [];
+        private readonly object _gate = new();
+
+        private readonly List<OrderPlaced> _notified = [];
+
+        public IReadOnlyList<OrderPlaced> Notified
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _notified.ToArray();
+                }
+            }
+        }
 
         public List<OrderCancelled> Cancelled { get; } = [];
 
         public Task NotifyPlacedAsync(OrderPlaced orderPlaced, CancellationToken cancellationToken)
         {
-            Notified.Add(orderPlaced);
+            lock (_gate)
+            {
+                _notified.Add(orderPlaced);
+            }
+
             return Task.CompletedTask;
         }
 

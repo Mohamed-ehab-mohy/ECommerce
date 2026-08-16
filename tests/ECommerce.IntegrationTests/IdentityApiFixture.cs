@@ -1,3 +1,4 @@
+using System.Linq;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.UseCases.Identity.Ports;
@@ -70,11 +71,33 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         await using (var scope = _factory.Services.CreateAsyncScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
-            await dbContext.Database.MigrateAsync();
+            await WaitForMigrationsAsync(dbContext);
         }
 
         EmailSender = emailSender;
         Client = _factory.CreateClient();
+    }
+
+    private static async Task WaitForMigrationsAsync(ECommerceDbContext dbContext)
+    {
+        for (var attempt = 0; attempt < 80; attempt++)
+        {
+            try
+            {
+                var pending = await dbContext.Database.GetPendingMigrationsAsync();
+                if (!pending.Any())
+                {
+                    return;
+                }
+            }
+            catch (NpgsqlException)
+            {
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500));
+        }
+
+        throw new InvalidOperationException("Database migrations did not complete in time.");
     }
 
     public Task DisposeAsync()

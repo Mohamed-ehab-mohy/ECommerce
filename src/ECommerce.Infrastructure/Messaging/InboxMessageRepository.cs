@@ -18,9 +18,12 @@ public sealed class InboxMessageRepository(ECommerceDbContext dbContext) : IInbo
             VALUES (@consumer_queue, @message_id, @processed_at)
             ON CONFLICT (consumer_queue, message_id) DO NOTHING
             """,
-            new NpgsqlParameter("@consumer_queue", consumerQueue),
-            new NpgsqlParameter("@message_id", messageId),
-            new NpgsqlParameter("@processed_at", DateTime.UtcNow),
+            new object[]
+            {
+                new NpgsqlParameter("@consumer_queue", consumerQueue),
+                new NpgsqlParameter("@message_id", messageId),
+                new NpgsqlParameter("@processed_at", DateTime.UtcNow),
+            },
             cancellationToken);
 
         return inserted > 0;

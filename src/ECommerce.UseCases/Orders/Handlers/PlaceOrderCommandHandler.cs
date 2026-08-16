@@ -67,19 +67,7 @@ public sealed class PlaceOrderCommandHandler(
 
         if (checkout.Status != CheckoutStatus.PaymentAuthorized)
         {
-            var concurrentKey = await idempotencyKeys.GetByKeyAsync(request.IdempotencyKey, cancellationToken);
-            if (concurrentKey is not null)
-            {
-                if (concurrentKey.CheckoutId != request.CheckoutId)
-                {
-                    return OrderErrors.IdempotencyKeyReuse;
-                }
-
-                var replayedOrder = await orders.GetByIdAsync(concurrentKey.OrderId, cancellationToken);
-                return replayedOrder is null ? OrderErrors.OrderNotFound : OrderResponse.From(replayedOrder);
-            }
-
-            return CheckoutErrors.InvalidState;
+            return await TryReplayAsync(request, cancellationToken) ?? CheckoutErrors.InvalidState;
         }
 
         if (checkout.PaymentId is null)
@@ -95,7 +83,7 @@ public sealed class PlaceOrderCommandHandler(
 
         if (payment.Status != PaymentStatus.Authorized)
         {
-            return PaymentErrors.PaymentNotAuthorized;
+            return await TryReplayAsync(request, cancellationToken) ?? PaymentErrors.PaymentNotAuthorized;
         }
 
         var orderNumber = await orderNumberGenerator.GenerateAsync(utcNow, cancellationToken);
@@ -213,5 +201,22 @@ public sealed class PlaceOrderCommandHandler(
         await transaction.CommitAsync(cancellationToken);
 
         return OrderResponse.From(order);
+    }
+
+    private async Task<Result<OrderResponse>?> TryReplayAsync(PlaceOrderCommand request, CancellationToken cancellationToken)
+    {
+        var concurrentKey = await idempotencyKeys.GetByKeyAsync(request.IdempotencyKey, cancellationToken);
+        if (concurrentKey is null)
+        {
+            return null;
+        }
+
+        if (concurrentKey.CheckoutId != request.CheckoutId)
+        {
+            return OrderErrors.IdempotencyKeyReuse;
+        }
+
+        var replayedOrder = await orders.GetByIdAsync(concurrentKey.OrderId, cancellationToken);
+        return replayedOrder is null ? OrderErrors.OrderNotFound : OrderResponse.From(replayedOrder);
     }
 }

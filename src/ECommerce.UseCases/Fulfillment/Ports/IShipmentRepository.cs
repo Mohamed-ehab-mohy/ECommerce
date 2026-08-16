@@ -8,7 +8,7 @@ public interface IShipmentRepository
 
     Task<Shipment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken);
 
-    Task<bool> HasUndeliveredShipmentsAsync(Guid orderId, CancellationToken cancellationToken);
+    Task<bool> HasUndeliveredShipmentsAsync(Guid orderId, Guid excludedShipmentId, CancellationToken cancellationToken);
 
     void Add(Shipment shipment);
 }

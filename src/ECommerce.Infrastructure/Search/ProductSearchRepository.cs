@@ -59,13 +59,12 @@ public sealed class ProductSearchRepository(ECommerceDbContext dbContext) : IPro
         }
 
         var hasQuery = !string.IsNullOrWhiteSpace(criteria.Query);
-        NpgsqlTsQuery? tsQuery = null;
 
         if (hasQuery)
         {
-            tsQuery = EF.Functions.WebSearchToTsQuery("simple", criteria.Query!);
             query = query.Where(item =>
-                item.document.SearchVector!.Matches(tsQuery) ||
+                item.document.SearchVector!.Matches(
+                    EF.Functions.WebSearchToTsQuery("simple", criteria.Query!)) ||
                 EF.Functions.TrigramsSimilarity(item.document.Name, criteria.Query!) >= TrigramThreshold);
         }
 
@@ -74,7 +73,8 @@ public sealed class ProductSearchRepository(ECommerceDbContext dbContext) : IPro
         IQueryable<Product> ordered = hasQuery
             ? query
                 .OrderByDescending(item =>
-                    0.7 * item.document.SearchVector!.RankCoverDensity(tsQuery!)
+                    0.7 * item.document.SearchVector!.RankCoverDensity(
+                        EF.Functions.WebSearchToTsQuery("simple", criteria.Query!))
                     + 0.3 * EF.Functions.TrigramsSimilarity(item.document.Name, criteria.Query!))
                 .ThenBy(item => item.document.ProductId)
                 .Select(item => item.product)

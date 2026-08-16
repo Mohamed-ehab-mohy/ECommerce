@@ -1094,9 +1094,10 @@ internal sealed class FakeFulfillmentTaskRepository : IFulfillmentTaskRepository
     public Task<bool> ExistsForOrderAsync(Guid orderId, CancellationToken cancellationToken) =>
         Task.FromResult(Tasks.Any(task => task.OrderId == orderId));
 
-    public Task<bool> HasUnshippedTasksAsync(Guid orderId, CancellationToken cancellationToken) =>
+    public Task<bool> HasUnshippedTasksAsync(Guid orderId, Guid excludedTaskId, CancellationToken cancellationToken) =>
         Task.FromResult(Tasks.Any(task =>
             task.OrderId == orderId
+            && task.Id != excludedTaskId
             && task.Status != FulfillmentTaskStatus.Shipped
             && task.Status != FulfillmentTaskStatus.Cancelled));
 
@@ -1145,9 +1146,11 @@ internal sealed class FakeShipmentRepository : IShipmentRepository
     public Task<Shipment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken) =>
         Task.FromResult(Shipments.FirstOrDefault(shipment => shipment.TrackingNumber == trackingNumber));
 
-    public Task<bool> HasUndeliveredShipmentsAsync(Guid orderId, CancellationToken cancellationToken) =>
+    public Task<bool> HasUndeliveredShipmentsAsync(Guid orderId, Guid excludedShipmentId, CancellationToken cancellationToken) =>
         Task.FromResult(Shipments.Any(shipment =>
-            shipment.OrderId == orderId && shipment.Status != ShipmentStatus.Delivered));
+            shipment.OrderId == orderId
+            && shipment.Id != excludedShipmentId
+            && shipment.Status != ShipmentStatus.Delivered));
 
     public void Add(Shipment shipment) => Shipments.Add(shipment);
 }

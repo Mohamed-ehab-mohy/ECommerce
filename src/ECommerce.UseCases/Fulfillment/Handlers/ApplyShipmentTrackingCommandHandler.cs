@@ -46,7 +46,7 @@ public sealed class ApplyShipmentTrackingCommandHandler(
         }
 
         if (status == ShipmentStatus.Delivered
-            && !await shipments.HasUndeliveredShipmentsAsync(shipment.OrderId, cancellationToken))
+            && !await shipments.HasUndeliveredShipmentsAsync(shipment.OrderId, shipment.Id, cancellationToken))
         {
             var order = await orders.GetByIdAsync(shipment.OrderId, cancellationToken);
             if (order is null)

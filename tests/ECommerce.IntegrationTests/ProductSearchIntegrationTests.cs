@@ -23,6 +23,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var headphones = CreateProduct("SKU-S-001", "wireless-headphones", "Wireless Noise Cancelling Headphones");
         var keyboard = CreateProduct("SKU-S-002", "mechanical-keyboard", "Mechanical Keyboard");
@@ -47,6 +48,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var product = CreateProduct("SKU-S-003", "headphones", "Wireless Headphones");
         context.Products.Add(product);
@@ -68,6 +70,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var now = DateTime.UtcNow;
         var brand = Brand.Create("Sony", null, null, now);
@@ -100,8 +103,9 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
-        var cheap = CreateProduct("SKU-S-006", "cheap", "Cheap Headphones", listAmount: 30m);
+        var cheap = CreateProduct("SKU-S-006", "cheap", "Cheap Headphones", listAmount: 100m);
         var expensive = CreateProduct("SKU-S-007", "expensive", "Premium Headphones", listAmount: 300m);
         context.Products.AddRange(cheap, expensive);
         await context.SaveChangesAsync();
@@ -125,6 +129,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var now = DateTime.UtcNow;
         var brand = Brand.Create("Sony", null, null, now);
@@ -163,6 +168,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var active = CreateProduct("SKU-S-011", "active", "Active Headphones");
         var deactivated = CreateProduct("SKU-S-012", "inactive", "Inactive Headphones");
@@ -189,6 +195,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
         await using var context = CreateContext();
         await context.Database.MigrateAsync();
+        await ResetAsync(context);
 
         var product = CreateProduct("SKU-S-013", "headphones", "Old Name");
         context.Products.Add(product);
@@ -230,6 +237,10 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
             false,
             ProductStatus.Active,
             DateTime.UtcNow);
+
+    private static async Task ResetAsync(ECommerceDbContext context) =>
+        await context.Database.ExecuteSqlRawAsync(
+            "TRUNCATE TABLE product_search_documents, products, brands, categories CASCADE;");
 
     private ECommerceDbContext CreateContext()
     {
