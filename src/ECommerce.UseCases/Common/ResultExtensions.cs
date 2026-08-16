@@ -20,7 +20,7 @@ public static class ResultExtensions
         where T : notnull =>
         result.Error.ToOperationError();
 
-    private static OperationError ToOperationError(this Error error)
+    public static OperationError ToOperationError(this Error error)
     {
         var (statusCode, type) = error.Type switch
         {
