@@ -47,6 +47,7 @@ public sealed class OutboxBackgroundService(
         var dbContext = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
         var publisher = scope.ServiceProvider.GetRequiredService<OutboxPublisher>();
         var metrics = scope.ServiceProvider.GetRequiredService<OutboxMetrics>();
+        var postCommit = scope.ServiceProvider.GetRequiredService<PostCommitActions>();
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -73,6 +74,8 @@ public sealed class OutboxBackgroundService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+
+        await postCommit.ExecuteAsync();
     }
 
     private async Task ProcessMessageAsync(

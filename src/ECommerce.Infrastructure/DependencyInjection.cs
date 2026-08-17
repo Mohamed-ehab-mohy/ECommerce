@@ -201,6 +201,7 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(10));
 
         services.AddHostedService<MigrateOnStartupHostedService>();
+        services.AddScoped<PostCommitActions>();
         services.AddHostedService<OutboxBackgroundService>();
 
         return services;

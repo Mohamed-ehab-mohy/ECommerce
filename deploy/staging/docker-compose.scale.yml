@@ -1,0 +1,14 @@
+# T-TST-003 S6 scale-out override. Maps a host port range across scaled API
+# replicas (docker compose assigns 8080 to api-1, 8081 to api-2, ...).
+# `!override` replaces the base file's fixed "8080:8080" mapping so replicas
+# can spread across the range (compose otherwise appends the two mappings).
+#
+#   docker compose -f deploy/staging/docker-compose.staging.yml \
+#       -f deploy/staging/docker-compose.scale.yml up -d --scale api=2 --no-deps
+name: ecommerce-staging
+
+services:
+  api:
+    ports:
+      !override
+      - "${API_PORT_RANGE:-8080-8081}:8080"

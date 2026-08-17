@@ -15,7 +15,7 @@ public sealed class WebhookEndpointRepository(ECommerceDbContext dbContext) : IW
         string eventType,
         CancellationToken cancellationToken) =>
         await dbContext.Set<WebhookEndpoint>()
-            .Where(endpoint => endpoint.IsActive && !endpoint.IsDeleted && endpoint.EventTypes.Contains(eventType))
+            .Where(endpoint => endpoint.IsActive && !endpoint.IsDeleted && EF.Functions.JsonExists(endpoint.EventTypes, eventType))
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<WebhookEndpoint>> ListAsync(CancellationToken cancellationToken) =>
