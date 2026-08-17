@@ -15,7 +15,6 @@ public sealed class OutboxBackgroundService(
     IConfiguration configuration,
     ILogger<OutboxBackgroundService> logger) : BackgroundService
 {
-    private const int BatchSize = 20;
     private const int MaxAttempts = 5;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,6 +48,8 @@ public sealed class OutboxBackgroundService(
         var metrics = scope.ServiceProvider.GetRequiredService<OutboxMetrics>();
         var postCommit = scope.ServiceProvider.GetRequiredService<PostCommitActions>();
 
+        var batchSize = configuration.GetValue("Outbox:BatchSize", 20);
+
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var messages = await dbContext.OutboxMessages
@@ -56,7 +57,7 @@ public sealed class OutboxBackgroundService(
                 SELECT * FROM "outbox_events"
                 WHERE "processed_on" IS NULL
                 ORDER BY "occurred_on"
-                LIMIT {BatchSize}
+                LIMIT {batchSize}
                 FOR UPDATE SKIP LOCKED
                 """)
             .ToListAsync(cancellationToken);
