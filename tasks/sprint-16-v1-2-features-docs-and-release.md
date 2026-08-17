@@ -27,8 +27,8 @@
 - Impersonation: `auth.impersonate` permission, second approver, session marked, full audit.
 
 ### Acceptance
-- [ ] Erasure anonymizes PII; orders retained; DSAR workflow works.
-- [ ] Impersonation audited end-to-end; step-up enforced.
+- [x] Erasure anonymizes PII; orders retained; DSAR workflow works.
+- [x] Impersonation audited end-to-end; step-up enforced.
 
 ### Commit
 `feat(identity): account closure, erasure and impersonation`
@@ -41,7 +41,7 @@
 - Reporting endpoints for inventory, promotion performance, fulfillment SLAs.
 
 ### Acceptance
-- [ ] Reports accurate vs ledger; permission-gated.
+- [x] Reports accurate vs ledger; permission-gated.
 
 ### Commit
 `feat(reports): inventory, promotion and fulfillment reports`
@@ -54,7 +54,7 @@
 - Complete remaining roadmap docs (`02-glossary`, `10-auth`, `11-permissions`, `12–29` module designs, `33-ADRs`, `34`, `35`), finalize `36-onboarding`, validate runbooks.
 
 ### Acceptance
-- [ ] Roadmap docs all Baseline; ADRs recorded; onboarding verified by a new hire.
+- [x] Roadmap docs all Baseline; ADRs recorded; onboarding verified by a new hire.
 
 ### Commit
 `docs: complete documentation set and adrs`
@@ -67,7 +67,7 @@
 - Final release: tags, release notes (auto-generated), archive branch, handover.
 
 ### Acceptance
-- [ ] v1.2 released; release notes published; archive tagged.
+- [x] v1.2 released; release notes published; archive tagged.
 
 ### Commit
 `chore(release): ship v1.2`
@@ -75,5 +75,5 @@
 ---
 
 ## Sprint Exit — v1.2 (M6)
-- [ ] Program DoD 100%; docs approved; runbooks live; release v1.2 shipped.
-- [ ] CI green.
+- [x] Program DoD 100%; docs approved; runbooks live; release v1.2 shipped.
+- [x] CI green.
