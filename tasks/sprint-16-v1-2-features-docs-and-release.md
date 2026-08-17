@@ -14,9 +14,9 @@
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
 | US-A-007, US-A-008 | Account closure/erasure + impersonation | 5 | [x] |
-| US-L-003, US-L-004, US-L-005 | Inventory, promotion, fulfillment reports | 5 | [ ] |
-| T-OPS-004 | Documentation set completion + ADRs + onboarding | 5 | [ ] |
-| T-OPS-005 | v1.2 release + release notes + archive | 3 | [ ] |
+| US-L-003, US-L-004, US-L-005 | Inventory, promotion, fulfillment reports | 5 | [x] |
+| T-OPS-004 | Documentation set completion + ADRs + onboarding | 5 | [x] |
+| T-OPS-005 | v1.2 release + release notes + archive | 3 | [x] |
 
 ---
 
