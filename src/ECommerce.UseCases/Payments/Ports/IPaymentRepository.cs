@@ -15,6 +15,8 @@ public interface IPaymentRepository
         ReconciliationStatus? status,
         CancellationToken cancellationToken);
 
+    Task<Payment?> GetByProviderTokenAsync(string providerToken, CancellationToken cancellationToken);
+
     void Add(Payment payment);
 
     void AddReconciliationRecord(PaymentReconciliationRecord record);

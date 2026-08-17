@@ -37,6 +37,12 @@ public sealed class PaymentRepository(ECommerceDbContext dbContext) : IPaymentRe
             .ThenBy(record => record.Id)
             .ToListAsync(cancellationToken);
 
+    public Task<Payment?> GetByProviderTokenAsync(string providerToken, CancellationToken cancellationToken) =>
+        dbContext.Set<Payment>()
+            .Include(payment => payment.Attempts)
+            .Include(payment => payment.Ledger)
+            .SingleOrDefaultAsync(payment => payment.ProviderToken == providerToken, cancellationToken);
+
     public void Add(Payment payment) => dbContext.Set<Payment>().Add(payment);
 
     public void AddReconciliationRecord(PaymentReconciliationRecord record) =>

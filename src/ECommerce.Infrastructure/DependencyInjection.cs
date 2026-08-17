@@ -15,6 +15,7 @@ using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Invoicing;
 using ECommerce.Infrastructure.Jobs;
 using ECommerce.Infrastructure.Messaging;
+using ECommerce.Infrastructure.Metrics;
 using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
@@ -75,7 +76,7 @@ public static class DependencyInjection
         if (dataProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(sqlServerConnectionString))
         {
             services.AddDbContext<ECommerceDbContext>(options => options
-                .UseSqlServer(sqlServerConnectionString)
+                .UseSqlServer(sqlServerConnectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
                 .AddInterceptors(new DomainEventsInterceptor()));
         }
         else
@@ -85,7 +86,7 @@ public static class DependencyInjection
             var dataSource = dataSourceBuilder.Build();
 
             services.AddDbContext<ECommerceDbContext>(options => options
-                .UseNpgsql(dataSource)
+                .UseNpgsql(dataSource, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
                 .AddInterceptors(new DomainEventsInterceptor()));
         }
 
@@ -153,6 +154,7 @@ public static class DependencyInjection
         services.AddScoped<CarrierRateSelector>();
         services.AddScoped<PickListGenerationService>();
         services.AddSingleton<OutboxMetrics>();
+        services.AddSingleton<BusinessMetrics>();
         services.AddScoped<OutboxPublisher>();
 
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
@@ -237,6 +239,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.Configure<PaymentProviderOptions>(configuration.GetSection(PaymentProviderOptions.SectionName));
+        services.Configure<StripeWebhookOptions>(configuration.GetSection(StripeWebhookOptions.SectionName));
         services.AddOptions<PaymentRetryOptions>().BindConfiguration(PaymentRetryOptions.SectionName);
         services.AddOptions<RefundRetryOptions>().BindConfiguration(RefundRetryOptions.SectionName);
         services.AddSingleton<IPaymentProviderHealth, PaymentCircuitBreaker>();

@@ -65,9 +65,10 @@ This document serves as the single entry point for all project documentation. It
 | 41 | OAuth/OIDC Design | **Exists** | Lightweight OAuth 2.0 implementation with client credentials, ROPC, and social login stubs. |
 | 42 | YARP Gateway Design | **Exists** | YARP reverse proxy as BFF gateway with in-process routing. |
 | 43 | SQL Server Provider | **Exists** | Multi-database support with EF Core and Dapper provider switching. |
-| 44 | Guest-to-Authenticated Cart Merge | **Planned** | Anonymous cart persistence and merge-on-login flow. |
-| 45 | GDPR & Data Privacy | **Planned** | Data retention, consent management, and right-to-erasure implementation. |
-| 46 | Disaster Recovery Plan | **Planned** | Backup strategy, RTO/RPO targets, and recovery procedures. |
+| 44 | Data Retention Policy | **Exists** | Retention schedules for audit logs, carts, reservations, payments, and GDPR compliance. |
+| 45 | Guest-to-Authenticated Cart Merge | **Planned** | Anonymous cart persistence and merge-on-login flow. |
+| 46 | GDPR & Data Privacy | **Planned** | Consent management and detailed privacy controls. |
+| 47 | Disaster Recovery Plan | **Planned** | Backup strategy, RTO/RPO targets, and recovery procedures. |
 
 ---
 

@@ -416,6 +416,9 @@ internal sealed class FakePaymentRepository : IPaymentRepository
             .Where(record => status == null || record.Status == status)
             .ToList());
 
+    public Task<Payment?> GetByProviderTokenAsync(string providerToken, CancellationToken cancellationToken) =>
+        Task.FromResult(Payments.FirstOrDefault(payment => payment.ProviderToken == providerToken));
+
     public void Add(Payment payment) => Payments.Add(payment);
 
     public void AddReconciliationRecord(PaymentReconciliationRecord record) =>

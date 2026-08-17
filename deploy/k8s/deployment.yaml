@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-api
+  namespace: ecommerce
+  labels:
+    app: ecommerce-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecommerce-api
+  template:
+    metadata:
+      labels:
+        app: ecommerce-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/Mohamed-ehab-mohy/ecommerce-api:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ecommerce-config
+            - secretRef:
+                name: ecommerce-secrets
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

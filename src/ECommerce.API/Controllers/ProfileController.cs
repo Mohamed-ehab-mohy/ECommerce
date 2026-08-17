@@ -91,6 +91,16 @@ public sealed class ProfileController(ISender sender) : ControllerBase
             : NoContent();
     }
 
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportData(CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ExportPersonalDataCommand(User.GetUserId()), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : Ok(result.Value);
+    }
+
     [HttpPost("erase")]
     public async Task<IActionResult> ErasePersonalData(CancellationToken cancellationToken)
     {

@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
 using ECommerce.API.Grpc;
@@ -15,6 +16,7 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -105,6 +107,85 @@ public static class DependencyInjection
         services.AddReverseProxy().LoadFromConfig(configuration.GetSection("ReverseProxy"));
 
         services.AddDataProtection().SetApplicationName("ECommerce");
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = 429;
+
+            options.OnRejected = (context, cancellationToken) =>
+            {
+                var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                {
+                    Status = 429,
+                    Title = "Too Many Requests",
+                    Detail = "Rate limit exceeded. Please try again later.",
+                    Type = "https://tools.ietf.org/html/rfc6585"
+                };
+
+                context.HttpContext.Response.ContentType = "application/problem+json";
+                return new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken));
+            };
+
+            options.AddFixedWindowLimiter("fixed", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 100;
+                limiterOptions.Window = TimeSpan.FromSeconds(10);
+                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                limiterOptions.QueueLimit = 0;
+            });
+
+            options.AddSlidingWindowLimiter("auth", slidingOptions =>
+            {
+                slidingOptions.PermitLimit = 10;
+                slidingOptions.Window = TimeSpan.FromSeconds(60);
+                slidingOptions.SegmentsPerWindow = 6;
+                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                slidingOptions.QueueLimit = 0;
+            });
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            {
+                var endpoint = context.GetEndpoint();
+                var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+
+                if (policyName == "auth")
+                {
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        "auth",
+                        _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromSeconds(60),
+                            SegmentsPerWindow = 6,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                }
+
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    ipAddress,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromSeconds(10),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    });
+            });
+        });
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowConfiguredOrigins", policy =>
+            {
+                policy.WithOrigins(configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000"])
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                    .WithExposedHeaders("X-Pagination");
+            });
+        });
 
         return services;
     }

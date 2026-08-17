@@ -25,6 +25,7 @@ public sealed class OrderRepository(ECommerceDbContext dbContext) : IOrderReposi
             .Include(order => order.Items)
             .Include(order => order.StatusLogs)
             .Include(order => order.BackorderItems)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(order => order.OrderNumber == orderNumber, cancellationToken);
 
     public async Task<IReadOnlyList<OrderBackorderItem>> ListOpenBackorderItemsBySkuAsync(

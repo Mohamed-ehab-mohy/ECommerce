@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-config
+  namespace: ecommerce
+data:
+  DataProvider__Provider: "Postgres"
+  Cors__AllowedOrigins__0: "https://ecommerce.example.com"
+  ReverseProxy__Routes__api-route__ClusterId: "api-cluster"
+  ReverseProxy__Routes__api-route__Match__Path: "/proxy/api/{**catch-all}"
+  ReverseProxy__Clusters__api-cluster__Destinations__api__Address: "http://ecommerce-api:8080/"
+  SeqUrl: "http://seq:5341"
+  OtlpTracesEndpoint: "http://seq:5341/ingest/otlp/v1/traces"
+  OtlpMetricsEndpoint: "http://seq:5341/ingest/otlp/v1/metrics"

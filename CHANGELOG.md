@@ -1,5 +1,39 @@
 # Changelog
 
+## [v1.4.0] — 2026-08-17
+
+### Security
+- **Rate Limiting:** ASP.NET Core rate limiting — 100 req/10s global, 10 req/60s on auth endpoints, 429 ProblemDetails response
+- **CORS:** Configurable allowed origins via `Cors:AllowedOrigins` config
+- **Stripe Webhooks:** HMAC-SHA256 signature verification with 5-min timestamp tolerance
+- **EF Core Resilience:** `EnableRetryOnFailure(3)` for both PostgreSQL and SQL Server
+
+### Features
+- **Stripe Webhooks:** Handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded` with full signature verification
+- **Stock Reservation Expiry:** Hourly Hangfire job releases stale reservations older than 30 minutes
+- **Payment Timeout:** Every-15-min job fails payments stuck in Created/Authorized for over 1 hour
+- **GDPR Data Export:** `GET /api/v1/me/export` — returns customer profile, orders, addresses, roles as JSON
+
+### Infrastructure
+- **Kubernetes:** Full manifests — Deployment, Service, Ingress (TLS), ConfigMap, Secrets, HPA (2-10 replicas)
+- **Docker Registry:** CI pushes images to `ghcr.io/Mohamed-ehab-mohy/ecommerce-api` on release
+- **Business Metrics:** `ecommerce.orders.placed`, `ecommerce.payments.captured/failed`, `ecommerce.carts.abandoned`, `ecommerce.checkout.duration_seconds`
+
+### Observability
+- **Grafana Dashboard:** 9-panel overview (API Health, Business, Infrastructure rows)
+- **Alertmanager:** Webhook-based alerting with resolved notifications
+- **Alert Rules:** HighErrorRate (>5%), HighLatency (p95>2s), OutboxBacklog (>60s), DeadLetters
+- **Data Retention:** Documented retention schedule (audit 7yr, carts 30d, reservations 30min, payments 1hr)
+
+### Performance
+- **AsSplitQuery:** Multi-include queries (Order with Items+StatusLogs+BackorderItems) use split queries to prevent cartesian products
+
+### Architecture
+- Stripe webhook handler routes through MediatR — API does not depend on Domain
+- All 845 tests passing (7 architecture + 838 unit)
+
+---
+
 ## [v1.3.0] — 2026-08-17
 
 ### Features

@@ -94,6 +94,9 @@ app.MapPrometheusScrapingEndpoint();
 
 app.MapGet("/", () => "ECommerce API");
 
+app.UseCors("AllowConfiguredOrigins");
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -124,6 +127,16 @@ if (!builder.Environment.IsDevelopment())
         "live-ops-metrics",
         job => job.ExecuteAsync(CancellationToken.None),
         LiveOpsMetricsJob.Schedule);
+
+    RecurringJob.AddOrUpdate<StockReservationExpiryJob>(
+        "stock-reservation-expiry",
+        job => job.ExecuteAsync(CancellationToken.None),
+        StockReservationExpiryJob.Schedule);
+
+    RecurringJob.AddOrUpdate<PaymentTimeoutJob>(
+        "payment-timeout",
+        job => job.ExecuteAsync(CancellationToken.None),
+        PaymentTimeoutJob.Schedule);
 }
 
 app.MapGrpcService<OrderStatusGrpcService>();
@@ -137,6 +150,14 @@ app.MapHub<WarehouseHub>("/hubs/warehouse");
 app.MapHub<AdminHub>("/hubs/admin");
 
 app.MapGet("/gateway/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+app.MapGet("/api/v1/rate-limit-status", () => Results.Ok(new
+{
+    fixedWindow = new { permitLimit = 100, windowSeconds = 10, description = "Global per-IP rate limit" },
+    slidingWindowAuth = new { permitLimit = 10, windowSeconds = 60, segmentsPerWindow = 6, description = "Auth endpoints (/api/v1/auth/)" },
+    rejectionStatusCode = 429,
+    timestamp = DateTime.UtcNow
+}));
 
 app.MapReverseProxy();
 

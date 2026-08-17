@@ -98,6 +98,17 @@ services:
     networks:
       - ecommerce
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: ecommerce-alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager:/etc/alertmanager:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - ecommerce
+
   grafana:
     image: grafana/grafana:latest
     container_name: ecommerce-grafana
