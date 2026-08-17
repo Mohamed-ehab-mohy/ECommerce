@@ -8,7 +8,9 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Flags;
 using ECommerce.Infrastructure.Fulfillment;
 using ECommerce.Infrastructure.Identity;
+using ECommerce.Infrastructure.Grpc;
 using ECommerce.Infrastructure.Integrations;
+using ECommerce.UseCases.Grpc.Ports;
 using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Invoicing;
 using ECommerce.Infrastructure.Jobs;
@@ -25,6 +27,7 @@ using ECommerce.Infrastructure.Reviews;
 using ECommerce.Infrastructure.Search;
 using ECommerce.Infrastructure.Shipping;
 using ECommerce.Infrastructure.Storage;
+using ECommerce.Infrastructure.ReadModels;
 using ECommerce.Infrastructure.Wishlists;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
@@ -169,6 +172,7 @@ public static class DependencyInjection
         services.AddScoped<LiveOpsMetricsJob>();
 
         services.AddScoped<IReportingQueryService, ReportingQueryService>();
+        services.AddScoped<IGrpcQueryService, GrpcQueryService>();
         services.AddScoped<IExportJobRepository, ExportJobRepository>();
         services.AddScoped<IExportJobScheduler, HangfireExportJobScheduler>();
         services.AddScoped<IExportFileStore>(sp =>
@@ -192,17 +196,25 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<RefundCompleted>, WebhookEventDispatcher>();
         services.AddScoped<IEventHandler<ProductUpdated>, WebhookEventDispatcher>();
         services.AddScoped<IEventHandler<LowStockAlertRaised>, WebhookEventDispatcher>();
-        services.AddHttpClient("webhooks", client => client.Timeout = TimeSpan.FromSeconds(30));
+        services.AddHttpClient("webhooks", client => client.Timeout = TimeSpan.FromSeconds(30))
+            .AddStandardResilienceHandler();
 
         services.AddHealthChecks()
             .AddCheck<RedisHealthCheck>("redis");
 
         services.AddHttpClient<IPasswordBreachChecker, HibpPasswordBreachChecker>(client =>
-            client.Timeout = TimeSpan.FromSeconds(10));
+            client.Timeout = TimeSpan.FromSeconds(10))
+            .AddStandardResilienceHandler();
 
         services.AddHostedService<MigrateOnStartupHostedService>();
         services.AddScoped<PostCommitActions>();
         services.AddHostedService<OutboxBackgroundService>();
+
+        services.AddSingleton<IDbConnectionFactory, DapperReadModelStore>();
+        services.AddSingleton<IReadModelStore, DapperReadModelStore>();
+        services.AddScoped<DapperProductReadService>();
+        services.AddScoped<DapperOrderReadService>();
+        services.AddScoped<DapperStockReadService>();
 
         return services;
     }

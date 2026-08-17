@@ -1,0 +1,40 @@
+syntax = "proto3";
+option csharp_namespace = "ECommerce.API.Protos";
+package ecommerce.order;
+
+import "google/protobuf/timestamp.proto";
+
+service OrderStatusService {
+  rpc GetByNumber (OrderNumberRequest) returns (OrderStatusResponse);
+  rpc Subscribe (SubscribeRequest) returns (stream OrderStatusEvent);
+}
+
+message OrderNumberRequest {
+  string order_number = 1;
+}
+
+message OrderStatusResponse {
+  string order_number = 1;
+  string status = 2;
+  string payment_status = 3;
+  string customer_email = 4;
+  repeated OrderTimelineEntry timeline = 5;
+  google.protobuf.Timestamp placed_at = 6;
+}
+
+message OrderTimelineEntry {
+  string status = 1;
+  string note = 2;
+  google.protobuf.Timestamp occurred_at = 3;
+}
+
+message SubscribeRequest {
+  string order_number = 1;
+}
+
+message OrderStatusEvent {
+  string order_number = 1;
+  string new_status = 2;
+  string previous_status = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}

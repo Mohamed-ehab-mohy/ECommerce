@@ -1,8 +1,10 @@
 using ECommerce.API;
 using ECommerce.API.Common;
+using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
 using ECommerce.API.Jobs;
 using ECommerce.Infrastructure.Jobs;
+using Grpc.Core.Interceptors;
 using Hangfire;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -123,6 +125,10 @@ if (!builder.Environment.IsDevelopment())
         job => job.ExecuteAsync(CancellationToken.None),
         LiveOpsMetricsJob.Schedule);
 }
+
+app.MapGrpcService<OrderStatusGrpcService>();
+app.MapGrpcService<CatalogLookupGrpcService>();
+app.MapGrpcHealthChecksService();
 
 app.MapControllers();
 

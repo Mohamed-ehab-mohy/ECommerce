@@ -1,0 +1,20 @@
+syntax = "proto3";
+option csharp_namespace = "ECommerce.API.Protos";
+package ecommerce.catalog;
+
+service CatalogLookupService {
+  rpc GetBySku (SkuRequest) returns (ProductSummaryResponse);
+}
+
+message SkuRequest {
+  string sku = 1;
+}
+
+message ProductSummaryResponse {
+  string id = 1;
+  string sku = 2;
+  string name = 3;
+  string slug = 4;
+  double list_price = 5;
+  bool is_active = 6;
+}

@@ -1,5 +1,6 @@
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
+using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
 using ECommerce.Infrastructure;
 using ECommerce.Infrastructure.Identity;
@@ -7,6 +8,7 @@ using ECommerce.Infrastructure.Jobs;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Realtime;
+using ECommerce.Infrastructure.Resilience;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
@@ -29,6 +31,7 @@ public static class DependencyInjection
             configuration.GetConnectionString("Postgres")!,
             configuration.GetConnectionString("Redis")!);
         services.AddPaymentInfrastructure(configuration);
+        services.AddResilience(configuration);
         services.AddMessageBus(configuration);
         services.AddJobs(configuration);
 
@@ -81,6 +84,13 @@ public static class DependencyInjection
                     ClockSkew = TimeSpan.FromSeconds(30)
                 };
             });
+
+        services.AddGrpc(options =>
+        {
+            options.Interceptors.Add<JwtTokenForwardingInterceptor>();
+        });
+
+        services.AddGrpcHealthChecks();
 
         services.AddDataProtection().SetApplicationName("ECommerce");
 
