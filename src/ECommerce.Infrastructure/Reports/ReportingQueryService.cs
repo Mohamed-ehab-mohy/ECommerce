@@ -1,6 +1,8 @@
+using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
+using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Reports.Ports;
 using ECommerce.UseCases.Reports.Responses;
@@ -113,6 +115,125 @@ public sealed class ReportingQueryService(ECommerceDbContext dbContext) : IRepor
                 row.Collected - row.Refunded))
             .OrderBy(line => line.Currency)
             .ToList();
+    }
+
+    public async Task<IReadOnlyList<PromotionLine>> GetPromotionsAsync(
+        PromotionReportFilter filter,
+        CancellationToken cancellationToken)
+    {
+        var promotions = await dbContext.Set<Promotion>().AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var promotionIds = promotions.Select(p => p.Id).ToList();
+
+        var orderDiscounts = await dbContext.Set<Order>().AsNoTracking()
+            .Where(order => order.PlacedAt >= filter.From && order.PlacedAt <= filter.To)
+            .Where(order => order.Status != OrderStatus.Cancelled)
+            .Where(order => order.AppliedPromotionIds.Any(id => promotionIds.Contains(id)))
+            .Select(order => new { order.AppliedPromotionIds, order.ItemDiscount, order.CartDiscount })
+            .ToListAsync(cancellationToken);
+
+        var couponRedemptions = await dbContext.Set<Coupon>().AsNoTracking()
+            .Where(coupon => promotionIds.Contains(coupon.PromotionId))
+            .Select(coupon => new { coupon.PromotionId, coupon.UsedCount })
+            .ToListAsync(cancellationToken);
+
+        var promoUsage = couponRedemptions
+            .GroupBy(cr => cr.PromotionId)
+            .ToDictionary(g => g.Key, g => g.Sum(cr => cr.UsedCount));
+
+        var promoDiscounts = new Dictionary<Guid, (int Orders, decimal Discount)>();
+        foreach (var order in orderDiscounts)
+        {
+            foreach (var promoId in order.AppliedPromotionIds.Where(id => promotionIds.Contains(id)))
+            {
+                if (promoDiscounts.TryGetValue(promoId, out var existing))
+                {
+                    promoDiscounts[promoId] = (existing.Orders + 1, existing.Discount + order.ItemDiscount + order.CartDiscount);
+                }
+                else
+                {
+                    promoDiscounts[promoId] = (1, order.ItemDiscount + order.CartDiscount);
+                }
+            }
+        }
+
+        return promotions
+            .Select(promo =>
+            {
+                promoDiscounts.TryGetValue(promo.Id, out var usage);
+                promoUsage.TryGetValue(promo.Id, out var redemptions);
+                return new PromotionLine(
+                    promo.Id,
+                    promo.Name,
+                    promo.State.ToString(),
+                    usage.Orders,
+                    usage.Discount,
+                    redemptions);
+            })
+            .OrderByDescending(line => line.TotalDiscount)
+            .ToList();
+    }
+
+    public async Task<FulfillmentReportData> GetFulfillmentAsync(
+        FulfillmentReportFilter filter,
+        CancellationToken cancellationToken)
+    {
+        var warehouses = await dbContext.Set<Warehouse>().AsNoTracking()
+            .Where(warehouse => !warehouse.IsDeleted)
+            .ToDictionaryAsync(warehouse => warehouse.Id, cancellationToken);
+
+        var tasks = await dbContext.Set<FulfillmentTask>().AsNoTracking()
+            .Where(task => task.CreatedAt >= filter.From && task.CreatedAt <= filter.To)
+            .ToListAsync(cancellationToken);
+
+        var shipped = tasks.Where(t => t.ShippedAt.HasValue).ToList();
+        var avgHours = shipped.Count > 0
+            ? shipped.Average(t => (t.ShippedAt!.Value - t.CreatedAt).TotalHours)
+            : 0.0;
+
+        var onTime = shipped.Count(t => t switch
+        {
+            { ShippedAt: not null } => (t.ShippedAt.Value - t.CreatedAt).TotalHours <= 48,
+            _ => false
+        });
+        var onTimeRate = shipped.Count > 0 ? (double)onTime / shipped.Count * 100.0 : 0.0;
+
+        var warehouseLines = tasks
+            .GroupBy(task => task.WarehouseId)
+            .Select(group =>
+            {
+                var wId = group.Key;
+                warehouses.TryGetValue(wId, out var warehouse);
+                var wTasks = group.ToList();
+                var wShipped = wTasks.Where(t => t.ShippedAt.HasValue).ToList();
+                var wAvg = wShipped.Count > 0 ? wShipped.Average(t => (t.ShippedAt!.Value - t.CreatedAt).TotalHours) : 0.0;
+                var wOnTime = wShipped.Count(t => (t.ShippedAt!.Value - t.CreatedAt).TotalHours <= 48);
+                var wOnTimeRate = wShipped.Count > 0 ? (double)wOnTime / wShipped.Count * 100.0 : 0.0;
+                return new FulfillmentWarehouseLine(
+                    wId,
+                    warehouse?.Code ?? "UNKNOWN",
+                    warehouse?.Name ?? "Unknown warehouse",
+                    wTasks.Count,
+                    wShipped.Count,
+                    wTasks.Count(t => t.Status == FulfillmentTaskStatus.Cancelled),
+                    Math.Round(wAvg, 2),
+                    Math.Round(wOnTimeRate, 1));
+            })
+            .OrderBy(w => w.WarehouseCode)
+            .ToList();
+
+        return new FulfillmentReportData(
+            tasks.Count,
+            tasks.Count(t => t.Status == FulfillmentTaskStatus.Queued),
+            tasks.Count(t => t.Status == FulfillmentTaskStatus.Assigned),
+            tasks.Count(t => t.Status == FulfillmentTaskStatus.Picking),
+            tasks.Count(t => t.Status == FulfillmentTaskStatus.Packed),
+            shipped.Count,
+            tasks.Count(t => t.Status == FulfillmentTaskStatus.Cancelled),
+            Math.Round(avgHours, 2),
+            Math.Round(onTimeRate, 1),
+            warehouseLines);
     }
 
     private static DateTime StartOfDay(DateTime value) => value.Date;

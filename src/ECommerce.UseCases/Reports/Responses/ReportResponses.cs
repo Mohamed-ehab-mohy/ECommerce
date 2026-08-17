@@ -51,3 +51,45 @@ public sealed record FinanceReportResponse(
     DateTime From,
     DateTime To,
     IReadOnlyList<FinanceLine> Lines);
+
+/// <summary>Promotion performance line (US-L-004).</summary>
+public sealed record PromotionLine(
+    Guid PromotionId,
+    string Name,
+    string State,
+    int OrdersApplied,
+    decimal TotalDiscount,
+    int CouponRedemptions);
+
+public sealed record PromotionReportResponse(
+    DateTime From,
+    DateTime To,
+    int TotalPromotions,
+    int ActiveCount,
+    decimal TotalDiscount,
+    IReadOnlyList<PromotionLine> Promotions);
+
+/// <summary>Fulfillment SLA warehouse line (US-L-005).</summary>
+public sealed record FulfillmentWarehouseLine(
+    Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    int TotalTasks,
+    int Shipped,
+    int Cancelled,
+    double AvgHoursToShip,
+    double OnTimeRate);
+
+public sealed record FulfillmentReportResponse(
+    DateTime From,
+    DateTime To,
+    int TotalTasks,
+    int Queued,
+    int Assigned,
+    int Picking,
+    int Packed,
+    int Shipped,
+    int Cancelled,
+    double AvgHoursToShip,
+    double OnTimeRate,
+    IReadOnlyList<FulfillmentWarehouseLine> Warehouses);

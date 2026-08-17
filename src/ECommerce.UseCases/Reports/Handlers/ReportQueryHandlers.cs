@@ -102,3 +102,71 @@ public sealed class FinanceReportQueryHandler(
         return Result<FinanceReportResponse>.Success(new FinanceReportResponse(from, to, lines));
     }
 }
+
+/// <summary>Executes the promotion performance report (US-L-004, T-DAT-017).</summary>
+public sealed class PromotionReportQueryHandler(
+    IReportingQueryService reporting,
+    IValidator<PromotionReportQuery> validator,
+    TimeProvider timeProvider) : IRequestHandler<PromotionReportQuery, Result<PromotionReportResponse>>
+{
+    public async Task<Result<PromotionReportResponse>> Handle(
+        PromotionReportQuery request,
+        CancellationToken cancellationToken)
+    {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return validation.ToResult<PromotionReportResponse>();
+        }
+
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var (from, to) = ReportRanges.Resolve(request.From, request.To, utcNow);
+
+        var lines = await reporting.GetPromotionsAsync(new PromotionReportFilter(from, to), cancellationToken);
+
+        return Result<PromotionReportResponse>.Success(new PromotionReportResponse(
+            from,
+            to,
+            lines.Count,
+            lines.Count(l => l.State == "Active"),
+            lines.Sum(l => l.TotalDiscount),
+            lines));
+    }
+}
+
+/// <summary>Executes the fulfillment SLA report (US-L-005, T-DAT-017).</summary>
+public sealed class FulfillmentReportQueryHandler(
+    IReportingQueryService reporting,
+    IValidator<FulfillmentReportQuery> validator,
+    TimeProvider timeProvider) : IRequestHandler<FulfillmentReportQuery, Result<FulfillmentReportResponse>>
+{
+    public async Task<Result<FulfillmentReportResponse>> Handle(
+        FulfillmentReportQuery request,
+        CancellationToken cancellationToken)
+    {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return validation.ToResult<FulfillmentReportResponse>();
+        }
+
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var (from, to) = ReportRanges.Resolve(request.From, request.To, utcNow);
+
+        var data = await reporting.GetFulfillmentAsync(new FulfillmentReportFilter(from, to), cancellationToken);
+
+        return Result<FulfillmentReportResponse>.Success(new FulfillmentReportResponse(
+            from,
+            to,
+            data.TotalTasks,
+            data.Queued,
+            data.Assigned,
+            data.Picking,
+            data.Packed,
+            data.Shipped,
+            data.Cancelled,
+            data.AvgHoursToShip,
+            data.OnTimeRate,
+            data.Warehouses));
+    }
+}

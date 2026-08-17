@@ -51,3 +51,39 @@ public sealed class FinanceReportQueryValidator : AbstractValidator<FinanceRepor
             .WithMessage($"A report cannot span more than {ReportValidation.MaxReportDays} days.");
     }
 }
+
+public sealed class PromotionReportQueryValidator : AbstractValidator<PromotionReportQuery>
+{
+    public PromotionReportQueryValidator()
+    {
+        RuleFor(query => query.From)
+            .Must((query, value) => value is null || query.To is null || value <= query.To.Value)
+            .WithMessage("The start date cannot be after the end date.");
+
+        RuleFor(query => query.To)
+            .Must((query, value) => value is null || query.From is null || value >= query.From.Value)
+            .WithMessage("The start date cannot be after the end date.");
+
+        RuleFor(query => query)
+            .Must(query => query.From is null || query.To is null || query.To.Value - query.From.Value <= TimeSpan.FromDays(ReportValidation.MaxReportDays))
+            .WithMessage($"A report cannot span more than {ReportValidation.MaxReportDays} days.");
+    }
+}
+
+public sealed class FulfillmentReportQueryValidator : AbstractValidator<FulfillmentReportQuery>
+{
+    public FulfillmentReportQueryValidator()
+    {
+        RuleFor(query => query.From)
+            .Must((query, value) => value is null || query.To is null || value <= query.To.Value)
+            .WithMessage("The start date cannot be after the end date.");
+
+        RuleFor(query => query.To)
+            .Must((query, value) => value is null || query.From is null || value >= query.From.Value)
+            .WithMessage("The start date cannot be after the end date.");
+
+        RuleFor(query => query)
+            .Must(query => query.From is null || query.To is null || query.To.Value - query.From.Value <= TimeSpan.FromDays(ReportValidation.MaxReportDays))
+            .WithMessage($"A report cannot span more than {ReportValidation.MaxReportDays} days.");
+    }
+}

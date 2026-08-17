@@ -56,4 +56,36 @@ public sealed class ReportsController(ISender sender) : ControllerBase
             ? ProblemResponse.Create(result.ToOperationError())
             : Ok(result.Value);
     }
+
+    /// <summary>Promotion performance report (reports.read, US-L-004).</summary>
+    [HttpGet("promotions")]
+    public async Task<IActionResult> Promotions(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new PromotionReportQuery(from, to),
+            cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : Ok(result.Value);
+    }
+
+    /// <summary>Fulfillment SLA report (reports.read, US-L-005).</summary>
+    [HttpGet("fulfillment")]
+    public async Task<IActionResult> Fulfillment(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new FulfillmentReportQuery(from, to),
+            cancellationToken);
+
+        return result.IsFailure
+            ? ProblemResponse.Create(result.ToOperationError())
+            : Ok(result.Value);
+    }
 }

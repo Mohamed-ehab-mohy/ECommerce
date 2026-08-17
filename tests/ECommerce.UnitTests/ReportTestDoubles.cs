@@ -43,6 +43,10 @@ internal sealed class FakeReportingQueryService : IReportingQueryService
 
     public IReadOnlyList<FinanceLine> Finance { get; set; } = [];
 
+    public IReadOnlyList<PromotionLine> Promotions { get; set; } = [];
+
+    public FulfillmentReportData Fulfillment { get; set; } = new(0, 0, 0, 0, 0, 0, 0, 0, 0, []);
+
     public Task<IReadOnlyList<SalesPoint>> GetSalesSeriesAsync(
         SalesReportFilter filter,
         CancellationToken cancellationToken) =>
@@ -55,4 +59,14 @@ internal sealed class FakeReportingQueryService : IReportingQueryService
         FinanceReportFilter filter,
         CancellationToken cancellationToken) =>
         Task.FromResult(Finance);
+
+    public Task<IReadOnlyList<PromotionLine>> GetPromotionsAsync(
+        PromotionReportFilter filter,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Promotions);
+
+    public Task<FulfillmentReportData> GetFulfillmentAsync(
+        FulfillmentReportFilter filter,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(Fulfillment);
 }

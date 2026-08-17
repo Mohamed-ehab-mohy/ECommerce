@@ -30,3 +30,17 @@ public sealed record FinanceReportQuery(DateTime? From, DateTime? To)
 {
     public string Permission => Permissions.ReportsRead;
 }
+
+/// <summary>Promotion performance report (US-L-004, docs/08 §6.9).</summary>
+public sealed record PromotionReportQuery(DateTime? From, DateTime? To)
+    : IRequest<Result<PromotionReportResponse>>, IRequirePermission
+{
+    public string Permission => Permissions.ReportsRead;
+}
+
+/// <summary>Fulfillment SLA report (US-L-005, docs/08 §6.9).</summary>
+public sealed record FulfillmentReportQuery(DateTime? From, DateTime? To)
+    : IRequest<Result<FulfillmentReportResponse>>, IRequirePermission
+{
+    public string Permission => Permissions.ReportsRead;
+}

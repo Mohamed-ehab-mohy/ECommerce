@@ -74,6 +74,54 @@ public static class CsvReportRenderer
         return builder.ToString();
     }
 
+    public static string RenderPromotions(IReadOnlyList<PromotionLine> lines)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("PromotionId,Name,State,OrdersApplied,TotalDiscount,CouponRedemptions");
+
+        foreach (var line in lines)
+        {
+            builder.Append(line.PromotionId);
+            builder.Append(',');
+            builder.Append(Escape(line.Name));
+            builder.Append(',');
+            builder.Append(Escape(line.State));
+            builder.Append(',');
+            builder.Append(line.OrdersApplied.ToString(CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.Append(line.TotalDiscount.ToString("F2", CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.AppendLine(line.CouponRedemptions.ToString(CultureInfo.InvariantCulture));
+        }
+
+        return builder.ToString();
+    }
+
+    public static string RenderFulfillment(IReadOnlyList<FulfillmentWarehouseLine> warehouses)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("WarehouseCode,WarehouseName,TotalTasks,Shipped,Cancelled,AvgHoursToShip,OnTimeRate");
+
+        foreach (var line in warehouses)
+        {
+            builder.Append(Escape(line.WarehouseCode));
+            builder.Append(',');
+            builder.Append(Escape(line.WarehouseName));
+            builder.Append(',');
+            builder.Append(line.TotalTasks.ToString(CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.Append(line.Shipped.ToString(CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.Append(line.Cancelled.ToString(CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.Append(line.AvgHoursToShip.ToString("F2", CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.AppendLine(line.OnTimeRate.ToString("F1", CultureInfo.InvariantCulture));
+        }
+
+        return builder.ToString();
+    }
+
     private static string Escape(string value) =>
         value.IndexOfAny([',', '"', '\r', '\n']) < 0
             ? value
