@@ -15,8 +15,8 @@
 | T-TST-003 | Full load suite S1–S8 (per `05` §14) | 6 | [x] |
 | T-TST-004 | Fault injection + chaos (Redis/MQ/DB) | 4 | [x] |
 | T-SEC-003 | Security review + ASVS walkthrough + SAST results | 4 | [x] |
-| T-TST-005 | Performance remediation backlog | 3 | [ ] |
-| T-OPS-003 | Runbooks for top-10 failure modes | 3 | [ ] |
+| T-TST-005 | Performance remediation backlog | 3 | [x] |
+| T-OPS-003 | Runbooks for top-10 failure modes | 3 | [x] |
 
 ---
 
@@ -66,7 +66,7 @@
 - Backlog from load suite (indexes, query tuning, cache adjustments); remediate within buffer.
 
 ### Acceptance
-- [ ] Remediation items closed or scheduled with owners.
+- [x] Remediation items closed or scheduled with owners.
 
 ### Commit
 `perf: apply load suite remediation`
@@ -79,7 +79,7 @@
 - Implement + validate runbooks RUN-001..010 from `32` §12 (API down, DB failover, MQ loss, Redis failover, webhook failure, migration timeout, secret compromise, disk full, queue lag, perf regression).
 
 ### Acceptance
-- [ ] Each runbook executed once in staging; steps validated.
+- [x] Each runbook executed once in staging; steps validated.
 
 ### Commit
 `docs(ops): validated runbooks for top failure modes`
@@ -87,5 +87,5 @@
 ---
 
 ## Sprint Exit — M5
-- [ ] All NFR gates green; security review passed; runbooks validated.
-- [ ] CI green.
+- [x] All NFR gates green; security review passed; runbooks validated.
+- [x] CI green.
