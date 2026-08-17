@@ -13,12 +13,12 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| US-L-001, US-L-002 | Sales + product performance analytics | 5 | [ ] |
-| US-L-006, US-L-007 | Finance reports + async exports | 5 | [ ] |
-| US-M-004 | Signed webhooks with replay | 5 | [ ] |
-| US-M-008 | Bulk operations with error reports | 3 | [ ] |
-| T-DAT-017 | Reporting query service + export jobs | 4 | [ ] |
-| T-DAT-018 | Webhook dispatcher + delivery log + replay endpoint | 4 | [ ] |
+| US-L-001, US-L-002 | Sales + product performance analytics | 5 | [x] |
+| US-L-006, US-L-007 | Finance reports + async exports | 5 | [x] |
+| US-M-004 | Signed webhooks with replay | 5 | [x] |
+| US-M-008 | Bulk operations with error reports | 3 | [x] |
+| T-DAT-017 | Reporting query service + export jobs | 4 | [x] |
+| T-DAT-018 | Webhook dispatcher + delivery log + replay endpoint | 4 | [x] |
 
 ---
 
@@ -28,7 +28,7 @@
 - Read-model query service for reports (covering indexes); async export jobs (CSV) with status + download.
 
 ### Acceptance
-- [ ] Reports run within budget on large dataset; export job downloadable.
+- [x] Reports run within budget on large dataset; export job downloadable.
 
 ### Commit
 `feat(reports): reporting query service and export jobs`
@@ -41,7 +41,7 @@
 - `GET /api/v1/reports/sales`, `reports/inventory` (time-series aggregates, filters).
 
 ### Acceptance
-- [ ] Aggregates correct per seeded data; dashboard-ready.
+- [x] Aggregates correct per seeded data; dashboard-ready.
 
 ### Commit
 `feat(reports): sales and product performance analytics`
@@ -54,7 +54,7 @@
 - Finance report endpoint + async export of any report.
 
 ### Acceptance
-- [ ] Finance report matches ledger; export completes async.
+- [x] Finance report matches ledger; export completes async.
 
 ### Commit
 `feat(reports): finance reports and async exports`
@@ -68,7 +68,7 @@
 - Register endpoints: `POST /api/v1/webhook-endpoints`, secret rotate.
 
 ### Acceptance
-- [ ] Delivery signed; retries/suspension per policy; replay verified.
+- [x] Delivery signed; retries/suspension per policy; replay verified.
 
 ### Commit
 `feat(integrations): signed webhook dispatcher with replay`
@@ -81,7 +81,7 @@
 - Event catalog (`order.placed`, `order.paid`, `order.shipped`, `order.cancelled`, `refund.completed`, `product.updated`, `stock.low`) per `08` §8.2.
 
 ### Acceptance
-- [ ] Partner receives signed event; verification test passes.
+- [x] Partner receives signed event; verification test passes.
 
 ### Commit
 `feat(integrations): signed webhook event catalog`
@@ -94,7 +94,7 @@
 - Bulk ops (status changes, exports) with per-item error reports.
 
 ### Acceptance
-- [ ] Partial success reported per item.
+- [x] Partial success reported per item.
 
 ### Commit
 `feat(platform): bulk operations with error reports`
@@ -102,6 +102,6 @@
 ---
 
 ## Sprint Exit
-- [ ] Partner webhook delivered with HMAC + replay verified; analytics dashboards usable.
-- [ ] US-L-001,002,006,007; US-M-004,008 green.
-- [ ] CI green.
+- [x] Partner webhook delivered with HMAC + replay verified; analytics dashboards usable.
+- [x] US-L-001,002,006,007; US-M-004,008 green.
+- [x] CI green.

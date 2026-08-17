@@ -78,6 +78,13 @@ services:
       SeqUrl: "http://seq:80"
       Auth__RequireVerifiedEmail: "false"
       Jwt__KeyFile: "/app/keys/jwt-staging.pem"
+      Jwt__Issuer: "https://${ALLOWED_HOSTS:-ecommerce-staging.example.com}"
+      Jwt__Audience: "ecommerce-staging-client"
+      OAuth__Issuer: "https://${ALLOWED_HOSTS:-ecommerce-staging.example.com}"
+      OAuth__Authority: "https://${ALLOWED_HOSTS:-ecommerce-staging.example.com}"
+      ReverseProxy__Clusters__api-cluster__Destinations__api__Address: "http://api:8080/"
+      OtlpTracesEndpoint: "http://seq:80"
+      OtlpMetricsEndpoint: "http://seq:80"
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:

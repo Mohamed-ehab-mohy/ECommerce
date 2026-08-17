@@ -28,7 +28,7 @@
 - Redis SignalR backplane; JWT hub auth (`u:{userId}` groups); `lastEventId` replay on reconnect; envelope per `08` §9.
 
 ### Acceptance
-- [ ] Event delivered to correct user group; reconnect replays missed events.
+- [x] Event delivered to correct user group; reconnect replays missed events.
 
 ### Commit
 `feat(realtime): redis backplane, hub auth and event replay`
@@ -41,7 +41,7 @@
 - `orderHub`: push `OrderStatusChanged`, `OrderTimelineUpdated` to `u:{userId}`.
 
 ### Acceptance
-- [ ] Order events push live to customer group.
+- [x] Order events push live to customer group.
 
 ### Commit
 `feat(realtime): customer order hub`
@@ -54,7 +54,7 @@
 - `warehouseHub`: `NewFulfillmentTask`, `TaskStatusChanged`, `StockAlert` to `wh:{id}`; client resume via lastEventId.
 
 ### Acceptance
-- [ ] Warehouse events push; reconnect resumes without duplicates.
+- [x] Warehouse events push; reconnect resumes without duplicates.
 
 ### Commit
 `feat(realtime): warehouse hub with resume`
@@ -67,7 +67,7 @@
 - `adminHub` live metrics (order rate, stock alerts, recon drift) to `admins`.
 
 ### Acceptance
-- [ ] Admin dashboard updates live; permission-gated.
+- [x] Admin dashboard updates live; permission-gated.
 
 ### Commit
 `feat(realtime): live operational tiles`
@@ -80,7 +80,7 @@
 - Vote helpful/not helpful on reviews; unique per customer+review.
 
 ### Acceptance
-- [ ] Vote idempotent per user; aggregate updated.
+- [x] Vote idempotent per user; aggregate updated.
 
 ### Commit
 `feat(reviews): review helpfulness voting`
@@ -94,7 +94,7 @@
 - Assert: p95 < 800 ms, error < 0.5%, 0 SLO burn; record in `34-load-and-performance-test-report.md`.
 
 ### Acceptance
-- [ ] 1,000 orders/min load test passes; report recorded.
+- [x] 1,000 orders/min load test passes; report recorded.
 
 ### Commit
 `test(perf): v1.1 load test at 1000 orders per minute`
@@ -102,6 +102,6 @@
 ---
 
 ## Sprint Exit — v1.1 GA
-- [ ] Full commercial flows green; 1,000 orders/min load test passes; observability complete; dashboards live.
-- [ ] US-N-001..004; US-K-005 green.
-- [ ] CI green.
+- [x] Full commercial flows green; 1,000 orders/min load test passes; observability complete; dashboards live.
+- [x] US-N-001..004; US-K-005 green.
+- [x] CI green.

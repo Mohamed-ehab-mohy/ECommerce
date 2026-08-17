@@ -34,9 +34,9 @@
 - Map gRPC services in `Program.cs`; keep REST endpoints intact.
 
 ### Acceptance
-- [ ] `grpcurl` can list services and call `OrderStatusService.GetByNumber`.
-- [ ] gRPC endpoint secured (TLS), REST unaffected.
-- [ ] Integration test calls gRPC over Testcontainers-free in-process client.
+- [x] `grpcurl` can list services and call `OrderStatusService.GetByNumber`.
+- [x] gRPC endpoint secured (TLS), REST unaffected.
+- [x] Integration test calls gRPC over Testcontainers-free in-process client.
 
 ### Commit
 `feat(grpc): add grpc host, protos and order status service`
@@ -52,9 +52,9 @@
 - gRPC auth: JWT bearer interceptor (`IMetadataBearerToken`), permission checks on admin methods.
 
 ### Acceptance
-- [ ] Unary + server-streaming calls work with JWT.
-- [ ] 403/401 mapped to gRPC status codes (PermissionDenied/Unauthenticated).
-- [ ] Unit tests for interceptors; integration tests for services.
+- [x] Unary + server-streaming calls work with JWT.
+- [x] 403/401 mapped to gRPC status codes (PermissionDenied/Unauthenticated).
+- [x] Unit tests for interceptors; integration tests for services.
 
 ### Commit
 `feat(grpc): order status and catalog lookup services with jwt auth`
@@ -74,9 +74,9 @@
 - Metrics/telemetry per policy (otel + log on open/close).
 
 ### Acceptance
-- [ ] Unit tests prove: retry fires N times, circuit opens then half-opens, timeout aborts.
-- [ ] Policy failures exposed as `problems/upstream-unavailable` (502).
-- [ ] Dashboards show circuit state metric.
+- [x] Unit tests prove: retry fires N times, circuit opens then half-opens, timeout aborts.
+- [x] Policy failures exposed as `problems/upstream-unavailable` (502).
+- [x] Dashboards show circuit state metric.
 
 ### Commit
 `feat(resilience): polly policies library with telemetry`
@@ -91,8 +91,8 @@
 - Ensure idempotent operations safe under retry (no double PSP charge — retry only on idempotent ops).
 
 ### Acceptance
-- [ ] Kill provider in staging → circuit opens, fallback data served, no double-charge.
-- [ ] Contract tests pass through policies.
+- [x] Kill provider in staging → circuit opens, fallback data served, no double-charge.
+- [x] Contract tests pass through policies.
 
 ### Commit
 `feat(resilience): wire polly into adapters with cache fallback`
@@ -108,9 +108,9 @@
 - Parameterized SQL only; SQL lives in dedicated `Sql/` folder or inline constants — no string concat.
 
 ### Acceptance
-- [ ] Same query via EF and Dapper returns identical DTOs (contract tests).
-- [ ] Benchmarked (BenchmarkDotNet or k6) — Dapper path faster or equal; results recorded.
-- [ ] Architecture tests: read model store used only by query paths, never write paths.
+- [x] Same query via EF and Dapper returns identical DTOs (contract tests).
+- [x] Benchmarked (BenchmarkDotNet or k6) — Dapper path faster or equal; results recorded.
+- [x] Architecture tests: read model store used only by query paths, never write paths.
 
 ### Commit
 `feat(cqrs): dapper read models for read path`
@@ -126,9 +126,9 @@
 - Keep transaction discipline: reads on replica connection, writes on primary.
 
 ### Acceptance
-- [ ] Toggle switches read path at runtime without code change.
-- [ ] Benchmark comparison recorded in `docs/40-dapper-read-models.md` + `34` report.
-- [ ] No Dapper reference outside Infrastructure (architecture test).
+- [x] Toggle switches read path at runtime without code change.
+- [x] Benchmark comparison recorded in `docs/40-dapper-read-models.md` + `34` report.
+- [x] No Dapper reference outside Infrastructure (architecture test).
 
 ### Commit
 `feat(cqrs): dual-provider query strategy with toggle`

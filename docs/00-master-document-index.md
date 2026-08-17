@@ -12,7 +12,9 @@ This document serves as the single entry point for all project documentation. It
 |---|-------|--------|-------------|
 | 00 | Master Document Index | **Exists** | This file — index of all project documentation. |
 | 01 | Project Charter | **Exists** | Project goals, scope, stakeholders, and success criteria. |
+| 01a | Product Vision | **Exists** | Product vision, scope, personas, competitive analysis, and capability roadmap. |
 | 02 | Glossary | **Exists** | Domain terms, definitions, and entity mappings across all bounded contexts. |
+| 02a | User Personas | **Exists** | Detailed user personas with journey maps, JTBD, and requirement mapping. |
 | 03 | Business Requirements | **Exists** | Business-level requirements and constraints for the ECommerce platform. |
 | 03a | User Stories | **Exists** | Detailed user stories with acceptance criteria. |
 | 03b | Product Backlog | **Exists** | Prioritised product backlog items. |
@@ -57,9 +59,9 @@ This document serves as the single entry point for all project documentation. It
 | 36a | Performance Remediation Backlog | **Exists** | Tracked performance improvements and optimisation backlog. |
 | 37 | Coding Standards | **Exists** | C# coding conventions, naming, project structure, and tooling. |
 | 37a | Runbooks — Top 10 Failure Modes | **Exists** | Operational runbooks for the most common production failure scenarios. |
-| 38 | Database Migration Strategy | **Planned** | EF Core migrations, versioning, rollback, and seed data strategy. |
-| 39 | Caching Strategy | **Planned** | Cache layers, invalidation patterns, and cache configuration. |
-| 40 | Internationalisation & Localisation | **Planned** | Multi-currency, locale handling, and product translation strategy. |
+| 38 | Database Migration Strategy | **Exists** | EF Core migrations, multi-provider strategy, versioning, rollback, and seed data. |
+| 39 | Caching Strategy | **Exists** | Two-tier caching (L1 in-memory, L2 Redis), invalidation patterns, and health checks. |
+| 40 | Internationalisation & Localisation | **Exists** | Multi-currency Money value object, locale handling, product translations, and UTC conventions. |
 | 41 | OAuth/OIDC Design | **Exists** | Lightweight OAuth 2.0 implementation with client credentials, ROPC, and social login stubs. |
 | 42 | YARP Gateway Design | **Exists** | YARP reverse proxy as BFF gateway with in-process routing. |
 | 43 | SQL Server Provider | **Exists** | Multi-database support with EF Core and Dapper provider switching. |
