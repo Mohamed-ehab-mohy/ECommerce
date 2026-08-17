@@ -12,8 +12,8 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| T-TST-003 | Full load suite S1–S8 (per `05` §14) | 6 | [ ] |
-| T-TST-004 | Fault injection + chaos (Redis/MQ/DB) | 4 | [ ] |
+| T-TST-003 | Full load suite S1–S8 (per `05` §14) | 6 | [x] |
+| T-TST-004 | Fault injection + chaos (Redis/MQ/DB) | 4 | [x] |
 | T-SEC-003 | Security review + ASVS walkthrough + SAST results | 4 | [ ] |
 | T-TST-005 | Performance remediation backlog | 3 | [ ] |
 | T-OPS-003 | Runbooks for top-10 failure modes | 3 | [ ] |
@@ -27,7 +27,7 @@
 - Capture into `34-load-and-performance-test-report.md`.
 
 ### Acceptance
-- [ ] All NFR-PERF thresholds met; evidence documented.
+- [x] All NFR-PERF thresholds met; evidence documented.
 
 ### Commit
 `test(perf): full load suite s1-s8`
@@ -40,7 +40,7 @@
 - Kill Redis/MQ/DB in staging; verify degradation matrix (`06` §P7) + auto-recovery; record findings.
 
 ### Acceptance
-- [ ] Failover/graceful degradation validated; no data corruption.
+- [x] Failover/graceful degradation validated; no data corruption.
 
 ### Commit
 `test(chaos): fault injection for redis, mq and db`
