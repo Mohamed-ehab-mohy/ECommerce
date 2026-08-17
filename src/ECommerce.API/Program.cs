@@ -136,6 +136,10 @@ app.MapHub<OrderHub>("/hubs/orders");
 app.MapHub<WarehouseHub>("/hubs/warehouse");
 app.MapHub<AdminHub>("/hubs/admin");
 
+app.MapGet("/gateway/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+app.MapReverseProxy();
+
 app.Run();
 
 public partial class Program;

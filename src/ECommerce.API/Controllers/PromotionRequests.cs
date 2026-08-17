@@ -1,4 +1,3 @@
-using ECommerce.Domain.Pricing;
 using ECommerce.UseCases.Promotions.Commands;
 
 namespace ECommerce.API.Controllers;

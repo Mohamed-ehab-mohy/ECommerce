@@ -27,9 +27,15 @@ public static class DependencyInjection
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddApplication();
+
+        var dataProvider = configuration.GetValue("DataProvider:Provider", "Postgres")!;
+        var sqlServerCs = configuration.GetConnectionString("SqlServer");
+
         services.AddInfrastructure(
             configuration.GetConnectionString("Postgres")!,
-            configuration.GetConnectionString("Redis")!);
+            configuration.GetConnectionString("Redis")!,
+            sqlServerCs,
+            dataProvider);
         services.AddPaymentInfrastructure(configuration);
         services.AddResilience(configuration);
         services.AddMessageBus(configuration);
@@ -68,6 +74,10 @@ public static class DependencyInjection
         services.AddSingleton(authSettings);
         services.AddSingleton(keyProvider);
 
+        var oauthOptions = configuration.GetSection(OAuthOptions.SectionName).Get<OAuthOptions>() ?? new OAuthOptions();
+        services.AddSingleton(oauthOptions);
+        services.AddSingleton(new OAuthClientStore(oauthOptions));
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -91,6 +101,8 @@ public static class DependencyInjection
         });
 
         services.AddGrpcHealthChecks();
+
+        services.AddReverseProxy().LoadFromConfig(configuration.GetSection("ReverseProxy"));
 
         services.AddDataProtection().SetApplicationName("ECommerce");
 

@@ -13,12 +13,12 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| T-OAU-001 | OpenIddict (OIDC server) setup | 5 | [ ] |
-| T-OAU-002 | Social login (Google + Apple) | 4 | [ ] |
-| T-OAU-003 | External API tokens (scoped client credentials) | 4 | [ ] |
-| T-YRP-001 | YARP reverse proxy (BFF gateway) | 5 | [ ] |
-| T-SQL-001 | SQL Server provider for EF | 4 | [ ] |
-| T-SQL-002 | Dapper SQL Server read models + provider switch | 4 | [ ] |
+| T-OAU-001 | OpenIddict (OIDC server) setup | 5 | [x] |
+| T-OAU-002 | Social login (Google + Apple) | 4 | [x] |
+| T-OAU-003 | External API tokens (scoped client credentials) | 4 | [x] |
+| T-YRP-001 | YARP reverse proxy (BFF gateway) | 5 | [x] |
+| T-SQL-001 | SQL Server provider for EF | 4 | [x] |
+| T-SQL-002 | Dapper SQL Server read models + provider switch | 4 | [x] |
 
 ---
 
@@ -127,7 +127,7 @@
 ---
 
 ## Sprint Exit
-- [ ] OIDC flows (code+PKCE, social, client-credentials) tested; docs 41 baseline.
-- [ ] YARP gateway routing verified (REST/gRPC/SignalR); docs 42 baseline.
-- [ ] SQL Server + Dapper provider matrix green in CI; docs 43 baseline.
-- [ ] CI green; ADRs recorded.
+- [x] OIDC flows (code+PKCE, social, client-credentials) tested; docs 41 baseline.
+- [x] YARP gateway routing verified (REST/gRPC/SignalR); docs 42 baseline.
+- [x] SQL Server + Dapper provider matrix green in CI; docs 43 baseline.
+- [x] CI green; ADRs recorded.

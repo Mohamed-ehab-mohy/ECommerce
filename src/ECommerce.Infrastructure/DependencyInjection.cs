@@ -68,15 +68,26 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         string postgresConnectionString,
-        string redisConnectionString)
+        string redisConnectionString,
+        string? sqlServerConnectionString = null,
+        string dataProvider = "Postgres")
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
-        dataSourceBuilder.EnableDynamicJson();
-        var dataSource = dataSourceBuilder.Build();
+        if (dataProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(sqlServerConnectionString))
+        {
+            services.AddDbContext<ECommerceDbContext>(options => options
+                .UseSqlServer(sqlServerConnectionString)
+                .AddInterceptors(new DomainEventsInterceptor()));
+        }
+        else
+        {
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
+            dataSourceBuilder.EnableDynamicJson();
+            var dataSource = dataSourceBuilder.Build();
 
-        services.AddDbContext<ECommerceDbContext>(options => options
-            .UseNpgsql(dataSource)
-            .AddInterceptors(new DomainEventsInterceptor()));
+            services.AddDbContext<ECommerceDbContext>(options => options
+                .UseNpgsql(dataSource)
+                .AddInterceptors(new DomainEventsInterceptor()));
+        }
 
         services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
 
@@ -115,6 +126,8 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddSingleton<ILoginAttemptThrottler, InMemoryLoginAttemptThrottler>();
+        services.AddSingleton<ISocialLoginProvider, StubSocialLoginProvider>();
+        services.AddScoped<IOAuthClientValidator, OAuthClientValidatorAdapter>();
         services.AddScoped<IAuditEntryRepository, AuditEntryRepository>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<IFeatureFlagRepository, FeatureFlagRepository>();

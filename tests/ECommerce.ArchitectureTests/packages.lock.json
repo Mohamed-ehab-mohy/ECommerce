@@ -102,6 +102,15 @@
           "Grpc.Tools": "2.83.0"
         }
       },
+      "Grpc.AspNetCore.HealthChecks": {
+        "type": "Transitive",
+        "resolved": "2.83.0",
+        "contentHash": "eZesvIrd41tgbTY5W/fjF9c6GXtjJC+enKEaxoVabcRtvHu8dvHgA5OL7iWzGvuyq+l5eLUxs9V1ZoHbbTTXBw==",
+        "dependencies": {
+          "Grpc.AspNetCore.Server": "2.83.0",
+          "Grpc.HealthCheck": "2.83.0"
+        }
+      },
       "Grpc.AspNetCore.Server": {
         "type": "Transitive",
         "resolved": "2.83.0",
@@ -123,6 +132,15 @@
         "type": "Transitive",
         "resolved": "2.83.0",
         "contentHash": "xU8BT2bCw4Ct+/qIFJhhjkDEilKUbBOfp4US7l3Xa3hnlkN9l2LgISCbOw4PFYpW5jJFcK7FUAyWOFIQ94Hiqg=="
+      },
+      "Grpc.HealthCheck": {
+        "type": "Transitive",
+        "resolved": "2.83.0",
+        "contentHash": "R7x5aqL351UEJr2jpNffnxJzSxR8BzdbUju5RQLjfPJEpxNwU4l87t1QfgWWPV3uRWVq3388Q7hArni8gtM7Xg==",
+        "dependencies": {
+          "Google.Protobuf": "3.31.1",
+          "Grpc.Core.Api": "2.83.0"
+        }
       },
       "Grpc.Net.Client": {
         "type": "Transitive",
@@ -343,6 +361,18 @@
         "contentHash": "grznnTJgEYxaWpdKAsTzg6j+89jHgCXWYp+QGtlX5O92+w/VuhWM6JLPYb+uw8M9VhGUvOTsO76dYOy9vNPd5Q==",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "10.0.11",
+          "Microsoft.Extensions.Caching.Memory": "10.0.11",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.11",
+          "Microsoft.Extensions.Logging": "10.0.11"
+        }
+      },
+      "Microsoft.EntityFrameworkCore.SqlServer": {
+        "type": "Transitive",
+        "resolved": "10.0.11",
+        "contentHash": "LClSs5cNN6za2Uk7IeH7RAP4Qe5EMXxFsD9i53ncPx21TVg04IEjoFyxvvsSNkq2/Ux9HyJsJ2qEO8Tl7Gcrrg==",
+        "dependencies": {
+          "Microsoft.Data.SqlClient": "6.1.6",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.11",
           "Microsoft.Extensions.Caching.Memory": "10.0.11",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.11",
           "Microsoft.Extensions.Logging": "10.0.11"
@@ -1052,6 +1082,14 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "Yarp.ReverseProxy": {
+        "type": "Transitive",
+        "resolved": "2.3.0",
+        "contentHash": "gxtkN3a+9biu9V9Zd5NaTO6VZWXAnS2mhQ0R/VXmSPoTuiQNZsakKikrKpDtKxrL5nUYzbRsHtl40WNq+ZBKKg==",
+        "dependencies": {
+          "System.IO.Hashing": "8.0.0"
+        }
+      },
       "ecommerce.api": {
         "type": "Project",
         "dependencies": {
@@ -1061,6 +1099,7 @@
           "ECommerce.UseCases": "[1.0.0, )",
           "Google.Protobuf": "[3.35.1, )",
           "Grpc.AspNetCore": "[2.83.0, )",
+          "Grpc.AspNetCore.HealthChecks": "[2.83.0, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.11, )",
           "Microsoft.AspNetCore.SignalR.StackExchangeRedis": "[10.0.11, )",
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.11, )",
@@ -1070,7 +1109,8 @@
           "OpenTelemetry.Instrumentation.AspNetCore": "[1.17.0, )",
           "OpenTelemetry.Instrumentation.Process": "[1.17.0-rc.1, )",
           "Serilog.AspNetCore": "[10.0.0, )",
-          "Serilog.Sinks.Seq": "[9.1.0, )"
+          "Serilog.Sinks.Seq": "[9.1.0, )",
+          "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
       "ecommerce.domain": {
@@ -1093,6 +1133,7 @@
           "MassTransit.RabbitMQ": "[8.5.10, )",
           "Microsoft.Data.SqlClient": "[7.0.2, )",
           "Microsoft.EntityFrameworkCore": "[10.0.11, )",
+          "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.11, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.11, )",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "[10.0.11, )",
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.11, )",

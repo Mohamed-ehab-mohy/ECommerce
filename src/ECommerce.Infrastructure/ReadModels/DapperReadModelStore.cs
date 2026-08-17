@@ -1,5 +1,6 @@
 using System.Data;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
@@ -8,13 +9,20 @@ namespace ECommerce.Infrastructure.ReadModels;
 public sealed class DapperReadModelStore : IReadModelStore, IDbConnectionFactory
 {
     private readonly string _connectionString;
+    private readonly string _provider;
 
     public DapperReadModelStore(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("Postgres")!;
+        _provider = configuration.GetValue("DataProvider:Provider", "Postgres")!;
+        _connectionString = _provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase)
+            ? configuration.GetConnectionString("SqlServer")!
+            : configuration.GetConnectionString("Postgres")!;
     }
 
-    public IDbConnection CreateConnection() => new NpgsqlConnection(_connectionString);
+    public IDbConnection CreateConnection() =>
+        _provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase)
+            ? new SqlConnection(_connectionString)
+            : new NpgsqlConnection(_connectionString);
 
     public async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? parameters = null, CancellationToken cancellationToken = default)
     {
