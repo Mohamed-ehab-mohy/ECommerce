@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.3.0] — 2026-08-17
+
+### Features
+- **gRPC:** Order status and catalog lookup gRPC services with JWT token forwarding interceptor
+- **OAuth 2.0:** Client credentials and ROPC token endpoints, discovery document, OAuthClientStore
+- **Social Login:** Google/Apple social login stub with account linking port
+- **YARP Gateway:** In-process reverse proxy as BFF layer with config-driven routes
+- **SQL Server:** Multi-database support via `DataProvider:Provider` config (Postgres/SqlServer)
+- **Dapper Read Models:** Provider-aware connection factory (NpgsqlConnection/SqlConnection), QueryProvider toggle
+
+### Resilience
+- **Polly v8:** ResiliencePolicyFactory with retry, circuit breaker, timeout for webhooks and external APIs
+
+### Architecture
+- Fixed `Api_ShouldNotDependOnDomainDirectly` — OAuthController routes through MediatR instead of injecting IUserRepository
+- All 910 tests passing (7 architecture + 838 unit + 65 integration)
+
+### Documentation
+- 41: OAuth/OIDC Design, 42: YARP Gateway Design, 43: SQL Server Provider
+
+---
+
 ## [v1.2.0] — 2026-08-17
 
 ### Features
