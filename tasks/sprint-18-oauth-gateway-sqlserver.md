@@ -32,9 +32,9 @@
 - Consent screen + scopes (`openid profile email offline_access` + custom `orders.read` etc.).
 
 ### Acceptance
-- [ ] Authorization Code + PKCE flow works end-to-end in integration test.
-- [ ] Discovery document valid; token introspection works.
-- [ ] Refresh rotation from S2 reused.
+- [x] Authorization Code + PKCE flow works end-to-end in integration test.
+- [x] Discovery document valid; token introspection works.
+- [x] Refresh rotation from S2 reused.
 
 ### Commit
 `feat(oidc): openiddict server with authorization code and pkce`
@@ -49,8 +49,8 @@
 - PII-safe: store only provider subject + email; never tokens.
 
 ### Acceptance
-- [ ] Google + Apple test accounts sign in; linking works; audit records provider.
-- [ ] Conflict path handled without data loss.
+- [x] Google + Apple test accounts sign in; linking works; audit records provider.
+- [x] Conflict path handled without data loss.
 
 ### Commit
 `feat(oidc): google and apple social login`
@@ -64,8 +64,8 @@
 - Token introspection + audience validation for partner endpoints; revoke/rotate app secrets.
 
 ### Acceptance
-- [ ] Partner app obtains scoped token; forbidden scope → 403.
-- [ ] Secret rotation revokes old credentials.
+- [x] Partner app obtains scoped token; forbidden scope → 403.
+- [x] Secret rotation revokes old credentials.
 
 ### Commit
 `feat(oidc): client credentials for partner api access`
@@ -82,9 +82,9 @@
 - Health check on gateway.
 
 ### Acceptance
-- [ ] All routes proxied correctly (REST + gRPC + SignalR + dashboard).
-- [ ] Gateway-level rate limit enforced; headers set; traceId propagated.
-- [ ] Config via `appsettings` (YARP transform-friendly), not code.
+- [x] All routes proxied correctly (REST + gRPC + SignalR + dashboard).
+- [x] Gateway-level rate limit enforced; headers set; traceId propagated.
+- [x] Config via `appsettings` (YARP transform-friendly), not code.
 
 ### Commit
 `feat(gateway): yarp reverse proxy as bff gateway`
@@ -100,9 +100,9 @@
 - Document feature parity gaps (partitioning, RLS differences) in `docs/43-sql-server-provider.md`.
 
 ### Acceptance
-- [ ] Full schema migrates + seeds on SQL Server (local/container).
-- [ ] Integration tests run against SQL Server container variant.
-- [ ] CI matrix runs both providers.
+- [x] Full schema migrates + seeds on SQL Server (local/container).
+- [x] Integration tests run against SQL Server container variant.
+- [x] CI matrix runs both providers.
 
 ### Commit
 `feat(data): sql server ef provider with migrations`
@@ -117,9 +117,9 @@
 - Config toggle: `QueryProvider: Ef|Dapper` + `DataProvider: Postgres|SqlServer` (4 combinations tested in CI).
 
 ### Acceptance
-- [ ] Read models identical across provider combinations.
-- [ ] CI matrix: 2 data providers × 2 query providers.
-- [ ] Performance comparison recorded.
+- [x] Read models identical across provider combinations.
+- [x] CI matrix: 2 data providers × 2 query providers.
+- [x] Performance comparison recorded.
 
 ### Commit
 `feat(data): dapper sql server read models with provider switch`
