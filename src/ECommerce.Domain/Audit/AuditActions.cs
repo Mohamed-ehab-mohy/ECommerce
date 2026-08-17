@@ -39,4 +39,7 @@ public static class AuditActions
     public const string ReviewModerated = "reviews.review.moderated";
     public const string ReviewRemovedAction = "reviews.review.removed";
     public const string BulkProductStatusChange = "catalog.bulk.status.change";
+    public const string AccountClosed = "identity.account.closed";
+    public const string AccountErased = "identity.account.erased";
+    public const string ImpersonationStarted = "identity.impersonation.started";
 }

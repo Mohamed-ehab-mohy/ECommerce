@@ -81,5 +81,25 @@ public sealed class ProfileController(ISender sender) : ControllerBase
             : NoContent();
     }
 
+    [HttpPost("close")]
+    public async Task<IActionResult> CloseAccount(CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new CloseAccountCommand(User.GetUserId()), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : NoContent();
+    }
+
+    [HttpPost("erase")]
+    public async Task<IActionResult> ErasePersonalData(CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ErasePersonalDataCommand(User.GetUserId()), cancellationToken);
+
+        return result.IsFailure
+            ? ToProblem(result.ToOperationError())
+            : NoContent();
+    }
+
     private static IActionResult ToProblem(OperationError error) => ProblemResponse.Create(error);
 }

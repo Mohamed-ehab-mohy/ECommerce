@@ -13,3 +13,5 @@ public sealed record LogoutRequest(string RefreshToken);
 public sealed record ForgotPasswordRequest(string Email);
 
 public sealed record ResetPasswordRequest(string Token, string NewPassword);
+
+public sealed record ImpersonateRequest(Guid TargetUserId);

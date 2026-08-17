@@ -224,4 +224,35 @@ public sealed class Customer : BaseEntity<Guid>
 
         return Result.Success();
     }
+
+    public void Close(DateTime utcNow)
+    {
+        IsDeleted = true;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new AccountClosed(Id));
+    }
+
+    public void Anonymize(DateTime utcNow)
+    {
+        var anonymousId = Id.ToString()[..8];
+        Email = $"deleted-{anonymousId}@anonymized.invalid";
+        DisplayName = "Deleted User";
+        Phone = null;
+        Locale = "en";
+        Currency = "USD";
+        PasswordHash = string.Empty;
+        EmailVerified = false;
+        EmailVerifiedAt = null;
+        VerificationTokenHash = null;
+        VerificationTokenExpiresAt = null;
+        PasswordResetTokenHash = null;
+        PasswordResetTokenExpiresAt = null;
+        FailedLoginCount = 0;
+        LockoutEndAtUtc = null;
+        IsDeleted = true;
+        UpdatedAt = utcNow;
+
+        AddDomainEvent(new AccountErased(Id));
+    }
 }

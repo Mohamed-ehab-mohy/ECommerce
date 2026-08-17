@@ -124,6 +124,34 @@ public sealed class AuthController(ISender sender) : ControllerBase
             : Ok(new { status = "passwordReset" });
     }
 
+    [Authorize]
+    [HttpPost("impersonate")]
+    public async Task<IActionResult> Impersonate(ImpersonateRequest request, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new ImpersonateUserCommand(request.TargetUserId), cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return ToProblem(result.ToOperationError());
+        }
+
+        var r = result.Value;
+        return Ok(new
+        {
+            accessToken = r.AccessToken,
+            refreshToken = r.RefreshToken,
+            expiresIn = r.ExpiresInSeconds,
+            tokenType = "Bearer",
+            impersonatorId = r.ImpersonatorId,
+            user = new
+            {
+                id = r.UserId,
+                email = r.Email,
+                roles = r.Roles
+            }
+        });
+    }
+
     private static object ToTokenResponse(LoginResult result) => new
     {
         accessToken = result.AccessToken,
