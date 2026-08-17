@@ -5,6 +5,7 @@ using ECommerce.API.Jobs;
 using ECommerce.Infrastructure.Jobs;
 using Hangfire;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -44,7 +45,22 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    KnownIPNetworks = { },
+    KnownProxies = { }
+});
+
+if (!builder.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
 app.UseSerilogRequestLogging();
+
+app.UseSecurityHeaders();
 
 app.UseMiddleware<ApiVersionMiddleware>();
 

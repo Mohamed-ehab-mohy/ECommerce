@@ -58,7 +58,7 @@ services:
     restart: unless-stopped
     environment:
       ACCEPT_EULA: Y
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_FIRSTRUN_ADMINPASSWORD:-StagingAdmin#2026!}
+      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_FIRSTRUN_ADMINPASSWORD:?Set SEQ_FIRSTRUN_ADMINPASSWORD in .env}
     ports:
       - "5341:80"
     volumes:
@@ -71,6 +71,7 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
+      AllowedHosts: "${ALLOWED_HOSTS:-ecommerce-staging.example.com}"
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ecommerce_staging};Username=${POSTGRES_USER:-ecommerce};Password=${POSTGRES_PASSWORD:-ecommerce_staging_pw}"
       ConnectionStrings__Redis: "redis:6379"
       ConnectionStrings__RabbitMq: "amqp://${RABBITMQ_USER:-ecommerce}:${RABBITMQ_PASSWORD:-ecommerce_staging_pw}@rabbitmq:5672"

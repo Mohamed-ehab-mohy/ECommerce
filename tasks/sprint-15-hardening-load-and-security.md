@@ -14,7 +14,7 @@
 |----|------|:------:|--------|
 | T-TST-003 | Full load suite S1–S8 (per `05` §14) | 6 | [x] |
 | T-TST-004 | Fault injection + chaos (Redis/MQ/DB) | 4 | [x] |
-| T-SEC-003 | Security review + ASVS walkthrough + SAST results | 4 | [ ] |
+| T-SEC-003 | Security review + ASVS walkthrough + SAST results | 4 | [x] |
 | T-TST-005 | Performance remediation backlog | 3 | [ ] |
 | T-OPS-003 | Runbooks for top-10 failure modes | 3 | [ ] |
 
@@ -53,7 +53,7 @@
 - OWASP ASVS L2 walkthrough, SAST results review, dependency/container scans, pen-test (external or internal), collate in `35-security-review.md`.
 
 ### Acceptance
-- [ ] All critical/high findings remediated or risk-accepted with sign-off.
+- [x] All critical/high findings remediated or risk-accepted with sign-off.
 
 ### Commit
 `docs(security): security review and asvs walkthrough`
