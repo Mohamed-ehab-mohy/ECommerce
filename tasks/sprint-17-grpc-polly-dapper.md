@@ -13,12 +13,12 @@
 
 | ID | Task | Points | Status |
 |----|------|:------:|--------|
-| T-GRPC-001 | gRPC service host + contracts | 5 | [ ] |
-| T-GRPC-002 | gRPC services: OrderStatus, CatalogLookup | 5 | [ ] |
-| T-RES-001 | Polly policies library (retry/circuit/timeout/bulkhead) | 4 | [ ] |
-| T-RES-002 | Wire Polly into HTTP adapters + cache fallback | 4 | [ ] |
-| T-DPR-001 | Dapper read models (CQRS read path) | 5 | [ ] |
-| T-DPR-002 | Dapper + EF dual-provider query strategy | 4 | [ ] |
+| T-GRPC-001 | gRPC service host + contracts | 5 | [x] |
+| T-GRPC-002 | gRPC services: OrderStatus, CatalogLookup | 5 | [x] |
+| T-RES-001 | Polly policies library (retry/circuit/timeout/bulkhead) | 4 | [x] |
+| T-RES-002 | Wire Polly into HTTP adapters + cache fallback | 4 | [x] |
+| T-DPR-001 | Dapper read models (CQRS read path) | 5 | [x] |
+| T-DPR-002 | Dapper + EF dual-provider query strategy | 4 | [x] |
 
 ---
 
@@ -136,7 +136,7 @@
 ---
 
 ## Sprint Exit
-- [ ] gRPC services demoed (grpcurl + integration tests); docs 38 baseline.
-- [ ] Polly policies verified (circuit open/fallback/no double-charge); docs 39 baseline.
-- [ ] Dapper read models benchmarked; docs 40 baseline.
-- [ ] CI green; all ADRs recorded.
+- [x] gRPC services demoed (grpcurl + integration tests); docs 38 baseline.
+- [x] Polly policies verified (circuit open/fallback/no double-charge); docs 39 baseline.
+- [x] Dapper read models benchmarked; docs 40 baseline.
+- [x] CI green; all ADRs recorded.
