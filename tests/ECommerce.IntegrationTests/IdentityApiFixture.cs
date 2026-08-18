@@ -10,13 +10,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
+using StackExchange.Redis;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 
 namespace ECommerce.IntegrationTests;
 
 public sealed class IdentityApiFixture : IAsyncLifetime
 {
     private PostgreSqlContainer? _container;
+    private RedisContainer? _redisContainer;
     private WebApplicationFactory<Program>? _factory;
 
     public HttpClient Client { get; private set; } = null!;
@@ -33,7 +36,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         }
 
         _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
-        await _container.StartAsync();
+        _redisContainer = new RedisBuilder("redis:7-alpine").Build();
+        await Task.WhenAll(_container.StartAsync(), _redisContainer.StartAsync());
 
         var emailSender = new CapturingEmailSender();
 
@@ -44,7 +48,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                 {
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:Postgres"] = _container!.GetConnectionString()
+                        ["ConnectionStrings:Postgres"] = _container!.GetConnectionString(),
+                        ["ConnectionStrings:Redis"] = _redisContainer!.GetConnectionString()
                     });
                 });
 
@@ -55,6 +60,10 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
                     services.RemoveAll<IEmailSender>();
                     services.AddSingleton<IEmailSender>(emailSender);
+
+                    services.RemoveAll<IConnectionMultiplexer>();
+                    services.AddSingleton<IConnectionMultiplexer>(_ =>
+                        ConnectionMultiplexer.Connect(_redisContainer!.GetConnectionString()));
 
                     var dataSourceBuilder = new NpgsqlDataSourceBuilder(_container!.GetConnectionString());
                     dataSourceBuilder.EnableDynamicJson();
@@ -100,12 +109,16 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         throw new InvalidOperationException("Database migrations did not complete in time.");
     }
 
-    public Task DisposeAsync()
+    public async Task DisposeAsync()
     {
         _factory?.Dispose();
 
-        return _container is { } container && Docker.IsAvailable
-            ? container.DisposeAsync().AsTask()
-            : Task.CompletedTask;
+        if (Docker.IsAvailable)
+        {
+            if (_container is { } container)
+                await container.DisposeAsync().AsTask();
+            if (_redisContainer is { } redis)
+                await redis.DisposeAsync().AsTask();
+        }
     }
 }
