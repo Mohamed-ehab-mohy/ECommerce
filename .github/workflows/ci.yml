@@ -41,10 +41,14 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: "**/*.csproj"
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
       - name: Unit Tests
-        run: dotnet test tests/ECommerce.UnitTests --no-restore --logger "trx;LogFileName=unit.trx"
+        run: dotnet test tests/ECommerce.UnitTests --no-build --logger "trx;LogFileName=unit.trx"
       - name: Architecture Tests
-        run: dotnet test tests/ECommerce.ArchitectureTests --no-restore --logger "trx;LogFileName=arch.trx"
+        run: dotnet test tests/ECommerce.ArchitectureTests --no-build --logger "trx;LogFileName=arch.trx"
 
   integration-tests:
     name: Integration Tests
@@ -58,8 +62,12 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: "**/*.csproj"
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
       - name: Integration Tests
-        run: dotnet test tests/ECommerce.IntegrationTests --no-restore --logger "trx;LogFileName=integration.trx"
+        run: dotnet test tests/ECommerce.IntegrationTests --no-build --logger "trx;LogFileName=integration.trx"
 
   format:
     name: Format Check
@@ -73,6 +81,8 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
           cache-dependency-path: "**/*.csproj"
+      - name: Restore
+        run: dotnet restore
       - name: Format
         run: dotnet format --verify-no-changes
 
