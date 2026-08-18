@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace ECommerce.API.Controllers;
 
 [ApiController]
@@ -123,6 +124,13 @@ public sealed class ProductsController(ISender sender) : ControllerBase
         return result.IsFailure
             ? ToProblem(result.ToOperationError())
             : NoContent();
+    }
+
+    [HttpGet("autocomplete")]
+    public async Task<IActionResult> Autocomplete([FromQuery] string q, [FromQuery] int limit = 10, CancellationToken cancellationToken = default)
+    {
+        var results = await sender.Send(new AutocompleteProductsQuery(q, limit), cancellationToken);
+        return Ok(results);
     }
 
     private static IActionResult ToProblem(OperationError error) => ProblemResponse.Create(error);

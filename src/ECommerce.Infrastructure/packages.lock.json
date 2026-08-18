@@ -213,6 +213,12 @@
           "Npgsql": "10.0.3"
         }
       },
+      "Otp.NET": {
+        "type": "Direct",
+        "requested": "[1.4.0, )",
+        "resolved": "1.4.0",
+        "contentHash": "Fk1NKc0lWmlo6LAFYpFJInRgFKt72knRNEvxndDYoQHFwYOPXav+WEUBvQA0k4lxq5xt0SymrZ+oi0F/G40bPQ=="
+      },
       "QuestPDF": {
         "type": "Direct",
         "requested": "[2026.7.3, )",

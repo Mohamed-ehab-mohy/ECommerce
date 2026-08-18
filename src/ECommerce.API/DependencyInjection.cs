@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddProblemDetails();
         services.AddHttpContextAccessor();
+        services.AddScoped<ICorrelationIdProvider, HttpContextCorrelationIdProvider>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

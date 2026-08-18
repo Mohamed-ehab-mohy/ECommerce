@@ -1,5 +1,31 @@
 # Changelog
 
+## [v1.7.0] — 2026-08-18
+
+### Features
+- **MFA/TOTP:** Time-based One-Time Password setup and verification endpoints (`POST /api/v1/mfa/setup`, `POST /api/v1/mfa/verify`)
+- **Correlation ID:** `X-Correlation-Id` header propagated on every request, added to Serilog log context
+- **Autocomplete:** `GET /api/v1/products/autocomplete?q=iPhone&limit=10` — fuzzy product search via pg_trgm
+- **SLO/SLI:** Documented service level objectives, SLI metrics, error budgets, and alerting runbook
+
+### Security
+- MFA entity with lockout after failed attempts
+- TOTP via OtpNet (RFC 6238 compliant)
+- QR code URL generation for authenticator apps
+
+### Observability
+- CorrelationId in every log entry via Serilog LogContext
+- CorrelationId header returned in every API response
+
+### Documentation
+- Doc 45: SLO/SLI definitions with Prometheus metrics mapping
+
+### Database
+- EF Core migration: MfaSecrets table
+- 851 tests passing (7 arch + 844 unit)
+
+---
+
 ## [v1.6.0] — 2026-08-18
 
 ### Features

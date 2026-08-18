@@ -60,6 +60,8 @@ if (!builder.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseMiddleware<CorrelationIdMiddleware>();
+
 app.UseSerilogRequestLogging();
 
 app.UseSecurityHeaders();

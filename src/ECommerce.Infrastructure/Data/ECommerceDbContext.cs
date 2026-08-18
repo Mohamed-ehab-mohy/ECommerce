@@ -128,6 +128,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<CheckoutSagaState> CheckoutSagaStates => Set<CheckoutSagaState>();
 
+    public DbSet<MfaSecret> MfaSecrets => Set<MfaSecret>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pg_trgm");

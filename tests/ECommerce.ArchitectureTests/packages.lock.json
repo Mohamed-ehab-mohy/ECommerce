@@ -870,6 +870,11 @@
           "OpenTelemetry.Api": "[1.17.0, 2.0.0)"
         }
       },
+      "Otp.NET": {
+        "type": "Transitive",
+        "resolved": "1.4.0",
+        "contentHash": "Fk1NKc0lWmlo6LAFYpFJInRgFKt72knRNEvxndDYoQHFwYOPXav+WEUBvQA0k4lxq5xt0SymrZ+oi0F/G40bPQ=="
+      },
       "Polly.Core": {
         "type": "Transitive",
         "resolved": "8.4.2",
@@ -1199,6 +1204,7 @@
           "Microsoft.Extensions.Http.Resilience": "[10.9.0, )",
           "Microsoft.Extensions.Options": "[10.0.11, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
+          "Otp.NET": "[1.4.0, )",
           "QuestPDF": "[2026.7.3, )",
           "StackExchange.Redis": "[3.1.13, )",
           "Stripe.net": "[52.2.0, )",
