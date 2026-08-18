@@ -25,6 +25,9 @@ public static class DependencyInjection
             bus.AddConsumer<OrderCancelledConsumer>();
             bus.AddConsumer<OrderShippedConsumer>();
 
+            bus.AddSagaStateMachine<CheckoutSagaStateMachine, Domain.Checkout.CheckoutSagaState>()
+                .InMemoryRepository();
+
             bus.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(new Uri(connectionString));

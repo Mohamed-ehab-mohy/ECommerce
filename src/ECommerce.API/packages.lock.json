@@ -183,6 +183,19 @@
         "resolved": "1.0.48",
         "contentHash": "rsLM3yKr4g+YKKox9lhc8D+kz67P7Q9+xdyn1LmCsoYr1kYpJSm+Nt6slo5UrfUrcTiGJ57zUlyO8XUdV7G7iA=="
       },
+      "Elastic.Clients.Elasticsearch": {
+        "type": "Transitive",
+        "resolved": "8.18.0",
+        "contentHash": "3CNnsyG4Md9Gj7FEiAc+OPz0MuejFADpomBfZ5Y2ZLsW5V3x9noF1XQ6+beYGgqyUA6Vh/Uzgesh57An0iSoGA==",
+        "dependencies": {
+          "Elastic.Transport": "0.5.9"
+        }
+      },
+      "Elastic.Transport": {
+        "type": "Transitive",
+        "resolved": "0.5.9",
+        "contentHash": "RXoJAeXKaXq67SeLhyDMBPpvlkG940jqJWd5l+rKglMRLJn6X0dkLNlWehpDuouicNdwnYdcuADnqdSOiSvASw=="
+      },
       "FluentValidation": {
         "type": "Transitive",
         "resolved": "12.1.1",
@@ -772,7 +785,8 @@
       "ecommerce.domain": {
         "type": "Project",
         "dependencies": {
-          "ECommerce.Shared": "[1.0.0, )"
+          "ECommerce.Shared": "[1.0.0, )",
+          "MassTransit.Abstractions": "[8.5.10, )"
         }
       },
       "ecommerce.infrastructure": {
@@ -782,6 +796,7 @@
           "Dapper": "[2.1.79, )",
           "ECommerce.Domain": "[1.0.0, )",
           "ECommerce.UseCases": "[1.0.0, )",
+          "Elastic.Clients.Elasticsearch": "[8.18.0, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Hangfire.AspNetCore": "[1.8.24, )",
           "Hangfire.PostgreSql": "[1.21.1, )",

@@ -14,6 +14,15 @@
         "resolved": "2.1.79",
         "contentHash": "8YijbzgTfmqmQOnVNorYM6K++pxqnW3nJ4aC1sRHzxUA2CcuoJ9gsTem3kgBnPRMc38zZHl4Esb6hAezXIEEuw=="
       },
+      "Elastic.Clients.Elasticsearch": {
+        "type": "Direct",
+        "requested": "[8.18.0, )",
+        "resolved": "8.18.0",
+        "contentHash": "3CNnsyG4Md9Gj7FEiAc+OPz0MuejFADpomBfZ5Y2ZLsW5V3x9noF1XQ6+beYGgqyUA6Vh/Uzgesh57An0iSoGA==",
+        "dependencies": {
+          "Elastic.Transport": "0.5.9"
+        }
+      },
       "FluentValidation.DependencyInjectionExtensions": {
         "type": "Direct",
         "requested": "[12.1.1, )",
@@ -183,6 +192,16 @@
           "Microsoft.Extensions.Resilience": "10.9.0"
         }
       },
+      "Microsoft.Extensions.Options": {
+        "type": "Direct",
+        "requested": "[10.0.11, )",
+        "resolved": "10.0.11",
+        "contentHash": "eY1GAKcTfD2maP27J84X9IovT3yjHJ2dVDzPmDg6/XqYvt3jMzJhtfQCLjG9pVsZGAd+8DQ2QrjaDcs2+VQLGw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.11",
+          "Microsoft.Extensions.Primitives": "10.0.11"
+        }
+      },
       "Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "Direct",
         "requested": "[10.0.3, )",
@@ -240,6 +259,11 @@
         "type": "Transitive",
         "resolved": "1.0.48",
         "contentHash": "rsLM3yKr4g+YKKox9lhc8D+kz67P7Q9+xdyn1LmCsoYr1kYpJSm+Nt6slo5UrfUrcTiGJ57zUlyO8XUdV7G7iA=="
+      },
+      "Elastic.Transport": {
+        "type": "Transitive",
+        "resolved": "0.5.9",
+        "contentHash": "RXoJAeXKaXq67SeLhyDMBPpvlkG940jqJWd5l+rKglMRLJn6X0dkLNlWehpDuouicNdwnYdcuADnqdSOiSvASw=="
       },
       "FluentValidation": {
         "type": "Transitive",
@@ -591,15 +615,6 @@
         "resolved": "10.0.11",
         "contentHash": "p76ztQFROBOlHgdV1vXfmTjRyu073Av7ZlsiLR93ka6+nzkLCeV2ONXq0DO/BGf71REqGW29Uy/20fzQHAjB7Q=="
       },
-      "Microsoft.Extensions.Options": {
-        "type": "Transitive",
-        "resolved": "10.0.11",
-        "contentHash": "eY1GAKcTfD2maP27J84X9IovT3yjHJ2dVDzPmDg6/XqYvt3jMzJhtfQCLjG9pVsZGAd+8DQ2QrjaDcs2+VQLGw==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.11",
-          "Microsoft.Extensions.Primitives": "10.0.11"
-        }
-      },
       "Microsoft.Extensions.Options.ConfigurationExtensions": {
         "type": "Transitive",
         "resolved": "10.0.11",
@@ -868,7 +883,8 @@
       "ecommerce.domain": {
         "type": "Project",
         "dependencies": {
-          "ECommerce.Shared": "[1.0.0, )"
+          "ECommerce.Shared": "[1.0.0, )",
+          "MassTransit.Abstractions": "[8.5.10, )"
         }
       },
       "ecommerce.shared": {

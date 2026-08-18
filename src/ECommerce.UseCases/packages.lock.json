@@ -104,7 +104,8 @@
       "ecommerce.domain": {
         "type": "Project",
         "dependencies": {
-          "ECommerce.Shared": "[1.0.0, )"
+          "ECommerce.Shared": "[1.0.0, )",
+          "MassTransit.Abstractions": "[8.5.10, )"
         }
       },
       "ecommerce.shared": {

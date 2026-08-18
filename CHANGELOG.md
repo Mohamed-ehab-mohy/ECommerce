@@ -1,5 +1,41 @@
 # Changelog
 
+## [v1.6.0] — 2026-08-18
+
+### Features
+- **Elasticsearch integration:** Full-text search with faceted filtering, fuzzy matching, and autocomplete. pg_trgm fallback when ES is unavailable.
+- **Checkout Saga:** MassTransit state machine orchestrating Cart → Order → Payment → Inventory → Fulfillment with compensation
+- **Return Requests:** Full lifecycle (Requested → Approved/Rejected → Completed) with REST API
+- **Product Variants:** Domain entity exists, ready for CRUD extension
+
+### Search
+- `ElasticProductSearchRepository` with JSON-based query DSL for ES 8.x compatibility
+- `ProductIndexerService` for bulk and incremental product indexing
+- Faceted search: categories, brands, price ranges, ratings
+- Docker Compose service for Elasticsearch 8.15
+
+### Distributed Systems
+- Checkout saga state machine with 7 states, 6 events, compensation flows
+- `CheckoutSagaState` entity with EF Core persistence
+- In-memory saga repository (upgradeable to EF-backed)
+
+### Infrastructure
+- **K8s PDB:** PodDisruptionBudget (minAvailable: 1) for zero-downtime updates
+- **K8s NetworkPolicy:** Ingress restricted to ingress-nginx, egress allowed
+- **K8s SecurityContext:** runAsNonRoot, readOnlyRootFilesystem, drop ALL capabilities
+- **K8s StartupProbe:** Prevents premature liveness kills during cold start
+
+### Testing
+- 6 contract tests (API shapes, domain entity creation, search criteria)
+- 2 integration tests for ReturnRequest via Testcontainers
+- 851 total tests passing (7 arch + 844 unit)
+
+### Database
+- EF Core migration: ReturnRequest + ReturnRequestItem tables
+- EF Core migration: CheckoutSagaState table
+
+---
+
 ## [v1.5.0] — 2026-08-18
 
 ### Features

@@ -1,6 +1,7 @@
 using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Checkout;
 using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
@@ -120,6 +121,12 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
     public DbSet<ExportJob> ExportJobs => Set<ExportJob>();
+
+    public DbSet<ReturnRequest> ReturnRequests => Set<ReturnRequest>();
+
+    public DbSet<ReturnRequestItem> ReturnRequestItems => Set<ReturnRequestItem>();
+
+    public DbSet<CheckoutSagaState> CheckoutSagaStates => Set<CheckoutSagaState>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

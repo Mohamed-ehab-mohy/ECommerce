@@ -30,6 +30,7 @@ using ECommerce.Infrastructure.Shipping;
 using ECommerce.Infrastructure.Storage;
 using ECommerce.Infrastructure.ReadModels;
 using ECommerce.Infrastructure.Wishlists;
+using Elastic.Clients.Elasticsearch;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Catalog.Ports;
@@ -264,7 +265,33 @@ public static class DependencyInjection
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IRefundRepository, RefundRepository>();
+        services.AddScoped<IReturnRequestRepository, ReturnRequestRepository>();
         services.AddScoped<IRefundRetryJobScheduler, HangfireRefundRetryJobScheduler>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddSearchInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var elasticOptions = configuration
+            .GetSection(ElasticSearchOptions.SectionName)
+            .Get<ElasticSearchOptions>() ?? new ElasticSearchOptions();
+
+        services.Configure<ElasticSearchOptions>(configuration.GetSection(ElasticSearchOptions.SectionName));
+
+        if (elasticOptions.Enabled)
+        {
+            services.AddSingleton(sp =>
+            {
+                var settings = new ElasticsearchClientSettings(new Uri(elasticOptions.Uri))
+                    .DefaultIndex(elasticOptions.IndexName);
+                return new ElasticsearchClient(settings);
+            });
+            services.AddScoped<ProductIndexerService>();
+            services.AddScoped<IProductSearchRepository, ElasticProductSearchRepository>();
+        }
 
         return services;
     }

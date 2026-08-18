@@ -12,3 +12,6 @@ data:
   SeqUrl: "http://seq:5341"
   OtlpTracesEndpoint: "http://seq:5341/ingest/otlp/v1/traces"
   OtlpMetricsEndpoint: "http://seq:5341/ingest/otlp/v1/metrics"
+  ElasticSearch__Uri: "http://elasticsearch:9200"
+  ElasticSearch__IndexName: "products"
+  ElasticSearch__Enabled: "false"

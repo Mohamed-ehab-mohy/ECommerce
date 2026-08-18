@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddResilience(configuration);
         services.AddMessageBus(configuration);
         services.AddJobs(configuration);
+        services.AddSearchInfrastructure(configuration);
 
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
 
