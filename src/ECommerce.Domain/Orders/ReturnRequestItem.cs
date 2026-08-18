@@ -16,7 +16,11 @@ public sealed class ReturnRequestItem
         int quantity, decimal unitPrice, string? reason) =>
         new()
         {
-            OrderItemId = orderItemId, ProductId = productId, Sku = sku,
-            Quantity = quantity, UnitPrice = unitPrice, Reason = reason
+            OrderItemId = orderItemId,
+            ProductId = productId,
+            Sku = sku,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            Reason = reason
         };
 }

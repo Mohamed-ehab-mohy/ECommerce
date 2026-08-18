@@ -25,10 +25,16 @@ public sealed class ReturnRequest : BaseEntity<Guid>
     {
         var request = new ReturnRequest
         {
-            Id = Guid.NewGuid(), OrderId = orderId, CustomerId = customerId,
-            Reason = reason.Trim(), Currency = currency, RefundAmount = refundAmount,
-            Restock = restock, Status = ReturnRequestStatus.Requested,
-            CreatedAt = utcNow, UpdatedAt = utcNow
+            Id = Guid.NewGuid(),
+            OrderId = orderId,
+            CustomerId = customerId,
+            Reason = reason.Trim(),
+            Currency = currency,
+            RefundAmount = refundAmount,
+            Restock = restock,
+            Status = ReturnRequestStatus.Requested,
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
         };
         request._items.AddRange(items);
         return request;
