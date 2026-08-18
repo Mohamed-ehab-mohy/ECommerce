@@ -13,6 +13,7 @@ namespace ECommerce.API.Controllers;
 [Route("api/v1/me")]
 public sealed class ProfileController(ISender sender) : ControllerBase
 {
+    /// <summary>Get the current user's profile.</summary>
     [HttpGet]
     public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
     {
@@ -23,6 +24,7 @@ public sealed class ProfileController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
+    /// <summary>Update the current user's display name, phone, locale, or currency.</summary>
     [HttpPatch]
     public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request, CancellationToken cancellationToken)
     {
@@ -91,6 +93,7 @@ public sealed class ProfileController(ISender sender) : ControllerBase
             : NoContent();
     }
 
+    /// <summary>Export all personal data for the current user (GDPR).</summary>
     [HttpGet("export")]
     public async Task<IActionResult> ExportData(CancellationToken cancellationToken)
     {

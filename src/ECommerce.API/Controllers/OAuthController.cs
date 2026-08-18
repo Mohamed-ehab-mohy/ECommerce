@@ -12,6 +12,7 @@ namespace ECommerce.API.Controllers;
 public sealed class OAuthController(
     ISender sender) : ControllerBase
 {
+    /// <summary>Issue an access token via client_credentials or password grant.</summary>
     [HttpPost("token")]
     public async Task<IActionResult> Token([FromForm] OAuthTokenRequest request, CancellationToken cancellationToken)
     {
@@ -30,6 +31,7 @@ public sealed class OAuthController(
         };
     }
 
+    /// <summary>Revoke an issued access token.</summary>
     [HttpPost("revoke")]
     public IActionResult Revoke([FromForm] OAuthRevokeRequest request)
     {

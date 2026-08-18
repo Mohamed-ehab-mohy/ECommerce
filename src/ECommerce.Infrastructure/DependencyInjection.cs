@@ -81,7 +81,14 @@ public static class DependencyInjection
         }
         else
         {
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
+            var csBuilder = new NpgsqlConnectionStringBuilder(postgresConnectionString)
+            {
+                MinPoolSize = 5,
+                MaxPoolSize = 100,
+                ConnectionIdleLifetime = 300
+            };
+
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(csBuilder.ConnectionString);
             dataSourceBuilder.EnableDynamicJson();
             var dataSource = dataSourceBuilder.Build();
 

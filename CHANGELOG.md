@@ -1,5 +1,44 @@
 # Changelog
 
+## [v1.5.0] — 2026-08-18
+
+### Features
+- **Swagger/OpenAPI:** Interactive API documentation at `/swagger` in development
+- **GDPR Export:** `GET /api/v1/me/export` returns customer data as JSON
+- **Stripe Webhooks:** Full inbound webhook handler with HMAC-SHA256 verification
+
+### Infrastructure
+- **Terraform:** AWS IaC — VPC, RDS PostgreSQL, ElastiCache Redis, ECS Fargate, ALB, HPA
+- **K8s:** Deployment, Service, Ingress (TLS), ConfigMap, Secrets, HPA manifests
+
+### Performance
+- **Compiled EF Queries:** 7 hot-path queries pre-compiled (orders, products, carts)
+- **Connection Pool:** Npgsql MinPoolSize=5, MaxPoolSize=100, ConnectionIdleLifetime=300
+- **AsSplitQuery:** Multi-include Order queries use split queries
+
+### Security
+- **Rate Limiting:** 100 req/10s global, 10 req/60s on auth endpoints
+- **CORS:** Configurable origins via `Cors:AllowedOrigins`
+
+### Observability
+- **Grafana Dashboard:** 9-panel overview (API, Business, Infrastructure)
+- **Alertmanager:** Error rate, latency, outbox backlog, dead letter alerts
+- **Business Metrics:** orders, payments, cart abandonment, checkout duration
+
+### Testing
+- **k6 Load Tests:** Browse, checkout flow, rate limit scripts
+
+### Documentation
+- Swagger XML docs on all controllers
+- Doc 44: Data Retention Policy
+- Terraform README with setup instructions
+
+### Architecture
+- 845 tests passing (7 arch + 838 unit)
+- API has zero Domain dependencies (Stripe webhooks + OAuth routed via MediatR)
+
+---
+
 ## [v1.4.0] — 2026-08-17
 
 ### Security

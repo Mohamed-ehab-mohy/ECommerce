@@ -12,6 +12,7 @@ namespace ECommerce.API.Controllers;
 [Route("api/v1/products")]
 public sealed class ProductsController(ISender sender) : ControllerBase
 {
+    /// <summary>Search and filter products by keyword, category, brand, price, and rating.</summary>
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
@@ -52,6 +53,7 @@ public sealed class ProductsController(ISender sender) : ControllerBase
             : Ok(listResult.Value);
     }
 
+    /// <summary>Get a single product by its unique identifier.</summary>
     [HttpGet("{productId:guid}")]
     public async Task<IActionResult> Get(
         Guid productId,

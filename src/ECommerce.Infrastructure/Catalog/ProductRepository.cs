@@ -8,18 +8,10 @@ namespace ECommerce.Infrastructure.Catalog;
 public sealed class ProductRepository(ECommerceDbContext dbContext) : IProductRepository
 {
     public Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        dbContext.Set<Product>()
-            .Include(product => product.Translations)
-            .Include(product => product.Prices)
-            .SingleOrDefaultAsync(product => product.Id == id, cancellationToken);
+        CompiledQueries.GetProductById(dbContext, id);
 
     public Task<Product?> GetActiveByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        dbContext.Set<Product>()
-            .Include(product => product.Translations)
-            .Include(product => product.Prices)
-            .SingleOrDefaultAsync(
-                product => product.Id == id && product.Status == ProductStatus.Active && !product.IsDeleted,
-                cancellationToken);
+        CompiledQueries.GetActiveProductById(dbContext, id);
 
     public async Task<IReadOnlyList<Product>> GetByIdsAsync(
         IReadOnlyCollection<Guid> ids,

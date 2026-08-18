@@ -17,6 +17,7 @@ public sealed class StripeWebhookController(
     IOptions<StripeWebhookOptions> webhookOptions,
     ILogger<StripeWebhookController> logger) : ControllerBase
 {
+    /// <summary>Receive and process Stripe webhook events (payments, refunds).</summary>
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> HandleStripeEvent(CancellationToken cancellationToken)

@@ -80,9 +80,7 @@ public sealed class CartRepository : ICartRepository
     }
 
     public Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        _dbContext.Set<Cart>()
-            .Include(cart => cart.Items)
-            .SingleOrDefaultAsync(cart => cart.Id == id, cancellationToken);
+        CompiledQueries.GetCartById(_dbContext, id);
 
     public async Task SaveAsync(Cart cart, CancellationToken cancellationToken)
     {
@@ -137,9 +135,7 @@ public sealed class CartRepository : ICartRepository
     }
 
     private Task<Cart?> LoadFromStoreAsync(string ownerKey, CancellationToken cancellationToken) =>
-        _dbContext.Set<Cart>()
-            .Include(cart => cart.Items)
-            .SingleOrDefaultAsync(cart => cart.OwnerKey == ownerKey, cancellationToken);
+        CompiledQueries.GetCartByOwnerKey(_dbContext, ownerKey);
 
     private void LogHitRatio()
     {

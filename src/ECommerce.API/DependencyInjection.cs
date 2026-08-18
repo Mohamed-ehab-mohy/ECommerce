@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 
 namespace ECommerce.API;
@@ -48,6 +49,47 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddProblemDetails();
         services.AddHttpContextAccessor();
+
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "ECommerce API",
+                Version = "v1",
+                Description = "Full-featured e-commerce platform API with 18+ modules"
+            });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header. Example: \"Bearer {token}\"",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly);
+            foreach (var xmlFile in xmlFiles)
+            {
+                options.IncludeXmlComments(xmlFile);
+            }
+        });
 
         services.AddScoped<IAuditContextProvider, AuditContextProvider>();
         services.AddScoped<ICurrentUser, CurrentUser>();

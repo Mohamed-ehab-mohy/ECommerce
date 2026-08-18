@@ -143,6 +143,16 @@ app.MapGrpcService<OrderStatusGrpcService>();
 app.MapGrpcService<CatalogLookupGrpcService>();
 app.MapGrpcHealthChecksService();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "ECommerce API v1");
+        options.RoutePrefix = "swagger";
+    });
+}
+
 app.MapControllers();
 
 app.MapHub<OrderHub>("/hubs/orders");

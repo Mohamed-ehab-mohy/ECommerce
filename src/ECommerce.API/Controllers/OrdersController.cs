@@ -18,6 +18,7 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
 
     private const int MaxPageSize = 100;
 
+    /// <summary>List order history for the current user with cursor-based pagination.</summary>
     [HttpGet]
     public async Task<IActionResult> History(
         [FromQuery] string? cursor,
@@ -49,6 +50,7 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
         return Ok(result.Value);
     }
 
+    /// <summary>Get full details for a specific order by order number.</summary>
     [HttpGet("{orderNumber}")]
     public async Task<IActionResult> Detail(string orderNumber, CancellationToken cancellationToken)
     {
@@ -79,6 +81,7 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
             : Ok(result.Value.Timeline);
     }
 
+    /// <summary>Cancel an existing order with an optional reason.</summary>
     [HttpPost("{orderNumber}/cancel")]
     public async Task<IActionResult> Cancel(
         string orderNumber,
@@ -98,6 +101,7 @@ public sealed class OrdersController(ISender sender, ICurrentUser currentUser) :
             : Ok(result.Value);
     }
 
+    /// <summary>Reorder all items from a previous order into the current cart.</summary>
     [HttpPost("{orderNumber}/reorder")]
     public async Task<IActionResult> Reorder(string orderNumber, CancellationToken cancellationToken)
     {

@@ -9,24 +9,13 @@ namespace ECommerce.Infrastructure.Orders;
 public sealed class OrderRepository(ECommerceDbContext dbContext) : IOrderRepository
 {
     public Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        dbContext.Set<Order>()
-            .Include(order => order.Items)
-            .Include(order => order.BackorderItems)
-            .SingleOrDefaultAsync(order => order.Id == id, cancellationToken);
+        CompiledQueries.GetOrderById(dbContext, id);
 
     public Task<Order?> GetByNumberAsync(string orderNumber, CancellationToken cancellationToken) =>
-        dbContext.Set<Order>()
-            .Include(order => order.Items)
-            .Include(order => order.BackorderItems)
-            .SingleOrDefaultAsync(order => order.OrderNumber == orderNumber, cancellationToken);
+        CompiledQueries.GetOrderByNumber(dbContext, orderNumber);
 
     public Task<Order?> GetByNumberWithDetailsAsync(string orderNumber, CancellationToken cancellationToken) =>
-        dbContext.Set<Order>()
-            .Include(order => order.Items)
-            .Include(order => order.StatusLogs)
-            .Include(order => order.BackorderItems)
-            .AsSplitQuery()
-            .SingleOrDefaultAsync(order => order.OrderNumber == orderNumber, cancellationToken);
+        CompiledQueries.GetOrderByNumberWithDetails(dbContext, orderNumber);
 
     public async Task<IReadOnlyList<OrderBackorderItem>> ListOpenBackorderItemsBySkuAsync(
         string sku,
