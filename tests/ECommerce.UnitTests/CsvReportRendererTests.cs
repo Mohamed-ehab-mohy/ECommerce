@@ -14,7 +14,7 @@ public sealed class CsvReportRendererTests
             new SalesPoint(new DateTime(2026, 8, 2, 0, 0, 0, DateTimeKind.Utc), 1, 10.00m, 1)
         ]);
 
-        var lines = csv.TrimEnd().Split("\r\n");
+        var lines = csv.TrimEnd().Replace("\r\n", "\n").Split('\n');
         Assert.Equal("PeriodStart,Orders,Revenue,Items", lines[0]);
         Assert.Equal("2026-08-01T00:00:00.0000000Z,2,39.90,3", lines[1]);
         Assert.Equal("2026-08-02T00:00:00.0000000Z,1,10.00,1", lines[2]);

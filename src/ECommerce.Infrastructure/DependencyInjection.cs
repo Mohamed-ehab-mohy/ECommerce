@@ -111,7 +111,8 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductImportRepository, ProductImportRepository>();
         services.AddScoped<IProductImportJobScheduler, HangfireProductImportJobScheduler>();
-        services.AddScoped<IProductSearchRepository, ProductSearchRepository>();
+        services.AddScoped<ProductSearchRepository>();
+        services.AddScoped<IProductSearchRepository>(sp => sp.GetRequiredService<ProductSearchRepository>());
         services.AddScoped<IAutocompleteRepository, AutocompleteRepository>();
         services.AddScoped<IEventHandler<ProductCreated>, ProductSearchIndexSynchronizer>();
         services.AddScoped<IEventHandler<ProductUpdated>, ProductSearchIndexSynchronizer>();
