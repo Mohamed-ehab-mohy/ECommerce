@@ -364,22 +364,22 @@
       },
       "targets": [
         {
-          "expr": "hikaricp_connections_active",
-          "legendFormat": "Active connections",
+          "expr": "dotnet_threadpool_thread_count",
+          "legendFormat": "ThreadPool threads",
           "refId": "A"
         },
         {
-          "expr": "hikaricp_connections_idle",
-          "legendFormat": "Idle connections",
+          "expr": "process_memory_usage_bytes / 1048576",
+          "legendFormat": "Heap (MB)",
           "refId": "B"
         },
         {
-          "expr": "hikaricp_connections_pending",
-          "legendFormat": "Pending requests",
+          "expr": "dotnet_gc_gen_2_heap_size_bytes / 1048576",
+          "legendFormat": "LOH (MB)",
           "refId": "C"
         }
       ],
-      "title": "Postgres Connection Pool",
+      "title": "Process Runtime (Threads / GC Heap)",
       "type": "timeseries"
     },
     {
