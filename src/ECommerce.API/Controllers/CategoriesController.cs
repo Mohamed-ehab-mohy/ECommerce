@@ -13,6 +13,7 @@ namespace ECommerce.API.Controllers;
 public sealed class CategoriesController(ISender sender) : ControllerBase
 {
     [HttpGet]
+    [ResponseCache(Duration = 900)]
     public async Task<IActionResult> GetTree(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCategoryTreeQuery(), cancellationToken);

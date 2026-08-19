@@ -15,6 +15,7 @@ public sealed class ProductsController(ISender sender) : ControllerBase
 {
     /// <summary>Search and filter products by keyword, category, brand, price, and rating.</summary>
     [HttpGet]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = ["page", "pageSize", "q", "categoryId", "brandId", "price.gte", "price.lte", "rating.gte", "locale", "currency"], VaryByHeader = "Accept-Language")]
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -56,6 +57,7 @@ public sealed class ProductsController(ISender sender) : ControllerBase
 
     /// <summary>Get a single product by its unique identifier.</summary>
     [HttpGet("{productId:guid}")]
+    [ResponseCache(Duration = 300, VaryByQueryKeys = ["locale", "currency"], VaryByHeader = "Accept-Language")]
     public async Task<IActionResult> Get(
         Guid productId,
         [FromQuery] string? locale = null,

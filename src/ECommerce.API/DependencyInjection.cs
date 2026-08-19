@@ -1,4 +1,4 @@
-using System.Threading.RateLimiting;
+﻿using System.Threading.RateLimiting;
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
 using ECommerce.API.Grpc;
@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
 
         services.AddControllers();
+        services.AddResponseCaching();
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddHttpContextAccessor();

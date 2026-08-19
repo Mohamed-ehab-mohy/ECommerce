@@ -1,4 +1,4 @@
-using ECommerce.API;
+﻿using ECommerce.API;
 using ECommerce.API.Common;
 using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
@@ -65,6 +65,8 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging();
 
 app.UseSecurityHeaders();
+
+app.UseResponseCaching();
 
 app.UseMiddleware<ApiVersionMiddleware>();
 

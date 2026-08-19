@@ -13,6 +13,7 @@ namespace ECommerce.API.Controllers;
 public sealed class BrandsController(ISender sender) : ControllerBase
 {
     [HttpGet]
+    [ResponseCache(Duration = 900)]
     public async Task<IActionResult> List(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
