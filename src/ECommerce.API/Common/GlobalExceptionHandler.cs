@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Common;
 
-public sealed class GlobalExceptionHandler(IWebHostEnvironment environment, ILogger<GlobalExceptionHandler> logger)
+public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -20,10 +20,7 @@ public sealed class GlobalExceptionHandler(IWebHostEnvironment environment, ILog
             Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
         };
 
-        if (environment.IsDevelopment())
-        {
-            problem.Detail = exception.Message;
-        }
+        problem.Detail = exception.Message;
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);

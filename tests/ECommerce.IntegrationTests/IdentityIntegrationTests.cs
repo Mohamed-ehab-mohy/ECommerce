@@ -292,7 +292,8 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         var oldRefreshToken = login.GetProperty("refreshToken").GetString()!;
 
         var refreshResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = oldRefreshToken });
-        Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
+        var refreshBody = await ReadBodyAsync(refreshResponse);
+        Assert.True(refreshResponse.StatusCode == HttpStatusCode.OK, $"Refresh failed with {refreshResponse.StatusCode}: {refreshBody}");
         var refreshed = await ReadJsonAsync(refreshResponse);
         Assert.False(string.IsNullOrWhiteSpace(refreshed.GetProperty("accessToken").GetString()));
         Assert.NotEqual(oldRefreshToken, refreshed.GetProperty("refreshToken").GetString());
@@ -318,6 +319,11 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 
         Assert.Equal(2, responses.Length);
         var statuses = responses.Select(response => response.StatusCode).OrderBy(code => code).ToArray();
+        if (statuses[0] != HttpStatusCode.OK)
+        {
+            var failBody = await ReadBodyAsync(responses.First(r => r.StatusCode != HttpStatusCode.OK));
+            Assert.Fail($"Expected OK but got {statuses[0]}. Body: {failBody}");
+        }
         Assert.Equal(HttpStatusCode.OK, statuses[0]);
         Assert.Equal(HttpStatusCode.Unauthorized, statuses[1]);
 
@@ -348,7 +354,8 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
 
         var refreshResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken });
-        Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
+        var refreshBody = await ReadBodyAsync(refreshResponse);
+        Assert.True(refreshResponse.StatusCode == HttpStatusCode.Unauthorized, $"Expected Unauthorized but got {refreshResponse.StatusCode}: {refreshBody}");
     }
 
     [SkippableFact]
@@ -367,8 +374,10 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 
         var firstResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = firstRefresh });
         var secondResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = secondRefresh });
-        Assert.Equal(HttpStatusCode.Unauthorized, firstResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, secondResponse.StatusCode);
+        var firstBody = await ReadBodyAsync(firstResponse);
+        var secondBody = await ReadBodyAsync(secondResponse);
+        Assert.True(firstResponse.StatusCode == HttpStatusCode.Unauthorized, $"Expected Unauthorized but got {firstResponse.StatusCode}: {firstBody}");
+        Assert.True(secondResponse.StatusCode == HttpStatusCode.Unauthorized, $"Expected Unauthorized but got {secondResponse.StatusCode}: {secondBody}");
 
         await using (var scope = _fixture.Services.CreateAsyncScope())
         {
@@ -436,7 +445,8 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Equal("passwordReset", (await ReadJsonAsync(reset)).GetProperty("status").GetString());
 
         var staleSession = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = oldRefreshToken });
-        Assert.Equal(HttpStatusCode.Unauthorized, staleSession.StatusCode);
+        var staleBody = await ReadBodyAsync(staleSession);
+        Assert.True(staleSession.StatusCode == HttpStatusCode.Unauthorized, $"Expected Unauthorized but got {staleSession.StatusCode}: {staleBody}");
 
         await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message =>
             message.To == email && message.Subject == "Your password has been changed"));
@@ -890,6 +900,9 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
     private static async Task<JsonElement> ReadJsonAsync(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>(WebJson);
 
+    private static async Task<string> ReadBodyAsync(HttpResponseMessage response) =>
+        await response.Content.ReadAsStringAsync();
+
     private async Task<string> GetVerificationTokenAsync(Guid userId)
     {
         await using var scope = _fixture.Services.CreateAsyncScope();
@@ -908,7 +921,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         {
             if (DateTime.UtcNow > deadline)
             {
-                Assert.Fail("Timed out waiting for condition.");
+                Assert.Fail($"Timed out after {timeoutSeconds}s waiting for condition.");
             }
 
             await Task.Delay(250);
