@@ -11,6 +11,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        if (configuration.GetValue("Hangfire:Disabled", false))
+        {
+            return services;
+        }
+
         var connectionString = configuration.GetConnectionString("Postgres");
         if (string.IsNullOrWhiteSpace(connectionString))
         {

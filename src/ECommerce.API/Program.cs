@@ -99,16 +99,23 @@ app.MapGet("/", () => "ECommerce API");
 app.UseCors("AllowConfiguredOrigins");
 app.UseRateLimiter();
 
+app.UseExceptionHandler();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = [new OpsRoleDashboardAuthorizationFilter()],
-    StatsPollingInterval = 5000
-});
+var hangfireDisabled = builder.Configuration.GetValue("Hangfire:Disabled", false);
 
-if (!builder.Environment.IsDevelopment())
+if (!hangfireDisabled)
+{
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new OpsRoleDashboardAuthorizationFilter()],
+        StatsPollingInterval = 5000
+    });
+}
+
+if (!builder.Environment.IsDevelopment() && !hangfireDisabled)
 {
     RecurringJob.AddOrUpdate<ExpiredCartPurgeJob>(
         "expired-cart-purge",

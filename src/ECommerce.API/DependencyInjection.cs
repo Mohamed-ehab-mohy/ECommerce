@@ -49,6 +49,7 @@ public static class DependencyInjection
 
         services.AddControllers();
         services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICorrelationIdProvider, HttpContextCorrelationIdProvider>();
 

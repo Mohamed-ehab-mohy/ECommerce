@@ -49,7 +49,9 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         ["ConnectionStrings:Postgres"] = _container!.GetConnectionString(),
-                        ["ConnectionStrings:Redis"] = _redisContainer!.GetConnectionString()
+                        ["ConnectionStrings:Redis"] = _redisContainer!.GetConnectionString(),
+                        ["ConnectionStrings:RabbitMq"] = "",
+                        ["Hangfire:Disabled"] = "true"
                     });
                 });
 
