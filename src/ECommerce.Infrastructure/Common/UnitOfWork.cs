@@ -1,5 +1,6 @@
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ECommerce.Infrastructure.Common;
@@ -11,14 +12,27 @@ public sealed class UnitOfWork(ECommerceDbContext dbContext) : IUnitOfWork
 
     public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
-        var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-        return new DbContextTransaction(transaction);
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        IDbContextTransaction? transaction = null;
+
+        await strategy.ExecuteAsync(async () =>
+        {
+            transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        });
+
+        return new DbContextTransaction(dbContext, transaction!);
     }
 
-    private sealed class DbContextTransaction(IDbContextTransaction transaction) : ITransaction
+    private sealed class DbContextTransaction(ECommerceDbContext dbContext, IDbContextTransaction transaction) : ITransaction
     {
-        public Task CommitAsync(CancellationToken cancellationToken) =>
-            transaction.CommitAsync(cancellationToken);
+        public async Task CommitAsync(CancellationToken cancellationToken)
+        {
+            var strategy = dbContext.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await transaction.CommitAsync(cancellationToken);
+            });
+        }
 
         public Task RollbackAsync(CancellationToken cancellationToken) =>
             transaction.RollbackAsync(cancellationToken);

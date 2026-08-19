@@ -49,34 +49,38 @@ public sealed class OutboxBackgroundService(
         var postCommit = scope.ServiceProvider.GetRequiredService<PostCommitActions>();
 
         var batchSize = configuration.GetValue("Outbox:BatchSize", 20);
+        var strategy = dbContext.Database.CreateExecutionStrategy();
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-
-        var messages = await dbContext.OutboxMessages
-            .FromSqlInterpolated($"""
-                SELECT * FROM "outbox_events"
-                WHERE "processed_on" IS NULL
-                ORDER BY "occurred_on"
-                LIMIT {batchSize}
-                FOR UPDATE SKIP LOCKED
-                """)
-            .ToListAsync(cancellationToken);
-
-        if (messages.Count == 0)
+        await strategy.ExecuteAsync(async () =>
         {
-            await transaction.RollbackAsync(cancellationToken);
-            return;
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-        foreach (var message in messages)
-        {
-            await ProcessMessageAsync(publisher, metrics, message, cancellationToken);
-        }
+            var messages = await dbContext.OutboxMessages
+                .FromSqlInterpolated($"""
+                    SELECT * FROM "outbox_events"
+                    WHERE "processed_on" IS NULL
+                    ORDER BY "occurred_on"
+                    LIMIT {batchSize}
+                    FOR UPDATE SKIP LOCKED
+                    """)
+                .ToListAsync(cancellationToken);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
+            if (messages.Count == 0)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return;
+            }
 
-        await postCommit.ExecuteAsync();
+            foreach (var message in messages)
+            {
+                await ProcessMessageAsync(publisher, metrics, message, cancellationToken);
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            await postCommit.ExecuteAsync();
+        });
     }
 
     private async Task ProcessMessageAsync(
