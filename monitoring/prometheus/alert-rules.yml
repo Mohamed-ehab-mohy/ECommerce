@@ -11,13 +11,57 @@ groups:
           description: "More than 5% of requests are returning 5xx errors"
 
       - alert: HighLatency
-        expr: histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[5m])) > 2
+        expr: histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[5m])) > 0.5
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High API latency"
-          description: "P95 latency exceeds 2 seconds"
+          summary: "High API latency (SLO warning)"
+          description: "P95 latency exceeds 500ms — approaching SLO threshold"
+
+      - alert: HighLatencyCritical
+        expr: histogram_quantile(0.95, rate(http_server_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API latency (SLO breached)"
+          description: "P95 latency exceeds 2 seconds — SLO violated"
+
+      - alert: ErrorBudgetBurnHigh
+        expr: |
+          (
+            rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[1h])
+            / clamp_min(rate(http_server_request_duration_seconds_count[1h]), 1)
+          ) > 0.1
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error budget burning too fast (1h window)"
+          description: "Error rate exceeds 10% — on track to exhaust monthly budget in < 10 days"
+
+      - alert: ErrorBudgetBurnLow
+        expr: |
+          (
+            rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[6h])
+            / clamp_min(rate(http_server_request_duration_seconds_count[6h]), 1)
+          ) > 0.05
+        for: 6h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Error budget burning (6h window)"
+          description: "Sustained error rate above 5% for 6 hours — trending toward budget exhaustion"
+
+      - alert: PaymentFailureRateHigh
+        expr: rate(ecommerce_payments_failed_total[15m]) / clamp_min(rate(ecommerce_payments_succeeded_total[15m]) + rate(ecommerce_payments_failed_total[15m]), 1) > 0.02
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Payment failure rate above 2%"
+          description: "Payment failure rate is elevated — investigate Stripe dashboard or webhook issues"
 
       - alert: OutboxBacklog
         expr: outbox_lag_seconds > 60
@@ -36,3 +80,12 @@ groups:
         annotations:
           summary: "Dead letters increasing"
           description: "Dead letter rate is non-zero for 10 minutes"
+
+      - alert: BackupFailed
+        expr: aws_rds_instance_latest_successful_manual_snapshot_age_seconds > 90000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "RDS backup is stale"
+          description: "Latest manual backup is older than 25 hours"
