@@ -8,6 +8,8 @@ public abstract class BaseEntity<TId> : IHasDomainEvents
 
     public TId Id { get; protected set; } = default!;
 
+    public Guid? TenantId { get; protected set; }
+
     public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; protected set; } = DateTime.UtcNow;

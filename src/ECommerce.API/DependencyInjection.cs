@@ -1,4 +1,4 @@
-﻿using System.Threading.RateLimiting;
+using System.Threading.RateLimiting;
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
 using ECommerce.API.Grpc;
@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICorrelationIdProvider, HttpContextCorrelationIdProvider>();
+        services.AddScoped<ITenantService, HttpContextTenantService>();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>

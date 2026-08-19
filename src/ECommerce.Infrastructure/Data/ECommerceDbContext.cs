@@ -134,5 +134,20 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     {
         modelBuilder.HasPostgresExtension("pg_trgm");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ECommerceDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var tenantIdProperty = entityType.ClrType.GetProperty("TenantId");
+            if (tenantIdProperty is not null && tenantIdProperty.PropertyType == typeof(Guid?))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property<Guid?>("TenantId")
+                    .HasColumnName("tenant_id");
+
+                modelBuilder.Entity(entityType.ClrType)
+                    .HasIndex("TenantId")
+                    .HasDatabaseName($"ix_{entityType.GetTableName()}_tenant_id");
+            }
+        }
     }
 }

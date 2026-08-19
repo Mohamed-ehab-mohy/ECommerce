@@ -1,4 +1,4 @@
-﻿using ECommerce.API;
+using ECommerce.API;
 using ECommerce.API.Common;
 using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
@@ -61,6 +61,7 @@ if (!builder.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<TenantMiddleware>();
 
 app.UseSerilogRequestLogging();
 
