@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ecommerce-db-backup
+  namespace: ecommerce
+  labels:
+    app: ecommerce-db-backup
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: ecommerce-db-backup
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          containers:
+            - name: backup
+              image: postgres:16-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  BACKUP_FILE="/tmp/ecommerce-${TIMESTAMP}.sql.gz"
+
+                  echo "Starting backup at $(date -u)"
+                  pg_dump \
+                    --host="${DB_HOST}" \
+                    --port="${DB_PORT:-5432}" \
+                    --username="${DB_USER}" \
+                    --dbname="${DB_NAME}" \
+                    --no-owner \
+                    --no-privileges \
+                    --compress=9 \
+                    --format=custom \
+                    --file="${BACKUP_FILE}"
+
+                  BACKUP_SIZE=$(stat -c%s "${BACKUP_FILE}" 2>/dev/null || stat -f%z "${BACKUP_FILE}")
+                  echo "Backup complete: ${BACKUP_FILE} (${BACKUP_SIZE} bytes)"
+
+                  if [ -n "${S3_BUCKET:-}" ]; then
+                    echo "Uploading to s3://${S3_BUCKET}/db-backups/"
+                    apk add --no-cache aws-cli 2>/dev/null || true
+                    aws s3 cp "${BACKUP_FILE}" \
+                      "s3://${S3_BUCKET}/db-backups/ecommerce-${TIMESTAMP}.sql.gz" \
+                      --storage-class STANDARD_IA
+                    echo "Upload complete"
+                  fi
+
+                  echo "Cleaning up local file"
+                  rm -f "${BACKUP_FILE}"
+                  echo "Backup finished at $(date -u)"
+              envFrom:
+                - secretRef:
+                    name: ecommerce-secrets
+                - configMapRef:
+                    name: ecommerce-config
+              env:
+                - name: DB_HOST
+                  value: "postgres-service"
+                - name: DB_PORT
+                  value: "5432"
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: ecommerce-secrets
+                      key: DB_USER
+                      optional: true
+                - name: DB_NAME
+                  value: "ecommerce"
+                - name: S3_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ecommerce-config
+                      key: BACKUP_S3_BUCKET
+                      optional: true
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: ecommerce-secrets
+                      key: DB_PASSWORD
+                      optional: true
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "500m"
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 500Mi
