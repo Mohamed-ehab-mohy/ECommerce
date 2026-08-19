@@ -99,6 +99,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         var email = $"email_{Guid.NewGuid():N}@example.com";
 
         await RegisterAsync(email);
+        await _fixture.ProcessOutboxAsync();
 
         await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message => message.To == email));
 
@@ -408,6 +409,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 
         var knownResponse = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email = knownEmail });
         Assert.Equal(HttpStatusCode.Accepted, knownResponse.StatusCode);
+        await _fixture.ProcessOutboxAsync();
 
         await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message =>
             message.To == knownEmail && message.Subject == "Reset your password"));
@@ -434,6 +436,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 
         var forgot = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/forgot-password", new { email });
         Assert.Equal(HttpStatusCode.Accepted, forgot.StatusCode);
+        await _fixture.ProcessOutboxAsync();
         var resetToken = await GetPasswordResetTokenAsync(userId);
 
         var reset = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/reset-password", new
@@ -443,6 +446,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         });
         Assert.Equal(HttpStatusCode.OK, reset.StatusCode);
         Assert.Equal("passwordReset", (await ReadJsonAsync(reset)).GetProperty("status").GetString());
+        await _fixture.ProcessOutboxAsync();
 
         var staleSession = await _fixture.Client.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken = oldRefreshToken });
         var staleBody = await ReadBodyAsync(staleSession);

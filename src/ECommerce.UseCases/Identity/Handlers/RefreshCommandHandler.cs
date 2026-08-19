@@ -26,12 +26,15 @@ public sealed class RefreshCommandHandler(
 
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
         var token = await refreshTokens.GetByTokenHashAsync(
             RefreshTokens.Hash(request.RefreshToken),
             cancellationToken);
 
         if (token is null || !token.CanBeUsed(utcNow))
         {
+            await transaction.RollbackAsync(cancellationToken);
             return Result<LoginResult>.Failure(AuthErrors.RefreshTokenInvalid);
         }
 
@@ -39,12 +42,18 @@ public sealed class RefreshCommandHandler(
         if (revoked == 0)
         {
             await refreshTokens.RevokeFamilyAsync(token.FamilyId, utcNow, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
             return Result<LoginResult>.Failure(AuthErrors.RefreshTokenReused);
         }
+
+        await refreshTokens.RevokeFamilyAsync(token.FamilyId, utcNow, cancellationToken);
 
         var customer = await users.GetByIdAsync(token.UserId, cancellationToken);
         if (customer is null)
         {
+            await transaction.RollbackAsync(cancellationToken);
             return Result<LoginResult>.Failure(AuthErrors.RefreshTokenInvalid);
         }
 
@@ -54,6 +63,7 @@ public sealed class RefreshCommandHandler(
         token.Revoke(pair.RefreshToken.Id, utcNow);
         refreshTokens.Add(pair.RefreshToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Result<LoginResult>.Success(pair.Result);
     }
