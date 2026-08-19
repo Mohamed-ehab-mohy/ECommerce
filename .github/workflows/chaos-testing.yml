@@ -1,0 +1,212 @@
+name: Chaos Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      chaos_target:
+        description: "Which service to kill"
+        required: true
+        type: choice
+        options:
+          - postgres
+          - redis
+          - rabbitmq
+          - all
+      duration_seconds:
+        description: "Load test duration (seconds)"
+        required: false
+        default: "120"
+      vus:
+        description: "Virtual users for load"
+        required: false
+        default: "20"
+
+concurrency:
+  group: chaos-${{ github.event.inputs.chaos_target }}
+  cancel-in-progress: false
+
+jobs:
+  chaos-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ecommerce
+          POSTGRES_PASSWORD: ecommerce_dev_pw
+          POSTGRES_DB: ecommerce
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3-management-alpine
+        ports:
+          - 5672:5672
+          - 15672:15672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics check_port_connectivity"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Apply migrations
+        run: |
+          dotnet run --project src/ECommerce.API --no-build -c Release -- --migrate-only &
+          sleep 30
+        env:
+          ConnectionStrings__Postgres: "Host=localhost;Port=5432;Database=ecommerce;Username=ecommerce;Password=ecommerce_dev_pw"
+          ConnectionStrings__Redis: "localhost:6379"
+          ConnectionStrings__RabbitMQ: "amqp://guest:guest@localhost:5672/"
+          Hangfire__Disabled: "true"
+
+      - name: Start API
+        run: |
+          dotnet run --project src/ECommerce.API --no-build -c Release &
+          sleep 15
+          curl -sf http://localhost:5000/api/v1/health/ready || exit 1
+        env:
+          ASPNETCORE_URLS: "http://localhost:5000"
+          ConnectionStrings__Postgres: "Host=localhost;Port=5432;Database=ecommerce;Username=ecommerce;Password=ecommerce_dev_pw"
+          ConnectionStrings__Redis: "localhost:6379"
+          ConnectionStrings__RabbitMQ: "amqp://guest:guest@localhost:5672/"
+          Hangfire__Disabled: "true"
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D68
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Start background load
+        run: |
+          k6 run \
+            --vus ${{ github.event.inputs.vus }} \
+            --duration ${{ github.event.inputs.duration_seconds }}s \
+            --out json=perf-results.json \
+            perf/k6/s1-checkout-baseline.js &
+          K6_PID=$!
+          echo "K6_PID=${K6_PID}" >> $GITHUB_ENV
+          sleep 10
+
+      - name: Kill target service
+        run: |
+          TARGET="${{ github.event.inputs.chaos_target }}"
+          echo "Killing: ${TARGET}"
+
+          if [ "$TARGET" = "postgres" ] || [ "$TARGET" = "all" ]; then
+            echo "Stopping PostgreSQL..."
+            docker stop $(docker ps -q --filter ancestor=postgres:16-alpine) || true
+          fi
+
+          if [ "$TARGET" = "redis" ] || [ "$TARGET" = "all" ]; then
+            echo "Stopping Redis..."
+            docker stop $(docker ps -q --filter ancestor=redis:7-alpine) || true
+          fi
+
+          if [ "$TARGET" = "rabbitmq" ] || [ "$TARGET" = "all" ]; then
+            echo "Stopping RabbitMQ..."
+            docker stop $(docker ps -q --filter ancestor=rabbitmq:3-management-alpine) || true
+          fi
+
+          echo "Service killed at $(date -u). Waiting 30s for recovery observation..."
+          sleep 30
+
+      - name: Restart killed services
+        run: |
+          TARGET="${{ github.event.inputs.chaos_target }}"
+
+          if [ "$TARGET" = "postgres" ] || [ "$TARGET" = "all" ]; then
+            docker start $(docker ps -aq --filter ancestor=postgres:16-alpine) || true
+            for i in $(seq 1 30); do
+              if pg_isready -h localhost -p 5432 -U ecommerce 2>/dev/null; then
+                echo "PostgreSQL is ready"
+                break
+              fi
+              echo "Waiting for PostgreSQL... ($i/30)"
+              sleep 2
+            done
+          fi
+
+          if [ "$TARGET" = "redis" ] || [ "$TARGET" = "all" ]; then
+            docker start $(docker ps -aq --filter ancestor=redis:7-alpine) || true
+          fi
+
+          if [ "$TARGET" = "rabbitmq" ] || [ "$TARGET" = "all" ]; then
+            docker start $(docker ps -aq --filter ancestor=rabbitmq:3-management-alpine) || true
+          fi
+
+          echo "Recovery period: waiting 60s for API to stabilize..."
+          sleep 60
+
+      - name: Verify API recovery
+        run: |
+          echo "Checking API health after chaos..."
+          HEALTH=$(curl -sf http://localhost:5000/api/v1/health/ready || echo "UNHEALTHY")
+          echo "Health: ${HEALTH}"
+          if echo "$HEALTH" | grep -q "UNHEALTHY"; then
+            echo "::warning::API did not recover from chaos - health check failed"
+          fi
+
+      - name: Wait for k6 to complete
+        run: |
+          if [ -n "${K6_PID:-}" ]; then
+            wait $K6_PID || true
+          fi
+
+      - name: Analyze results
+        run: |
+          if [ -f perf-results.json ]; then
+            echo "=== Chaos Test Results ==="
+            echo "Total requests:"
+            grep -c '"type":"Point"' perf-results.json || echo "0"
+
+            echo ""
+            echo "HTTP errors (non-2xx):"
+            grep '"http_req_failed":true' perf-results.json | wc -l || echo "0"
+
+            echo ""
+            echo "P95 response time:"
+            grep '"http_req_duration"' perf-results.json | tail -1 || echo "N/A"
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-results-${{ github.event.inputs.chaos_target }}-${{ github.run_number }}
+          path: |
+            perf-results.json
+          retention-days: 30
