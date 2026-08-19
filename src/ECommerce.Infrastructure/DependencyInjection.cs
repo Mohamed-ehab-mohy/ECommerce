@@ -106,7 +106,8 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IMfaService, TotpMfaService>();
         services.AddScoped<IMfaSecretRepository, MfaSecretRepository>();
-        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductRepository, CachedProductRepository>();
+        services.AddScoped<ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductImportRepository, ProductImportRepository>();
@@ -117,6 +118,9 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<ProductCreated>, ProductSearchIndexSynchronizer>();
         services.AddScoped<IEventHandler<ProductUpdated>, ProductSearchIndexSynchronizer>();
         services.AddScoped<IEventHandler<ProductDeactivated>, ProductSearchIndexSynchronizer>();
+        services.AddScoped<IEventHandler<ProductCreated>, ProductCacheInvalidationHandler>();
+        services.AddScoped<IEventHandler<ProductUpdated>, ProductCacheInvalidationHandler>();
+        services.AddScoped<IEventHandler<ProductDeactivated>, ProductCacheInvalidationHandler>();
         services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
         services.AddScoped<IReviewVoteRepository, ReviewVoteRepository>();
         services.AddScoped<IVerifiedPurchaseChecker, VerifiedPurchaseChecker>();

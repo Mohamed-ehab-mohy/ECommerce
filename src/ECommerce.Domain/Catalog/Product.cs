@@ -167,6 +167,51 @@ public sealed class Product : BaseEntity<Guid>
         AddDomainEvent(new ProductDeactivated(Id, Sku, Slug));
     }
 
+    public static Product Rehydrate(
+        Guid id,
+        string sku,
+        string slug,
+        Guid? categoryId,
+        Guid? brandId,
+        ProductStatus status,
+        bool isFeatured,
+        bool backorderable,
+        List<string> imageUrls,
+        Dictionary<string, string> attributes,
+        DateTime createdAt,
+        DateTime updatedAt,
+        IEnumerable<ProductTranslationCache> translations,
+        IEnumerable<ProductPriceCache> prices)
+    {
+        var product = new Product
+        {
+            Id = id,
+            Sku = sku,
+            Slug = slug,
+            CategoryId = categoryId,
+            BrandId = brandId,
+            Status = status,
+            IsFeatured = isFeatured,
+            Backorderable = backorderable,
+            ImageUrls = imageUrls,
+            Attributes = attributes,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
+
+        foreach (var t in translations)
+        {
+            product._translations.Add(ProductTranslation.Create(id, t.Locale, t.Name, t.Description, t.MetaTitle, t.MetaDescription));
+        }
+
+        foreach (var p in prices)
+        {
+            product._prices.Add(ProductPrice.Create(id, p.Currency, p.ListAmount, p.OfferAmount, createdAt));
+        }
+
+        return product;
+    }
+
     private void SetTranslation(string locale, string name, string? description)
     {
         var translation = _translations.FirstOrDefault(item => item.Locale == locale);
@@ -201,3 +246,15 @@ public sealed class Product : BaseEntity<Guid>
 
     private decimal? GetDefaultOfferAmount() => _prices.FirstOrDefault()?.OfferAmount;
 }
+
+public sealed record ProductTranslationCache(
+    string Locale,
+    string Name,
+    string? Description,
+    string? MetaTitle,
+    string? MetaDescription);
+
+public sealed record ProductPriceCache(
+    string Currency,
+    decimal ListAmount,
+    decimal? OfferAmount);
