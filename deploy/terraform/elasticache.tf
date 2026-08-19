@@ -46,6 +46,9 @@ resource "aws_elasticache_replication_group" "main" {
   transit_encryption_enabled = true
   auth_token                = var.redis_password
 
+  snapshot_window          = "03:00-04:00"
+  snapshot_retention_limit = 3
+
   subnet_group_name  = aws_elasticache_subnet_group.main.name
   security_group_ids = [aws_security_group.redis.id]
 
