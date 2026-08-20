@@ -104,6 +104,7 @@ app.UseRateLimiter();
 
 app.UseExceptionHandler();
 
+app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
