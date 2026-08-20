@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ECommerce.ArchitectureTests/ECommerce.ArchitectureTests.csproj" />
+    <Project Path="tests/ECommerce.E2E/ECommerce.E2E.csproj" />
     <Project Path="tests/ECommerce.IntegrationTests/ECommerce.IntegrationTests.csproj" />
     <Project Path="tests/ECommerce.UnitTests/ECommerce.UnitTests.csproj" />
   </Folder>
