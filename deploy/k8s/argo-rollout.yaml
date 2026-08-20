@@ -1,0 +1,176 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ecommerce-api
+  namespace: ecommerce
+  labels:
+    app: ecommerce-api
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: ecommerce-api
+  strategy:
+    canary:
+      canaryService: ecommerce-api-canary
+      stableService: ecommerce-api-stable
+      trafficRouting:
+        nginx:
+          stableIngress: ecommerce-api-ingress
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+      analysis:
+        templates:
+          - templateName: success-rate
+          - templateName: latency
+        startingStep: 2
+        args:
+          - name: service-name
+            value: ecommerce-api-canary.ecommerce.svc.cluster.local
+      steps:
+        - setWeight: 10
+        - pause: { duration: 2m }
+        - setWeight: 30
+        - pause: { duration: 2m }
+        - setWeight: 60
+        - pause: { duration: 2m }
+        - setWeight: 100
+  template:
+    metadata:
+      labels:
+        app: ecommerce-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/Mohamed-ehab-mohy/ecommerce-api:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: ecommerce-config
+            - secretRef:
+                name: ecommerce-secrets
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+  namespace: ecommerce
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: success-rate
+      interval: 2m
+      count: 5
+      successCondition: result[0] >= 0.99
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring:9090
+          query: |
+            sum(rate(http_server_request_duration_seconds_count{
+              http_response_status_code!~"5..",
+              job="{{args.service-name}}"
+            }[2m])) /
+            sum(rate(http_server_request_duration_seconds_count{
+              job="{{args.service-name}}"
+            }[2m]))
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: latency
+  namespace: ecommerce
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: p95-latency
+      interval: 2m
+      count: 5
+      successCondition: result[0] <= 0.5
+      provider:
+        prometheus:
+          address: http://prometheus.monitoring:9090
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_server_request_duration_seconds_bucket{
+                job="{{args.service-name}}"
+              }[2m])) by (le)
+            )
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-api-canary
+  namespace: ecommerce
+  labels:
+    app: ecommerce-api
+    rollouts-pod-template-hash: canary
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: ecommerce-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecommerce-api-stable
+  namespace: ecommerce
+  labels:
+    app: ecommerce-api
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: ecommerce-api
