@@ -9,6 +9,15 @@ public sealed record InitiateCheckoutRequest(
     string ShippingMethodId,
     PaymentMethodRequest PaymentMethod);
 
+public sealed record GuestInitiateCheckoutRequest(
+    Guid CartId,
+    string CustomerEmail,
+    string Currency,
+    AddressRequest ShippingAddress,
+    AddressRequest? BillingAddress,
+    string ShippingMethodId,
+    PaymentMethodRequest PaymentMethod);
+
 public sealed record AddressRequest(
     string FullName,
     string? Phone,
