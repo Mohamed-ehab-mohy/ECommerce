@@ -1,5 +1,6 @@
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using Testcontainers.PostgreSql;
 
@@ -33,8 +34,10 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
         _dbContext = new ECommerceDbContext(
             new DbContextOptionsBuilder<ECommerceDbContext>()
                 .UseNpgsql(dataSourceBuilder.Build())
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options);
-        await _dbContext.Database.EnsureCreatedAsync();
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () => await _dbContext.Database.MigrateAsync());
     }
 
     public Task DisposeAsync() =>

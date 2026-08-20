@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ECommerce.Infrastructure.Data.Migrations
+namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddWarehouses : Migration

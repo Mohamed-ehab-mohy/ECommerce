@@ -3,6 +3,7 @@ using ECommerce.Infrastructure.Carts;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using StackExchange.Redis;
 
@@ -198,6 +199,7 @@ public sealed class CartRepositoryIntegrationTests :
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(_postgres.ConnectionString)
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
         return new ECommerceDbContext(options);

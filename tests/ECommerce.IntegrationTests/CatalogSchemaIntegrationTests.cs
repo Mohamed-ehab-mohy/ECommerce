@@ -2,6 +2,7 @@ using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Inventory;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 
 namespace ECommerce.IntegrationTests;
@@ -217,6 +218,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()
                 .UseNpgsql(dataSourceBuilder.Build())
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options);
     }
 

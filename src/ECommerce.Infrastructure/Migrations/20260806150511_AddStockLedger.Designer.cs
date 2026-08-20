@@ -10,11 +10,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ECommerce.Infrastructure.Data.Migrations
+namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ECommerceDbContext))]
-    [Migration("20260807150634_AddStockAllocationConcurrency")]
-    partial class AddStockAllocationConcurrency
+    [Migration("20260806150511_AddStockLedger")]
+    partial class AddStockLedger
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -859,11 +859,6 @@ namespace ECommerce.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint")
-                        .HasColumnName("version");
-
                     b.Property<Guid>("WarehouseId")
                         .HasColumnType("uuid")
                         .HasColumnName("warehouse_id");
@@ -876,10 +871,7 @@ namespace ECommerce.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_stock_items_sku_warehouse");
 
-                    b.ToTable("stock_items", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_stock_items_allocated_le_on_hand", "\"allocated\" <= \"on_hand\"");
-                        });
+                    b.ToTable("stock_items", (string)null);
                 });
 
             modelBuilder.Entity("ECommerce.Domain.Inventory.StockMovement", b =>

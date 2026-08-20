@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ECommerce.Infrastructure.Data.Migrations
+namespace ECommerce.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddPayments : Migration

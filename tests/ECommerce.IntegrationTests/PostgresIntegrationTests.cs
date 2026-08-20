@@ -1,5 +1,6 @@
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 
 namespace ECommerce.IntegrationTests;
@@ -23,6 +24,7 @@ public sealed class PostgresIntegrationTests : IClassFixture<PostgresContainerFi
         await using var context = new ECommerceDbContext(
             new DbContextOptionsBuilder<ECommerceDbContext>()
                 .UseNpgsql(dataSourceBuilder.Build())
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options);
         await context.Database.MigrateAsync();
         var applied = await context.Database.GetAppliedMigrationsAsync();

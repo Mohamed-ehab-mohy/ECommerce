@@ -20,6 +20,7 @@ using ECommerce.UseCases.Fulfillment.Commands;
 using ECommerce.UseCases.Fulfillment.Handlers;
 using ECommerce.UseCases.Fulfillment.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using AddressSnapshot = ECommerce.Domain.Orders.AddressSnapshot;
 
@@ -260,6 +261,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
         dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(dataSourceBuilder.Build())
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
         return new ECommerceDbContext(options);

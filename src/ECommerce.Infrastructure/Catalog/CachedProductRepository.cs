@@ -6,7 +6,7 @@ using StackExchange.Redis;
 namespace ECommerce.Infrastructure.Catalog;
 
 public sealed class CachedProductRepository(
-    IProductRepository inner,
+    ProductRepository inner,
     IConnectionMultiplexer redis,
     ILogger<CachedProductRepository> logger) : IProductRepository
 {

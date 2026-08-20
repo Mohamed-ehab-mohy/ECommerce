@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Npgsql;
 using StackExchange.Redis;
 using Testcontainers.PostgreSql;
@@ -76,16 +78,24 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                     services.RemoveAll<NpgsqlDataSource>();
                     services.RemoveAll<DbContextOptions<ECommerceDbContext>>();
                     services.RemoveAll<ECommerceDbContext>();
-                    services.AddDbContext<ECommerceDbContext>(options => options
-                        .UseNpgsql(dataSource)
-                        .AddInterceptors(new DomainEventsInterceptor()));
+                    services.AddSingleton(dataSource);
+                    services.AddScoped(sp =>
+                    {
+                        var builder = new DbContextOptionsBuilder<ECommerceDbContext>();
+                        builder.UseNpgsql(sp.GetRequiredService<NpgsqlDataSource>());
+                        builder.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+                        builder.AddInterceptors(new DomainEventsInterceptor());
+                        return new ECommerceDbContext(builder.Options);
+                    });
+
+                    services.RemoveAll<IHostedService>();
                 });
             });
 
         await using (var scope = _factory.Services.CreateAsyncScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
-            await WaitForMigrationsAsync(dbContext);
+            await dbContext.Database.MigrateAsync();
         }
 
         EmailSender = emailSender;
@@ -150,28 +160,6 @@ public sealed class IdentityApiFixture : IAsyncLifetime
             await transaction.CommitAsync();
             await postCommit.ExecuteAsync();
         });
-    }
-
-    private static async Task WaitForMigrationsAsync(ECommerceDbContext dbContext)
-    {
-        for (var attempt = 0; attempt < 80; attempt++)
-        {
-            try
-            {
-                var pending = await dbContext.Database.GetPendingMigrationsAsync();
-                if (!pending.Any())
-                {
-                    return;
-                }
-            }
-            catch (NpgsqlException)
-            {
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(500));
-        }
-
-        throw new InvalidOperationException("Database migrations did not complete in time.");
     }
 
     private static IDomainEvent? Deserialize(string eventType, string content)

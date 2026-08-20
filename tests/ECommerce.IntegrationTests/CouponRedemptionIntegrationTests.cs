@@ -15,6 +15,7 @@ using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Handlers;
 using ECommerce.UseCases.Orders.Responses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
@@ -244,6 +245,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<PostgresCon
         dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(dataSourceBuilder.Build())
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
         return new ECommerceDbContext(options);

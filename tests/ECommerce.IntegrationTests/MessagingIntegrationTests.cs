@@ -9,6 +9,7 @@ using ECommerce.UseCases.Messaging.Consumers;
 using ECommerce.UseCases.Messaging.Ports;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -115,6 +116,7 @@ public sealed class MessagingIntegrationTests :
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(_postgres.ConnectionString)
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .Options;
         return new ECommerceDbContext(options);
     }

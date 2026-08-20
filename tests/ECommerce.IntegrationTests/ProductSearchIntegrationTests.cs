@@ -3,6 +3,7 @@ using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Search;
 using ECommerce.UseCases.Catalog.Ports;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 
 namespace ECommerce.IntegrationTests;
@@ -249,6 +250,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()
                 .UseNpgsql(dataSourceBuilder.Build())
+                .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options);
     }
 }

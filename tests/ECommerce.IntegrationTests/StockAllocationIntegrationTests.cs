@@ -4,6 +4,7 @@ using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.UseCases.Inventory.Ports;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.IntegrationTests;
 
@@ -93,6 +94,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresCont
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(_fixture.ConnectionString)
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
         return new ECommerceDbContext(options);
