@@ -1,13 +1,12 @@
-using System.Text.Json;
 using Microsoft.Playwright;
 using Xunit;
 
 namespace ECommerce.E2E;
 
+[Trait("Category", "E2E")]
 public sealed class CatalogE2ETests : IAsyncLifetime
 {
     private IPlaywright _playwright = null!;
-    private IBrowser _browser = null!;
     private IAPIRequestContext _api = null!;
 
     private static string BaseUrl => Environment.GetEnvironmentVariable("API_BASE_URL") ?? "http://localhost:5000";
@@ -15,14 +14,12 @@ public sealed class CatalogE2ETests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _playwright = await Playwright.CreateAsync();
-        _browser = await _playwright.Chromium.LaunchAsync(new() { Headless = true });
         _api = await _playwright.APIRequest.NewContextAsync(new() { BaseURL = BaseUrl });
     }
 
     public async Task DisposeAsync()
     {
         await _api.DisposeAsync();
-        await _browser.CloseAsync();
         _playwright.Dispose();
     }
 
@@ -74,6 +71,7 @@ public sealed class CatalogE2ETests : IAsyncLifetime
     }
 }
 
+[Trait("Category", "E2E")]
 public sealed class CartE2ETests : IAsyncLifetime
 {
     private IPlaywright _playwright = null!;
@@ -100,8 +98,8 @@ public sealed class CartE2ETests : IAsyncLifetime
 
         if (registerResponse.Ok)
         {
-        var json = await registerResponse.JsonAsync();
-        _authToken = json?.GetProperty("accessToken").GetString() ?? string.Empty;
+            var json = await registerResponse.JsonAsync();
+            _authToken = json?.GetProperty("accessToken").GetString() ?? string.Empty;
         }
     }
 
