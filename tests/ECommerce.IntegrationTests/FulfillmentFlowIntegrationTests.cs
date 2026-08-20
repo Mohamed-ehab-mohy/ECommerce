@@ -3,6 +3,10 @@ using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Infrastructure.Catalog;
+using ECommerce.UseCases.Fulfillment.Shipping;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Fulfillment;
@@ -225,7 +229,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
             new FulfillmentTaskRepository(context),
             new OrderRepository(context),
             new ShipmentRepository(context),
-            [new DhlCarrierAdapter(TimeProvider.System), new AramexCarrierAdapter(TimeProvider.System)],
+            [new DhlCarrierAdapter(new HttpClient { BaseAddress = new Uri("https://localhost") }, Options.Create(new CarrierOptions()), TimeProvider.System, NullLogger<DhlCarrierAdapter>.Instance), new AramexCarrierAdapter(new HttpClient { BaseAddress = new Uri("https://localhost") }, Options.Create(new CarrierOptions()), TimeProvider.System, NullLogger<AramexCarrierAdapter>.Instance)],
             new UnitOfWork(context),
             TimeProvider.System,
             new CreateShipmentCommandValidator());

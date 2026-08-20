@@ -19,6 +19,8 @@ using ECommerce.Infrastructure.Metrics;
 using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
+using ECommerce.Infrastructure.Partners;
+using ECommerce.UseCases.Partners;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
@@ -165,8 +167,12 @@ public static class DependencyInjection
         services.AddScoped<IFulfillmentTaskRepository, FulfillmentTaskRepository>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
         services.AddSingleton<IShippingRateCache, InMemoryShippingRateCache>();
-        services.AddScoped<ICarrierAdapter, AramexCarrierAdapter>();
-        services.AddScoped<ICarrierAdapter, DhlCarrierAdapter>();
+        services.AddHttpClient<AramexCarrierAdapter>(client => client.Timeout = TimeSpan.FromSeconds(15))
+            .AddStandardResilienceHandler();
+        services.AddHttpClient<DhlCarrierAdapter>(client => client.Timeout = TimeSpan.FromSeconds(15))
+            .AddStandardResilienceHandler();
+        services.AddScoped<ICarrierAdapter>(sp => sp.GetRequiredService<AramexCarrierAdapter>());
+        services.AddScoped<ICarrierAdapter>(sp => sp.GetRequiredService<DhlCarrierAdapter>());
         services.AddScoped<CarrierRateSelector>();
         services.AddScoped<PickListGenerationService>();
         services.AddSingleton<OutboxMetrics>();
@@ -243,6 +249,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IDbConnectionFactory, DapperReadModelStore>();
         services.AddSingleton<IReadModelStore, DapperReadModelStore>();
+        services.AddSingleton<IPartnerRepository, InMemoryPartnerRepository>();
         services.AddScoped<DapperProductReadService>();
         services.AddScoped<DapperOrderReadService>();
         services.AddScoped<DapperStockReadService>();

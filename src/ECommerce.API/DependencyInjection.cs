@@ -10,7 +10,9 @@ using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Realtime;
 using ECommerce.Infrastructure.Resilience;
+using ECommerce.Infrastructure.Shipping;
 using ECommerce.UseCases;
+using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
@@ -46,6 +48,7 @@ public static class DependencyInjection
         services.AddSearchInfrastructure(configuration);
 
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.Configure<CarrierOptions>(configuration.GetSection(CarrierOptions.SectionName));
 
         services.AddControllers();
         services.AddResponseCaching();
