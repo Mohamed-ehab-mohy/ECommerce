@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ECommerce.Infrastructure.Common;
 
 namespace ECommerce.API.Common;
 
@@ -26,6 +27,15 @@ public sealed class TenantMiddleware(RequestDelegate next)
             context.Items["TenantId"] = tenantId.Value;
         }
 
-        await next(context);
+        TenantScope.Current = tenantId;
+
+        try
+        {
+            await next(context);
+        }
+        finally
+        {
+            TenantScope.Current = null;
+        }
     }
 }

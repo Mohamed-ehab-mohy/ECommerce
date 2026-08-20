@@ -2,6 +2,7 @@ using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Checkout;
+using ECommerce.Domain.Common;
 using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
@@ -15,6 +16,7 @@ using ECommerce.Domain.Pricing;
 using ECommerce.Domain.Reporting;
 using ECommerce.Domain.Reviews;
 using ECommerce.Domain.Wishlist;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Realtime;
@@ -147,6 +149,16 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
                 modelBuilder.Entity(entityType.ClrType)
                     .HasIndex("TenantId")
                     .HasDatabaseName($"ix_{entityType.GetTableName()}_tenant_id");
+
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                var tenantIdAccess = System.Linq.Expressions.Expression.Property(parameter, "TenantId");
+                var currentTenant = System.Linq.Expressions.Expression.Property(null, typeof(TenantScope), "Current");
+                var isNull = System.Linq.Expressions.Expression.Equal(currentTenant, System.Linq.Expressions.Expression.Constant(null, typeof(Guid?)));
+                var filter = System.Linq.Expressions.Expression.Lambda(
+                    System.Linq.Expressions.Expression.OrElse(isNull, System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant)),
+                    parameter);
+
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
             }
         }
     }

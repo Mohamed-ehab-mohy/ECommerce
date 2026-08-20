@@ -78,7 +78,7 @@ public static class DependencyInjection
         {
             services.AddDbContext<ECommerceDbContext>(options => options
                 .UseSqlServer(sqlServerConnectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
-                .AddInterceptors(new DomainEventsInterceptor()));
+                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor()));
         }
         else
         {
@@ -95,7 +95,7 @@ public static class DependencyInjection
 
             services.AddDbContext<ECommerceDbContext>(options => options
                 .UseNpgsql(dataSource, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
-                .AddInterceptors(new DomainEventsInterceptor()));
+                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor()));
         }
 
         services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
