@@ -11,6 +11,7 @@ using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Realtime;
 using ECommerce.Infrastructure.Resilience;
 using ECommerce.Infrastructure.Shipping;
+using ECommerce.Infrastructure.Vault;
 using ECommerce.UseCases;
 using ECommerce.UseCases.Fulfillment.Shipping;
 using ECommerce.UseCases.Audit.Ports;
@@ -46,6 +47,10 @@ public static class DependencyInjection
         services.AddMessageBus(configuration);
         services.AddJobs(configuration);
         services.AddSearchInfrastructure(configuration);
+
+        services.Configure<VaultOptions>(configuration.GetSection(VaultOptions.SectionName));
+        services.AddHttpClient("vault");
+        services.AddSingleton<IVaultService, VaultSecretService>();
 
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<CarrierOptions>(configuration.GetSection(CarrierOptions.SectionName));
