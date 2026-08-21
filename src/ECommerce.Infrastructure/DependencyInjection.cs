@@ -20,7 +20,9 @@ using ECommerce.Infrastructure.Notifications;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Partners;
+using ECommerce.Infrastructure.Recommendations;
 using ECommerce.UseCases.Partners;
+using ECommerce.UseCases.Recommendations;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
 using ECommerce.Infrastructure.Redis;
@@ -251,6 +253,7 @@ public static class DependencyInjection
         services.AddSingleton<IReadModelStore, DapperReadModelStore>();
         services.AddScoped<IPartnerRepository, PostgresPartnerRepository>();
         services.AddScoped<IPartnerAuthService, PostgresPartnerAuthService>();
+        services.AddScoped<IRecommendationService, CollaborativeFilteringRecommendationService>();
         services.AddScoped<DapperProductReadService>();
         services.AddScoped<DapperOrderReadService>();
         services.AddScoped<DapperStockReadService>();
