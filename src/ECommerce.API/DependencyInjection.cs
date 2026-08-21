@@ -169,11 +169,17 @@ public static class DependencyInjection
 
             options.OnRejected = (context, cancellationToken) =>
             {
+                var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retry)
+                    ? retry.TotalSeconds.ToString("F0")
+                    : "60";
+
+                context.HttpContext.Response.Headers.RetryAfter = retryAfter;
+
                 var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
                 {
                     Status = 429,
                     Title = "Too Many Requests",
-                    Detail = "Rate limit exceeded. Please try again later.",
+                    Detail = $"Rate limit exceeded. Retry after {retryAfter} seconds.",
                     Type = "https://tools.ietf.org/html/rfc6585"
                 };
 
@@ -198,32 +204,94 @@ public static class DependencyInjection
                 slidingOptions.QueueLimit = 0;
             });
 
+            options.AddSlidingWindowLimiter("api-read", slidingOptions =>
+            {
+                slidingOptions.PermitLimit = 60;
+                slidingOptions.Window = TimeSpan.FromSeconds(60);
+                slidingOptions.SegmentsPerWindow = 4;
+                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                slidingOptions.QueueLimit = 0;
+            });
+
+            options.AddSlidingWindowLimiter("api-write", slidingOptions =>
+            {
+                slidingOptions.PermitLimit = 30;
+                slidingOptions.Window = TimeSpan.FromSeconds(60);
+                slidingOptions.SegmentsPerWindow = 4;
+                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                slidingOptions.QueueLimit = 0;
+            });
+
+            options.AddSlidingWindowLimiter("api-heavy", slidingOptions =>
+            {
+                slidingOptions.PermitLimit = 10;
+                slidingOptions.Window = TimeSpan.FromSeconds(60);
+                slidingOptions.SegmentsPerWindow = 2;
+                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                slidingOptions.QueueLimit = 0;
+            });
+
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 var endpoint = context.GetEndpoint();
                 var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
 
-                if (policyName == "auth")
+                if (policyName is not null)
                 {
-                    return RateLimitPartition.GetSlidingWindowLimiter(
-                        "auth",
-                        _ => new SlidingWindowRateLimiterOptions
-                        {
-                            PermitLimit = 10,
-                            Window = TimeSpan.FromSeconds(60),
-                            SegmentsPerWindow = 6,
-                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                            QueueLimit = 0
-                        });
+                    return policyName switch
+                    {
+                        "auth" => RateLimitPartition.GetSlidingWindowLimiter(
+                            "auth",
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 10,
+                                Window = TimeSpan.FromSeconds(60),
+                                SegmentsPerWindow = 6,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            }),
+                        "api-read" => RateLimitPartition.GetSlidingWindowLimiter(
+                            GetPartitionKey(context),
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 60,
+                                Window = TimeSpan.FromSeconds(60),
+                                SegmentsPerWindow = 4,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            }),
+                        "api-write" => RateLimitPartition.GetSlidingWindowLimiter(
+                            GetPartitionKey(context),
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 30,
+                                Window = TimeSpan.FromSeconds(60),
+                                SegmentsPerWindow = 4,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            }),
+                        "api-heavy" => RateLimitPartition.GetSlidingWindowLimiter(
+                            GetPartitionKey(context),
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 10,
+                                Window = TimeSpan.FromSeconds(60),
+                                SegmentsPerWindow = 2,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            }),
+                        _ => RateLimitPartition.GetNoLimiter("noop")
+                    };
                 }
 
                 var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                return RateLimitPartition.GetFixedWindowLimiter(
+                return RateLimitPartition.GetSlidingWindowLimiter(
                     ipAddress,
-                    _ => new FixedWindowRateLimiterOptions
+                    _ => new SlidingWindowRateLimiterOptions
                     {
                         PermitLimit = 100,
-                        Window = TimeSpan.FromSeconds(10),
+                        Window = TimeSpan.FromSeconds(60),
+                        SegmentsPerWindow = 6,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         QueueLimit = 0
                     });
@@ -243,5 +311,20 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    private static string GetPartitionKey(HttpContext context)
+    {
+        var user = context.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                return $"user:{userId}";
+            }
+        }
+
+        return $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
     }
 }
