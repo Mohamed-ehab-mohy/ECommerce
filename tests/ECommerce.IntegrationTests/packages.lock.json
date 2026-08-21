@@ -91,11 +91,11 @@
       },
       "Testcontainers.RabbitMq": {
         "type": "Direct",
-        "requested": "[4.13.0, )",
-        "resolved": "4.13.0",
-        "contentHash": "xXKFYXoylY0W8XlClLr1YhUn008tO2wN7+ZBxvS9rlyjtKMP/zubD9/I2lgNGOXFQi/C3YRLok5EwlByWRE0Ww==",
+        "requested": "[4.14.0, )",
+        "resolved": "4.14.0",
+        "contentHash": "NUUrGSZEW3XpDDY7OSAjeJdl9fNLd8f29CdQ7s8AiBODl035mawyTAu+JicWfGGXaGsLqdcUUlEFTc0b1WtmQA==",
         "dependencies": {
-          "Testcontainers": "4.13.0"
+          "Testcontainers": "4.14.0"
         }
       },
       "Testcontainers.Redis": {
@@ -1357,13 +1357,13 @@
       },
       "Testcontainers": {
         "type": "Transitive",
-        "resolved": "4.13.0",
-        "contentHash": "j8vi9jPBNSwaraGGx8w+2gtZyWrlbKxdhiGMS3nektg+KiwjFWx9ghCjs57EoQfvI+IAbzti0oQJupQChwgMog==",
+        "resolved": "4.14.0",
+        "contentHash": "ojuBi91xcMsR6vnFuNsQDWU9tlZlrtmqy95VPNWVVnh24GiwFL/WMnVmb6bRv8LqovtnKPJN9cpmH1k02Z4ZoA==",
         "dependencies": {
           "Docker.DotNet.Enhanced": "4.3.3",
           "Docker.DotNet.Enhanced.X509": "4.3.3",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.3",
-          "SSH.NET": "2025.1.0",
+          "SSH.NET": "2026.0.0",
           "SharpZipLib": "1.4.2"
         }
       },
