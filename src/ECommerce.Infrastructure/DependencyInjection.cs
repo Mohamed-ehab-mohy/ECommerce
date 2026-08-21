@@ -249,7 +249,8 @@ public static class DependencyInjection
 
         services.AddSingleton<IDbConnectionFactory, DapperReadModelStore>();
         services.AddSingleton<IReadModelStore, DapperReadModelStore>();
-        services.AddSingleton<IPartnerRepository, InMemoryPartnerRepository>();
+        services.AddScoped<IPartnerRepository, PostgresPartnerRepository>();
+        services.AddScoped<IPartnerAuthService, PostgresPartnerAuthService>();
         services.AddScoped<DapperProductReadService>();
         services.AddScoped<DapperOrderReadService>();
         services.AddScoped<DapperStockReadService>();

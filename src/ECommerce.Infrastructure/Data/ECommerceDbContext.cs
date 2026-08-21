@@ -11,6 +11,7 @@ using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Notifications;
 using ECommerce.Domain.Orders;
+using ECommerce.Domain.Partners;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
 using ECommerce.Domain.Reporting;
@@ -131,6 +132,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<CheckoutSagaState> CheckoutSagaStates => Set<CheckoutSagaState>();
 
     public DbSet<MfaSecret> MfaSecrets => Set<MfaSecret>();
+
+    public DbSet<PartnerAccount> PartnerAccounts => Set<PartnerAccount>();
+
+    public DbSet<PartnerApiKey> PartnerApiKeys => Set<PartnerApiKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

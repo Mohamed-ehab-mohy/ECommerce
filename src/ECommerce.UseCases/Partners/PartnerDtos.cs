@@ -1,10 +1,9 @@
 namespace ECommerce.UseCases.Partners;
 
-public sealed class PartnerApiKey
+public sealed class PartnerApiKeyDto
 {
     public Guid Id { get; init; }
     public Guid PartnerId { get; init; }
-    public string KeyHash { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string[] Scopes { get; init; } = [];
     public bool IsActive { get; init; }
@@ -13,12 +12,26 @@ public sealed class PartnerApiKey
     public DateTime? LastUsedAt { get; init; }
 }
 
-public sealed class PartnerAccount
+public sealed class PartnerAccountDto
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
-    public int RateLimitPerMinute { get; init; } = 60;
+    public int RateLimitPerMinute { get; init; }
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
+}
+
+public sealed class CreatePartnerApiKeyRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public string[] Scopes { get; init; } = [];
+    public int? ExpiresInDays { get; init; }
+}
+
+public sealed class CreatePartnerAccountRequest
+{
+    public string Name { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public int RateLimitPerMinute { get; init; } = 60;
 }
