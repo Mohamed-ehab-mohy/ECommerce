@@ -31,7 +31,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageReference Include="QuestPDF" Version="2026.7.3" />
     <PackageReference Include="StackExchange.Redis" Version="3.1.13" />
-    <PackageReference Include="Stripe.net" Version="52.2.0" />
+    <PackageReference Include="Stripe.net" Version="52.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
   </ItemGroup>
 
