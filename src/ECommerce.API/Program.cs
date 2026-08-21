@@ -30,6 +30,9 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("ecommerce-api"))
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddRedisInstrumentation()
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri(builder.Configuration["OtlpTracesEndpoint"] ?? "http://localhost:5341");
@@ -37,6 +40,7 @@ builder.Services.AddOpenTelemetry()
         }))
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
         .AddProcessInstrumentation()
         .AddOtlpExporter(options =>
         {
