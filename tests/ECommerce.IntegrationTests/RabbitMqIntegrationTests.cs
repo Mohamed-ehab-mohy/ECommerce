@@ -2,11 +2,11 @@ using RabbitMQ.Client;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class RabbitMqIntegrationTests : IClassFixture<RabbitMqContainerFixture>
+public sealed class RabbitMqIntegrationTests : IClassFixture<IntegrationFixture>
 {
-    private readonly RabbitMqContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public RabbitMqIntegrationTests(RabbitMqContainerFixture fixture)
+    public RabbitMqIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -18,7 +18,7 @@ public sealed class RabbitMqIntegrationTests : IClassFixture<RabbitMqContainerFi
 
         var factory = new ConnectionFactory
         {
-            Uri = new Uri(_fixture.ConnectionString)
+            Uri = new Uri(_fixture.RabbitMqConnectionString)
         };
         await using var connection = await factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();

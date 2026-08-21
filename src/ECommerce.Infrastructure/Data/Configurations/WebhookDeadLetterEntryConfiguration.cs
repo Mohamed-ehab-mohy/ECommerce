@@ -58,10 +58,11 @@ public sealed class WebhookDeadLetterEntryConfiguration : IEntityTypeConfigurati
         builder.Property(entry => entry.IsDeleted).HasColumnName("is_deleted");
 
         builder.Ignore(entry => entry.DomainEvents);
+        builder.Ignore(entry => entry.IsReplayed);
 
         builder.HasIndex(entry => entry.EndpointId).HasDatabaseName("ix_webhook_dlq_endpoint_id");
         builder.HasIndex(entry => entry.EventType).HasDatabaseName("ix_webhook_dlq_event_type");
         builder.HasIndex(entry => entry.LastFailedAtUtc).HasDatabaseName("ix_webhook_dlq_last_failed");
-        builder.HasIndex(entry => new { entry.IsReplayed, entry.LastFailedAtUtc }).HasDatabaseName("ix_webhook_dlq_replayed_failed");
+        builder.HasIndex(entry => new { entry.ReplayedAtUtc, entry.LastFailedAtUtc }).HasDatabaseName("ix_webhook_dlq_replayed_failed");
     }
 }

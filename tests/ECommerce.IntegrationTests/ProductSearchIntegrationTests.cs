@@ -8,11 +8,11 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContainerFixture>
+public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFixture>
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public ProductSearchIntegrationTests(PostgresContainerFixture fixture)
+    public ProductSearchIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -22,8 +22,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var headphones = CreateProduct("SKU-S-001", "wireless-headphones", "Wireless Noise Cancelling Headphones");
@@ -47,8 +47,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var product = CreateProduct("SKU-S-003", "headphones", "Wireless Headphones");
@@ -69,8 +69,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var now = DateTime.UtcNow;
@@ -102,8 +102,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var cheap = CreateProduct("SKU-S-006", "cheap", "Cheap Headphones", listAmount: 100m);
@@ -128,8 +128,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var now = DateTime.UtcNow;
@@ -167,8 +167,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var active = CreateProduct("SKU-S-011", "active", "Active Headphones");
@@ -194,8 +194,8 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
         await ResetAsync(context);
 
         var product = CreateProduct("SKU-S-013", "headphones", "Old Name");
@@ -245,7 +245,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()

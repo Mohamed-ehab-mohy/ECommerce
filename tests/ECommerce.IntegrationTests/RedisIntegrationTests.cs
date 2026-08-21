@@ -2,11 +2,11 @@ using StackExchange.Redis;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class RedisIntegrationTests : IClassFixture<RedisContainerFixture>
+public sealed class RedisIntegrationTests : IClassFixture<IntegrationFixture>
 {
-    private readonly RedisContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public RedisIntegrationTests(RedisContainerFixture fixture)
+    public RedisIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -16,7 +16,7 @@ public sealed class RedisIntegrationTests : IClassFixture<RedisContainerFixture>
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await using var connection = await ConnectionMultiplexer.ConnectAsync(_fixture.ConnectionString);
+        await using var connection = await ConnectionMultiplexer.ConnectAsync(_fixture.RedisConnectionString);
         var database = connection.GetDatabase();
         await database.StringSetAsync("smoke", "ok");
         var value = await database.StringGetAsync("smoke");

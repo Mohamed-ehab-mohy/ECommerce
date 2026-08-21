@@ -9,17 +9,13 @@ using StackExchange.Redis;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class CartRepositoryIntegrationTests :
-    IClassFixture<PostgresContainerFixture>,
-    IClassFixture<RedisContainerFixture>
+public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFixture>
 {
-    private readonly PostgresContainerFixture _postgres;
-    private readonly RedisContainerFixture _redis;
+    private readonly IntegrationFixture _fixture;
 
-    public CartRepositoryIntegrationTests(PostgresContainerFixture postgres, RedisContainerFixture redis)
+    public CartRepositoryIntegrationTests(IntegrationFixture fixture)
     {
-        _postgres = postgres;
-        _redis = redis;
+        _fixture = fixture;
     }
 
     [SkippableFact]
@@ -30,10 +26,7 @@ public sealed class CartRepositoryIntegrationTests :
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await using (var setup = CreateContext())
-        {
-            await setup.Database.MigrateAsync();
-        }
+        await _fixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -47,7 +40,7 @@ public sealed class CartRepositoryIntegrationTests :
         }
 
         var cacheKey = new RedisKey($"cart:anon-key-1");
-        await using (var connection = await ConnectionMultiplexer.ConnectAsync(_redis.ConnectionString))
+        await using (var connection = await ConnectionMultiplexer.ConnectAsync(_fixture.RedisConnectionString))
         {
             var value = await connection.GetDatabase().StringGetAsync(cacheKey);
             Assert.False(value.IsNullOrEmpty, "cache entry should be written through on save");
@@ -73,10 +66,7 @@ public sealed class CartRepositoryIntegrationTests :
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await using (var setup = CreateContext())
-        {
-            await setup.Database.MigrateAsync();
-        }
+        await _fixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -110,8 +100,7 @@ public sealed class CartRepositoryIntegrationTests :
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await using var context = CreateContext();
-        await context.Database.MigrateAsync();
+        await _fixture.EnsureDatabaseReadyAsync();
 
         await using var redis = await ConnectRedisAsync();
         var repository = CreateRepository(redis);
@@ -127,10 +116,7 @@ public sealed class CartRepositoryIntegrationTests :
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await using (var setup = CreateContext())
-        {
-            await setup.Database.MigrateAsync();
-        }
+        await _fixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -159,10 +145,7 @@ public sealed class CartRepositoryIntegrationTests :
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await using (var setup = CreateContext())
-        {
-            await setup.Database.MigrateAsync();
-        }
+        await _fixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -198,7 +181,7 @@ public sealed class CartRepositoryIntegrationTests :
     private ECommerceDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-            .UseNpgsql(_postgres.ConnectionString)
+            .UseNpgsql(_fixture.PostgresConnectionString)
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
@@ -206,7 +189,7 @@ public sealed class CartRepositoryIntegrationTests :
     }
 
     private async Task<IConnectionMultiplexer> ConnectRedisAsync() =>
-        await ConnectionMultiplexer.ConnectAsync(_redis.ConnectionString);
+        await ConnectionMultiplexer.ConnectAsync(_fixture.RedisConnectionString);
 
     private CartRepository CreateRepository(IConnectionMultiplexer redis) =>
         new(

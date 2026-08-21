@@ -26,15 +26,15 @@ using AddressSnapshot = ECommerce.Domain.Orders.AddressSnapshot;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresContainerFixture>
+public sealed class FulfillmentFlowIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "FUL-01";
     private const string Slug = "fulfillment-widget";
     private const string OrderNumber = "FUL-1001";
 
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public FulfillmentFlowIntegrationTests(PostgresContainerFixture fixture)
+    public FulfillmentFlowIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -101,9 +101,9 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
 
     private async Task<(Guid WarehouseId, Guid ProductId, Guid OrderId)> SeedAsync(DateTime utcNow)
     {
+        await _fixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
-            await setup.Database.MigrateAsync();
             await setup.Database.ExecuteSqlRawAsync("""
                 TRUNCATE TABLE
                     warehouses,
@@ -257,7 +257,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<PostgresCont
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(dataSourceBuilder.Build())

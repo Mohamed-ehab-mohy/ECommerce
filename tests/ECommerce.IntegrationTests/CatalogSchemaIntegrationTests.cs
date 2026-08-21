@@ -7,11 +7,11 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContainerFixture>
+public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFixture>
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public CatalogSchemaIntegrationTests(PostgresContainerFixture fixture)
+    public CatalogSchemaIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -21,8 +21,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var tables = await QueryTablesAsync();
         Assert.Contains(tables, table => table == "products");
@@ -47,8 +47,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         context.Products.Add(Product.Create("SKU-001", "slug-001", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
@@ -65,8 +65,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         context.Products.Add(Product.Create("SKU-002", "same-slug", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now));
@@ -83,8 +83,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         var product = Product.Create("SKU-004", "slug-004", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
@@ -104,8 +104,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         var product = Product.Create("SKU-005", "slug-005", "en", "Test Product", null, "USD", 10m, null, null, null, false, ProductStatus.Active, now);
@@ -122,8 +122,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         context.Warehouses.Add(Warehouse.Create("CAI-01", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now));
@@ -140,8 +140,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         var warehouse = Warehouse.Create("WH-STK-01", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
@@ -161,8 +161,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         var warehouse = Warehouse.Create("WH-STK-02", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
@@ -186,8 +186,8 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
-        await context.Database.MigrateAsync();
 
         var now = DateTime.UtcNow;
         var warehouse = Warehouse.Create("WH-STK-03", "Cairo Hub", "Downtown, Cairo", "Africa/Cairo", WarehouseStatus.Active, now);
@@ -213,7 +213,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()
@@ -224,7 +224,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
 
     private async Task<IReadOnlyCollection<string>> QueryTablesAsync()
     {
-        await using var connection = new NpgsqlConnection(_fixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_fixture.PostgresConnectionString);
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand(
             """

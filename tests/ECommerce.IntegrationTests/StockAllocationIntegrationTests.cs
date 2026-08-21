@@ -8,15 +8,15 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresContainerFixture>
+public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "QAS-01";
     private const int AvailableUnits = 10;
     private const int ConcurrentRequests = 25;
 
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public StockAllocationIntegrationTests(PostgresContainerFixture fixture)
+    public StockAllocationIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -26,9 +26,9 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresCont
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
-            await setup.Database.MigrateAsync();
             var utcNow = DateTime.UtcNow;
             var warehouse = Warehouse.Create("W-QAS", "QAS Warehouse", "Test", "UTC", WarehouseStatus.Active, utcNow);
             setup.Add(warehouse);
@@ -93,7 +93,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresCont
     private ECommerceDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-            .UseNpgsql(_fixture.ConnectionString)
+            .UseNpgsql(_fixture.PostgresConnectionString)
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;

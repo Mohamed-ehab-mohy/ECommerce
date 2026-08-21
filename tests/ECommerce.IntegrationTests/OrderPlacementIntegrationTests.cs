@@ -20,13 +20,13 @@ using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresContainerFixture>
+public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "QAS-05";
 
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public OrderPlacementIntegrationTests(PostgresContainerFixture fixture)
+    public OrderPlacementIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -122,9 +122,9 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
     {
         var utcNow = DateTime.UtcNow;
 
+        await _fixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
-            await setup.Database.MigrateAsync();
             await setup.Database.ExecuteSqlRawAsync("""
                 TRUNCATE TABLE
                     warehouses,
@@ -201,7 +201,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<PostgresConta
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(dataSourceBuilder.Build())
