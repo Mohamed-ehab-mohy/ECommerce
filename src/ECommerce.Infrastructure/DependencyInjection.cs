@@ -224,6 +224,7 @@ public static class DependencyInjection
 
         services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
         services.AddScoped<IWebhookDeliveryRepository, WebhookDeliveryRepository>();
+        services.AddScoped<IWebhookDeadLetterRepository, WebhookDeadLetterRepository>();
         services.AddScoped<IWebhookSigner, HmacWebhookSigner>();
         services.AddScoped<IWebhookHttpDeliverer, HttpWebhookDeliverer>();
         services.AddScoped<IWebhookDeliveryJobScheduler, HangfireWebhookDeliveryJobScheduler>();

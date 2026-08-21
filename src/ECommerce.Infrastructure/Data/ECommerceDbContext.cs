@@ -137,6 +137,8 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<PartnerApiKey> PartnerApiKeys => Set<PartnerApiKey>();
 
+    public DbSet<WebhookDeadLetterEntry> WebhookDeadLetterEntries => Set<WebhookDeadLetterEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pg_trgm");
