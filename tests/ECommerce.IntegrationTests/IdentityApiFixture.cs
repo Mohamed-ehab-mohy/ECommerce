@@ -16,15 +16,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using StackExchange.Redis;
-using Testcontainers.PostgreSql;
-using Testcontainers.Redis;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class IdentityApiFixture : IAsyncLifetime
+public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifetime
 {
-    private PostgreSqlContainer? _container;
-    private RedisContainer? _redisContainer;
     private WebApplicationFactory<Program>? _factory;
 
     public HttpClient Client { get; private set; } = null!;
@@ -40,10 +36,6 @@ public sealed class IdentityApiFixture : IAsyncLifetime
             return;
         }
 
-        _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
-        _redisContainer = new RedisBuilder("redis:7-alpine").Build();
-        await Task.WhenAll(_container.StartAsync(), _redisContainer.StartAsync());
-
         var emailSender = new CapturingEmailSender();
 
         _factory = new WebApplicationFactory<Program>()
@@ -53,8 +45,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                 {
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:Postgres"] = _container!.GetConnectionString(),
-                        ["ConnectionStrings:Redis"] = _redisContainer!.GetConnectionString(),
+                        ["ConnectionStrings:Postgres"] = shared.PostgresConnectionString,
+                        ["ConnectionStrings:Redis"] = shared.RedisConnectionString,
                         ["ConnectionStrings:RabbitMq"] = "",
                         ["Hangfire:Disabled"] = "true"
                     });
@@ -70,9 +62,9 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
                     services.RemoveAll<IConnectionMultiplexer>();
                     services.AddSingleton<IConnectionMultiplexer>(_ =>
-                        ConnectionMultiplexer.Connect(_redisContainer!.GetConnectionString()));
+                        ConnectionMultiplexer.Connect(shared.RedisConnectionString));
 
-                    var dataSourceBuilder = new NpgsqlDataSourceBuilder(_container!.GetConnectionString());
+                    var dataSourceBuilder = new NpgsqlDataSourceBuilder(shared.PostgresConnectionString);
                     dataSourceBuilder.EnableDynamicJson();
                     var dataSource = dataSourceBuilder.Build();
                     services.RemoveAll<NpgsqlDataSource>();
@@ -174,13 +166,5 @@ public sealed class IdentityApiFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         _factory?.Dispose();
-
-        if (Docker.IsAvailable)
-        {
-            if (_container is { } container)
-                await container.DisposeAsync().AsTask();
-            if (_redisContainer is { } redis)
-                await redis.DisposeAsync().AsTask();
-        }
     }
 }

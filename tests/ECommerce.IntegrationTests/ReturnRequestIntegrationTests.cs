@@ -7,11 +7,12 @@ using Xunit;
 namespace ECommerce.IntegrationTests;
 
 [Trait("Category", "Integration")]
-public sealed class ReturnRequestIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class ReturnRequestIntegrationTests
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public ReturnRequestIntegrationTests(PostgresContainerFixture fixture)
+    public ReturnRequestIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }

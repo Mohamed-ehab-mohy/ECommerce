@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 {
     private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);

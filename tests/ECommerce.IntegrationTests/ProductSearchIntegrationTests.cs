@@ -8,11 +8,12 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class ProductSearchIntegrationTests
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public ProductSearchIntegrationTests(PostgresContainerFixture fixture)
+    public ProductSearchIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -245,7 +246,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<PostgresContai
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()

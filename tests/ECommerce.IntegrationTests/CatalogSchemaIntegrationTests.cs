@@ -7,11 +7,12 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class CatalogSchemaIntegrationTests
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public CatalogSchemaIntegrationTests(PostgresContainerFixture fixture)
+    public CatalogSchemaIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -213,7 +214,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         return new(
             new DbContextOptionsBuilder<ECommerceDbContext>()
@@ -224,7 +225,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<PostgresContai
 
     private async Task<IReadOnlyCollection<string>> QueryTablesAsync()
     {
-        await using var connection = new NpgsqlConnection(_fixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_fixture.PostgresConnectionString);
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand(
             """

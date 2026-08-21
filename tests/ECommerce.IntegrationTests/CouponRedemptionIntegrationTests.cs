@@ -25,15 +25,16 @@ namespace ECommerce.IntegrationTests;
 /// QAS-02: coupon redemption is atomic. When the usage limit is N, exactly N concurrent
 /// place-order attempts succeed; the remainder fail with COUPON_EXHAUSTED.
 /// </summary>
-public sealed class CouponRedemptionIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class CouponRedemptionIntegrationTests
 {
     private const string Sku = "QAS-02";
     private const string CouponCode = "QAS02";
     private const int TotalUses = 10;
 
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public CouponRedemptionIntegrationTests(PostgresContainerFixture fixture)
+    public CouponRedemptionIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -241,7 +242,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<PostgresCon
 
     private ECommerceDbContext CreateContext()
     {
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
             .UseNpgsql(dataSourceBuilder.Build())

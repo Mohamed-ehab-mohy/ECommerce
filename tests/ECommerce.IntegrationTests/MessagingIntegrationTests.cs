@@ -15,20 +15,14 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class MessagingIntegrationTests :
-    IClassFixture<PostgresContainerFixture>,
-    IClassFixture<RabbitMqContainerFixture>
+[Collection("Integration")]
+public sealed class MessagingIntegrationTests
 {
-    private readonly PostgresContainerFixture _postgres;
+    private readonly IntegrationFixture _fixture;
 
-    private readonly RabbitMqContainerFixture _rabbitMq;
-
-    public MessagingIntegrationTests(
-        PostgresContainerFixture postgres,
-        RabbitMqContainerFixture rabbitMq)
+    public MessagingIntegrationTests(IntegrationFixture fixture)
     {
-        _postgres = postgres;
-        _rabbitMq = rabbitMq;
+        _fixture = fixture;
     }
 
     [SkippableFact]
@@ -57,7 +51,7 @@ public sealed class MessagingIntegrationTests :
             bus.AddConsumer<OrderPlacedConsumer>();
             bus.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(new Uri(_rabbitMq.ConnectionString));
+                cfg.Host(new Uri(_fixture.RabbitMqConnectionString));
 
                 cfg.ReceiveEndpoint(OrderPlacedConsumer.QueueName, endpoint =>
                 {
@@ -115,7 +109,7 @@ public sealed class MessagingIntegrationTests :
     private ECommerceDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-            .UseNpgsql(_postgres.ConnectionString)
+            .UseNpgsql(_fixture.PostgresConnectionString)
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .Options;
         return new ECommerceDbContext(options);

@@ -5,11 +5,12 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class PostgresIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class PostgresIntegrationTests
 {
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public PostgresIntegrationTests(PostgresContainerFixture fixture)
+    public PostgresIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -19,7 +20,7 @@ public sealed class PostgresIntegrationTests : IClassFixture<PostgresContainerFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.ConnectionString);
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_fixture.PostgresConnectionString);
         dataSourceBuilder.EnableDynamicJson();
         await using var context = new ECommerceDbContext(
             new DbContextOptionsBuilder<ECommerceDbContext>()
@@ -36,7 +37,7 @@ public sealed class PostgresIntegrationTests : IClassFixture<PostgresContainerFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await using var connection = new NpgsqlConnection(_fixture.ConnectionString);
+        await using var connection = new NpgsqlConnection(_fixture.PostgresConnectionString);
         await connection.OpenAsync();
         await using var command = new NpgsqlCommand("SELECT 1", connection);
         var result = await command.ExecuteScalarAsync();

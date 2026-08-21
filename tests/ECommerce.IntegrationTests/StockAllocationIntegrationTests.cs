@@ -8,15 +8,16 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresContainerFixture>
+[Collection("Integration")]
+public sealed class StockAllocationIntegrationTests
 {
     private const string Sku = "QAS-01";
     private const int AvailableUnits = 10;
     private const int ConcurrentRequests = 25;
 
-    private readonly PostgresContainerFixture _fixture;
+    private readonly IntegrationFixture _fixture;
 
-    public StockAllocationIntegrationTests(PostgresContainerFixture fixture)
+    public StockAllocationIntegrationTests(IntegrationFixture fixture)
     {
         _fixture = fixture;
     }
@@ -93,7 +94,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<PostgresCont
     private ECommerceDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<ECommerceDbContext>()
-            .UseNpgsql(_fixture.ConnectionString)
+            .UseNpgsql(_fixture.PostgresConnectionString)
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
             .Options;
