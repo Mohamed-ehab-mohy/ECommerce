@@ -18,7 +18,7 @@ public sealed class ReturnRequestIntegrationTests : IClassFixture<IntegrationFix
 
     private async Task<ECommerceDbContext> GetDbContextAsync()
     {
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         return _fixture.DbContext;
     }
 

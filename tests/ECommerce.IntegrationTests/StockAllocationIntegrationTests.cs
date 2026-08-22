@@ -26,7 +26,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
             var utcNow = DateTime.UtcNow;

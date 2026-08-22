@@ -16,9 +16,13 @@ public sealed class IntegrationFixture : IAsyncLifetime
     private static RabbitMqContainer? _rabbitMq;
     private static ECommerceDbContext? _dbContext;
 
-    public string PostgresConnectionString => _postgres?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
-    public string RedisConnectionString => _redis?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
-    public string RabbitMqConnectionString => _rabbitMq?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+    public static string GetPostgresConnectionString() => _postgres?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+    public static string GetRedisConnectionString() => _redis?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+    public static string GetRabbitMqConnectionString() => _rabbitMq?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+
+    public string PostgresConnectionString => GetPostgresConnectionString();
+    public string RedisConnectionString => GetRedisConnectionString();
+    public string RabbitMqConnectionString => GetRabbitMqConnectionString();
     public ECommerceDbContext DbContext => _dbContext!;
 
     public async Task InitializeAsync()
@@ -46,7 +50,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         }
     }
 
-    public async Task EnsureDatabaseReadyAsync()
+    public static async Task EnsureDatabaseReadyAsync()
     {
         if (_dbContext is not null) return;
 
@@ -55,7 +59,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         {
             if (_dbContext is not null) return;
 
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(PostgresConnectionString);
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(GetPostgresConnectionString());
             dataSourceBuilder.EnableDynamicJson();
             _dbContext = new ECommerceDbContext(
                 new DbContextOptionsBuilder<ECommerceDbContext>()

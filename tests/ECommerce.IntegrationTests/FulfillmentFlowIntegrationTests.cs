@@ -101,7 +101,7 @@ public sealed class FulfillmentFlowIntegrationTests : IClassFixture<IntegrationF
 
     private async Task<(Guid WarehouseId, Guid ProductId, Guid OrderId)> SeedAsync(DateTime utcNow)
     {
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
             await setup.Database.ExecuteSqlRawAsync("""

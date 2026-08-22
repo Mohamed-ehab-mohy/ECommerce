@@ -29,7 +29,7 @@ public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         CountingInboxRepository.ResetCalls();
         var notifier = new CapturingNotifier();

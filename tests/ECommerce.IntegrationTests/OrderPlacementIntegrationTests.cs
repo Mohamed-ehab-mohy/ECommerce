@@ -122,7 +122,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
     {
         var utcNow = DateTime.UtcNow;
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using (var setup = CreateContext())
         {
             await setup.Database.ExecuteSqlRawAsync("""

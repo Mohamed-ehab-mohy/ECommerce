@@ -26,7 +26,7 @@ public sealed class PostgresIntegrationTests : IClassFixture<IntegrationFixture>
                 .UseNpgsql(dataSourceBuilder.Build())
                 .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options);
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         var applied = await context.Database.GetAppliedMigrationsAsync();
         Assert.Contains(applied, migration => migration.EndsWith("InitialMigration", StringComparison.Ordinal));
     }

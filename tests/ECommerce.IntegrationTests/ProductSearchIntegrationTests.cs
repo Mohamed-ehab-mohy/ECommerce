@@ -22,7 +22,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -47,7 +47,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -69,7 +69,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -102,7 +102,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -128,7 +128,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -167,7 +167,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 
@@ -194,7 +194,7 @@ public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
         await ResetAsync(context);
 

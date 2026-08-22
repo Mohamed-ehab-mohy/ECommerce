@@ -26,7 +26,7 @@ public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFi
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -66,7 +66,7 @@ public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFi
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -100,7 +100,7 @@ public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         await using var redis = await ConnectRedisAsync();
         var repository = CreateRepository(redis);
@@ -116,7 +116,7 @@ public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFi
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {
@@ -145,7 +145,7 @@ public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFi
         var utcNow = DateTime.UtcNow;
         var productId = Guid.NewGuid();
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         await using (var redis = await ConnectRedisAsync())
         {

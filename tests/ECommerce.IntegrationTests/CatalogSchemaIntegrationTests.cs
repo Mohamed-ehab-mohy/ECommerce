@@ -21,7 +21,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var tables = await QueryTablesAsync();
@@ -47,7 +47,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -65,7 +65,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -83,7 +83,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -104,7 +104,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -122,7 +122,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -140,7 +140,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -161,7 +161,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;
@@ -186,7 +186,7 @@ public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFix
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var context = CreateContext();
 
         var now = DateTime.UtcNow;

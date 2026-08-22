@@ -19,7 +19,7 @@ using StackExchange.Redis;
 
 namespace ECommerce.IntegrationTests;
 
-public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifetime
+public sealed class IdentityApiFixture : IAsyncLifetime
 {
     private WebApplicationFactory<Program>? _factory;
 
@@ -37,6 +37,8 @@ public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifeti
         }
 
         var emailSender = new CapturingEmailSender();
+        var postgresConnectionString = IntegrationFixture.GetPostgresConnectionString();
+        var redisConnectionString = IntegrationFixture.GetRedisConnectionString();
 
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -45,8 +47,8 @@ public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifeti
                 {
                     configuration.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:Postgres"] = shared.PostgresConnectionString,
-                        ["ConnectionStrings:Redis"] = shared.RedisConnectionString,
+                        ["ConnectionStrings:Postgres"] = postgresConnectionString,
+                        ["ConnectionStrings:Redis"] = redisConnectionString,
                         ["ConnectionStrings:RabbitMq"] = "",
                         ["Hangfire:Disabled"] = "true"
                     });
@@ -62,9 +64,9 @@ public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifeti
 
                     services.RemoveAll<IConnectionMultiplexer>();
                     services.AddSingleton<IConnectionMultiplexer>(_ =>
-                        ConnectionMultiplexer.Connect(shared.RedisConnectionString));
+                        ConnectionMultiplexer.Connect(redisConnectionString));
 
-                    var dataSourceBuilder = new NpgsqlDataSourceBuilder(shared.PostgresConnectionString);
+                    var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
                     dataSourceBuilder.EnableDynamicJson();
                     var dataSource = dataSourceBuilder.Build();
                     services.RemoveAll<NpgsqlDataSource>();
@@ -84,7 +86,7 @@ public sealed class IdentityApiFixture(IntegrationFixture shared) : IAsyncLifeti
                 });
             });
 
-        await shared.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
 
         EmailSender = emailSender;
         Client = _factory.CreateClient();

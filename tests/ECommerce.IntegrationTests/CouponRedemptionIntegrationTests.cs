@@ -108,7 +108,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         int? perCustomerLimit = null,
         bool singleCustomer = false)
     {
-        await _fixture.EnsureDatabaseReadyAsync();
+        await IntegrationFixture.EnsureDatabaseReadyAsync();
         await using var setup = CreateContext();
         await setup.Database.ExecuteSqlRawAsync("""
             TRUNCATE TABLE
