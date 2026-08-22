@@ -34,7 +34,7 @@ builder.Services.AddOpenTelemetry()
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
             .AddRedisInstrumentation();
-            
+
         if (!builder.Configuration.GetValue("Telemetry:Disabled", false))
         {
             tracing.AddOtlpExporter(options =>
