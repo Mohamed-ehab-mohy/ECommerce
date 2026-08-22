@@ -54,7 +54,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                         ["ConnectionStrings:Postgres"] = postgresConnectionString,
                         ["ConnectionStrings:Redis"] = redisConnectionString,
                         ["ConnectionStrings:RabbitMq"] = "",
-                        ["Hangfire:Disabled"] = "true"
+                        ["Hangfire:Disabled"] = "true",
+                        ["Telemetry:Disabled"] = "true"
                     });
                 });
 

@@ -28,26 +28,38 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("ecommerce-api"))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddEntityFrameworkCoreInstrumentation()
-        .AddRedisInstrumentation()
-        .AddOtlpExporter(options =>
+    .WithTracing(tracing =>
+    {
+        tracing.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation()
+            .AddRedisInstrumentation();
+            
+        if (!builder.Configuration.GetValue("Telemetry:Disabled", false))
         {
-            options.Endpoint = new Uri(builder.Configuration["OtlpTracesEndpoint"] ?? "http://localhost:5341");
-            options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddProcessInstrumentation()
-        .AddOtlpExporter(options =>
+            tracing.AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(builder.Configuration["OtlpTracesEndpoint"] ?? "http://localhost:5341");
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+        }
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter();
+
+        if (!builder.Configuration.GetValue("Telemetry:Disabled", false))
         {
-            options.Endpoint = new Uri(builder.Configuration["OtlpMetricsEndpoint"] ?? "http://localhost:5341");
-            options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-        })
-        .AddPrometheusExporter());
+            metrics.AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(builder.Configuration["OtlpMetricsEndpoint"] ?? "http://localhost:5341");
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+        }
+    });
 
 var app = builder.Build();
 
