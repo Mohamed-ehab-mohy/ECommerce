@@ -144,11 +144,11 @@ jobs:
 
       - name: Run API server
         run: |
-          dotnet run --project src/ECommerce.API --no-build --urls "http://localhost:8080" &
+          dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" &
           echo "API_PID=$!" >> "$GITHUB_ENV"
 
           echo "Waiting for API to be ready..."
-          timeout 60 bash -c 'until curl -sf http://localhost:8080/health/live >/dev/null 2>&1; do sleep 2; done'
+          timeout 60 bash -c 'until curl -sf http://127.0.0.1:8080/health/live >/dev/null 2>&1; do sleep 2; done'
 
       - uses: grafana/k6-action@v0.3.1
         with:
