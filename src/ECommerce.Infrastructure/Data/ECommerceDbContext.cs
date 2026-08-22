@@ -145,26 +145,43 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
+            var isSoftDeletable = typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType);
             var tenantIdProperty = entityType.ClrType.GetProperty("TenantId");
-            if (tenantIdProperty is not null && tenantIdProperty.PropertyType == typeof(Guid?))
+
+            if (tenantIdProperty is not null && tenantIdProperty.PropertyType == typeof(Guid?) || isSoftDeletable)
             {
-                modelBuilder.Entity(entityType.ClrType)
-                    .Property<Guid?>("TenantId")
-                    .HasColumnName("tenant_id");
-
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasIndex("TenantId")
-                    .HasDatabaseName($"ix_{entityType.GetTableName()}_tenant_id");
-
                 var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                var tenantIdAccess = System.Linq.Expressions.Expression.Property(parameter, "TenantId");
-                var currentTenant = System.Linq.Expressions.Expression.Property(null, typeof(TenantScope), "Current");
-                var isNull = System.Linq.Expressions.Expression.Equal(currentTenant, System.Linq.Expressions.Expression.Constant(null, typeof(Guid?)));
-                var filter = System.Linq.Expressions.Expression.Lambda(
-                    System.Linq.Expressions.Expression.OrElse(isNull, System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant)),
-                    parameter);
+                System.Linq.Expressions.Expression? filter = null;
 
-                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+                if (tenantIdProperty is not null && tenantIdProperty.PropertyType == typeof(Guid?))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property<Guid?>("TenantId")
+                        .HasColumnName("tenant_id");
+
+                    modelBuilder.Entity(entityType.ClrType)
+                        .HasIndex("TenantId")
+                        .HasDatabaseName($"ix_{entityType.GetTableName()}_tenant_id");
+
+                    var tenantIdAccess = System.Linq.Expressions.Expression.Property(parameter, "TenantId");
+                    var currentTenant = System.Linq.Expressions.Expression.Property(null, typeof(TenantScope), "Current");
+                    var isNull = System.Linq.Expressions.Expression.Equal(currentTenant, System.Linq.Expressions.Expression.Constant(null, typeof(Guid?)));
+                    filter = System.Linq.Expressions.Expression.OrElse(isNull, System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant));
+                }
+
+                if (isSoftDeletable)
+                {
+                    var isDeletedProperty = System.Linq.Expressions.Expression.Property(parameter, "IsDeleted");
+                    var isNotDeleted = System.Linq.Expressions.Expression.Equal(isDeletedProperty, System.Linq.Expressions.Expression.Constant(false));
+                    
+                    filter = filter is null ? isNotDeleted : System.Linq.Expressions.Expression.AndAlso(filter, isNotDeleted);
+                }
+
+                if (filter is not null)
+                {
+                    var lambda = System.Linq.Expressions.Expression.Lambda(filter, parameter);
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+                }
             }
         }
     }

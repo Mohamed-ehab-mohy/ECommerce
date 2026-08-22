@@ -84,7 +84,7 @@ public static class DependencyInjection
             services.AddDbContext<ECommerceDbContext>(options => options
                 .UseSqlServer(sqlServerConnectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
                 .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
-                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor()));
+                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor(), new SoftDeleteInterceptor()));
         }
         else
         {
@@ -102,7 +102,7 @@ public static class DependencyInjection
             services.AddDbContext<ECommerceDbContext>(options => options
                 .UseNpgsql(dataSource, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null))
                 .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
-                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor()));
+                .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor(), new SoftDeleteInterceptor()));
         }
 
         services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));

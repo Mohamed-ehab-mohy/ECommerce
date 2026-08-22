@@ -2,7 +2,7 @@ using ECommerce.Domain.Abstractions;
 
 namespace ECommerce.Domain.Common;
 
-public abstract class BaseEntity<TId> : IHasDomainEvents
+public abstract class BaseEntity<TId> : IHasDomainEvents, ISoftDeletable
 {
     private readonly List<IDomainEvent> _domainEvents = [];
 
@@ -21,4 +21,10 @@ public abstract class BaseEntity<TId> : IHasDomainEvents
     public void AddDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
 
     public void ClearDomainEvents() => _domainEvents.Clear();
+
+    public void Delete()
+    {
+        IsDeleted = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
