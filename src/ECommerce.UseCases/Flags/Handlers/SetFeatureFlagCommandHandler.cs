@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Flags;
 using ECommerce.Shared.Audit;
 using ECommerce.Shared.Primitives;
@@ -7,7 +7,6 @@ using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Flags.Commands;
 using ECommerce.UseCases.Flags.Ports;
-using MediatR;
 
 namespace ECommerce.UseCases.Flags.Handlers;
 

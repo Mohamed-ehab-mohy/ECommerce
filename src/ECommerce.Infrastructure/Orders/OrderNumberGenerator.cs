@@ -1,7 +1,6 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Orders.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Orders;
 

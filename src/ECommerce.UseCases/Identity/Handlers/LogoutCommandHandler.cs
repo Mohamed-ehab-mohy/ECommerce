@@ -1,9 +1,7 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Identity.Handlers;
 

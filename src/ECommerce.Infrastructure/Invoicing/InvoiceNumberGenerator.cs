@@ -1,7 +1,6 @@
-using ECommerce.Domain.Invoicing;
+﻿using ECommerce.Domain.Invoicing;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Invoicing.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Invoicing;
 

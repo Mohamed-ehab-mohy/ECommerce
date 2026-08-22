@@ -1,5 +1,4 @@
-using ECommerce.Domain.Wishlist;
-using Microsoft.EntityFrameworkCore;
+﻿using ECommerce.Domain.Wishlist;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

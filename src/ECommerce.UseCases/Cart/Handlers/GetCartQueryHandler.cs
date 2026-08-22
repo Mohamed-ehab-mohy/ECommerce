@@ -1,12 +1,10 @@
-using ECommerce.Domain.Cart;
+﻿using ECommerce.Domain.Cart;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Cart.Responses;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Pricing;
-using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using CartAggregate = ECommerce.Domain.Cart.Cart;
 

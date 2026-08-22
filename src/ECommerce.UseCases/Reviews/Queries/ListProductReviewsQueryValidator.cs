@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Reviews.Queries;
 
 public sealed class ListProductReviewsQueryValidator : AbstractValidator<ListProductReviewsQuery>

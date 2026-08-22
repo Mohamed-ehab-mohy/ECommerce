@@ -1,6 +1,5 @@
-using ECommerce.UseCases.Cart.Queries;
+﻿using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Pricing;
-using FluentValidation;
 
 namespace ECommerce.UseCases.Cart.Queries;
 

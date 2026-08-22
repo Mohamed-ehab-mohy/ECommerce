@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Audit;
 using ECommerce.Shared.Errors;
@@ -8,8 +8,6 @@ using ECommerce.UseCases.Cart.Services;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
-using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.UseCases.Identity.Handlers;

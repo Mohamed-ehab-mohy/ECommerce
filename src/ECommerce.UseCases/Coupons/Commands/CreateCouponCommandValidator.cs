@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Coupons.Commands;
 
 public sealed class CreateCouponCommandValidator : AbstractValidator<CreateCouponCommand>

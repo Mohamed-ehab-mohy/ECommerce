@@ -1,5 +1,4 @@
-using ECommerce.Domain.Fulfillment;
-using FluentValidation;
+﻿using ECommerce.Domain.Fulfillment;
 
 namespace ECommerce.UseCases.Fulfillment.Commands;
 

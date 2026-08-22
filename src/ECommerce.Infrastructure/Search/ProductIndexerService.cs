@@ -1,7 +1,6 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Infrastructure.Data;
 using Elastic.Clients.Elasticsearch;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

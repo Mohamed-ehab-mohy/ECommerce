@@ -1,6 +1,5 @@
-using ECommerce.Infrastructure.Data;
+﻿using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Common;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ECommerce.Infrastructure.Common;

@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Reviews.Queries;
 
 public sealed class GetModerationQueueQueryValidator : AbstractValidator<GetModerationQueueQuery>

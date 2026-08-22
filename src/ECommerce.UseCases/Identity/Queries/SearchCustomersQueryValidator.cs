@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Identity.Queries;
 
 public sealed class SearchCustomersQueryValidator : AbstractValidator<SearchCustomersQuery>

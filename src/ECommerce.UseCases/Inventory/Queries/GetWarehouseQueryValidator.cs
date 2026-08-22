@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Inventory.Queries;
 
 public sealed class GetWarehouseQueryValidator : AbstractValidator<GetWarehouseQuery>

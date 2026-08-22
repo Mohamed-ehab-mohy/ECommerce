@@ -1,7 +1,6 @@
-using ECommerce.Domain.Partners;
+﻿using ECommerce.Domain.Partners;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
-using MediatR;
 
 namespace ECommerce.UseCases.Partners;
 

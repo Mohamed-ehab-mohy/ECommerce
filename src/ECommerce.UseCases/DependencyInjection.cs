@@ -1,4 +1,4 @@
-using ECommerce.Domain.Events;
+﻿using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Services;
@@ -12,8 +12,6 @@ using ECommerce.UseCases.Notifications.Services;
 using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Pricing;
 using ECommerce.UseCases.Promotions.Services;
-using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ECommerce.UseCases;

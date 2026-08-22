@@ -1,4 +1,4 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
@@ -7,8 +7,6 @@ using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Responses;
 using ECommerce.UseCases.Payments.Ports;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Orders.Handlers;
 

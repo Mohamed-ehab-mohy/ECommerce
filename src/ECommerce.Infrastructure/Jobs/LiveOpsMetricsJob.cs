@@ -1,9 +1,8 @@
-using ECommerce.Domain.Inventory;
+﻿using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Realtime;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Jobs;
 

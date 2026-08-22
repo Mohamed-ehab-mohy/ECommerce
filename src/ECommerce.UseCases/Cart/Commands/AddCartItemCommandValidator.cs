@@ -1,6 +1,5 @@
-using ECommerce.UseCases.Cart.Commands;
+﻿using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Pricing;
-using FluentValidation;
 
 namespace ECommerce.UseCases.Cart.Commands;
 

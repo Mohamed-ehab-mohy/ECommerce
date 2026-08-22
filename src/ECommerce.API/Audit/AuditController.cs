@@ -1,9 +1,7 @@
-using ECommerce.API.Common;
+﻿using ECommerce.API.Common;
 using ECommerce.UseCases.Audit.Queries;
 using ECommerce.UseCases.Common;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Audit;
 

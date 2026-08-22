@@ -1,8 +1,7 @@
-using ECommerce.Shared.Authorization;
+﻿using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Identity.Queries;
 

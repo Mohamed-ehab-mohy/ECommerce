@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Checkout;
@@ -21,7 +21,6 @@ using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Messaging;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Realtime;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Data;
 

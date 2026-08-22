@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Catalog;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit.Ports;
@@ -6,8 +6,6 @@ using ECommerce.UseCases.Catalog.Commands;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Responses;
 using ECommerce.UseCases.Common;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Catalog.Handlers;
 

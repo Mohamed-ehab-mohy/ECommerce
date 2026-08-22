@@ -1,12 +1,10 @@
-using ECommerce.Domain.Identity;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Identity.Queries;
 using ECommerce.UseCases.Identity.Responses;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Identity.Handlers;
 

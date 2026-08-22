@@ -1,7 +1,6 @@
-using ECommerce.UseCases.Common;
+﻿using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Recommendations;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Catalog.Commands;
 
 public sealed class CreateBrandCommandValidator : AbstractValidator<CreateBrandCommand>

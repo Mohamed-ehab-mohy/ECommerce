@@ -1,6 +1,5 @@
-using ECommerce.Infrastructure.Data;
+﻿using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Messaging.Ports;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace ECommerce.Infrastructure.Messaging;

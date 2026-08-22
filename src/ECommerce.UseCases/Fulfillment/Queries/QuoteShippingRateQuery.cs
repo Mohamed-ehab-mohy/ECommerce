@@ -1,10 +1,8 @@
-using ECommerce.Shared.Authorization;
+﻿using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Queries;
 using ECommerce.UseCases.Fulfillment.Shipping;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Fulfillment.Queries;
 

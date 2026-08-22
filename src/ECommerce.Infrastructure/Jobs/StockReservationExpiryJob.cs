@@ -1,8 +1,7 @@
-using ECommerce.Domain.Inventory;
+﻿using ECommerce.Domain.Inventory;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Inventory.Ports;
 using Hangfire;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Jobs;

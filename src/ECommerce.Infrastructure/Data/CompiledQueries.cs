@@ -1,6 +1,5 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Orders;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Data;
 

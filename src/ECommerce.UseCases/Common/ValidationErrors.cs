@@ -1,6 +1,5 @@
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
-using FluentValidation;
 using FluentValidation.Results;
 
 namespace ECommerce.UseCases.Common;

@@ -1,4 +1,4 @@
-using ECommerce.Domain.Fulfillment;
+﻿using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
@@ -6,7 +6,6 @@ using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Reports.Ports;
 using ECommerce.UseCases.Reports.Responses;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Reports;
 

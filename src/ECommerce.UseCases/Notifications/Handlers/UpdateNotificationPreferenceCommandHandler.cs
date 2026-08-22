@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Notifications;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
@@ -9,7 +9,6 @@ using ECommerce.UseCases.Notifications.Commands;
 using ECommerce.UseCases.Notifications.Ports;
 using ECommerce.UseCases.Notifications.Queries;
 using ECommerce.UseCases.Notifications.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Notifications.Handlers;
 

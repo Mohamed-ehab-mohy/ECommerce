@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Audit;
 using ECommerce.Shared.Primitives;
@@ -6,7 +6,6 @@ using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
-using MediatR;
 
 namespace ECommerce.UseCases.Identity.Handlers;
 

@@ -1,4 +1,4 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Shared.Primitives;
@@ -11,8 +11,6 @@ using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Pricing;
 using ECommerce.UseCases.Wishlist.Commands;
 using ECommerce.UseCases.Wishlist.Ports;
-using FluentValidation;
-using MediatR;
 using CartAggregate = ECommerce.Domain.Cart.Cart;
 using WishlistAggregate = ECommerce.Domain.Wishlist.Wishlist;
 

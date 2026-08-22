@@ -1,4 +1,4 @@
-using ECommerce.Domain.Cart;
+﻿using ECommerce.Domain.Cart;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Errors;
@@ -13,8 +13,6 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Payments.Services;
 using ECommerce.UseCases.Promotions.Ports;
-using FluentValidation;
-using MediatR;
 using CartAggregate = ECommerce.Domain.Cart.Cart;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 

@@ -1,12 +1,10 @@
-using ECommerce.API.Common;
+﻿using ECommerce.API.Common;
 using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Queries;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Queries;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

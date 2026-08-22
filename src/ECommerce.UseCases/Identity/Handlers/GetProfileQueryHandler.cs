@@ -1,9 +1,8 @@
-using ECommerce.Domain.Identity;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Identity.Queries;
 using ECommerce.UseCases.Identity.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Identity.Handlers;
 

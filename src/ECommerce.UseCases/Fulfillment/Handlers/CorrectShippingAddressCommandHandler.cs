@@ -1,10 +1,8 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Commands;
 using ECommerce.UseCases.Orders.Ports;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Fulfillment.Handlers;
 

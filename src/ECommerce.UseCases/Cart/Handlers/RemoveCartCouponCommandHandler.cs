@@ -1,4 +1,4 @@
-using ECommerce.Domain.Cart;
+﻿using ECommerce.Domain.Cart;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Commands;
@@ -6,8 +6,6 @@ using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Cart.Responses;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Pricing;
-using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace ECommerce.UseCases.Cart.Handlers;

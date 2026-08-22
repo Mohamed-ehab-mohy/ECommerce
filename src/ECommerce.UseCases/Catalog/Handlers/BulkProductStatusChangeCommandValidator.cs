@@ -1,5 +1,4 @@
-using ECommerce.UseCases.Catalog.Commands;
-using FluentValidation;
+﻿using ECommerce.UseCases.Catalog.Commands;
 
 namespace ECommerce.UseCases.Catalog.Handlers;
 

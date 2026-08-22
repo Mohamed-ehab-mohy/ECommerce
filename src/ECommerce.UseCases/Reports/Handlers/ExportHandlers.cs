@@ -1,12 +1,10 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using ECommerce.Domain.Reporting;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reports.Commands;
 using ECommerce.UseCases.Reports.Ports;
 using ECommerce.UseCases.Reports.Responses;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Reports.Handlers;
 

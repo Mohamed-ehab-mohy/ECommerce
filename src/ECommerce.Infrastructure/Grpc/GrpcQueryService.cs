@@ -1,6 +1,5 @@
-using ECommerce.Infrastructure.Data;
+﻿using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Grpc.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Grpc;
 

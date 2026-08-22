@@ -1,7 +1,6 @@
-using ECommerce.Domain.Pricing;
+﻿using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Promotions.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Promotions;
 

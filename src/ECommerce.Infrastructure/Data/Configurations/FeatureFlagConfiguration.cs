@@ -1,5 +1,4 @@
-using ECommerce.Domain.Flags;
-using Microsoft.EntityFrameworkCore;
+﻿using ECommerce.Domain.Flags;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

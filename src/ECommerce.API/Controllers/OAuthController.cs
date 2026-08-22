@@ -1,9 +1,7 @@
-using ECommerce.API.Common;
+﻿using ECommerce.API.Common;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

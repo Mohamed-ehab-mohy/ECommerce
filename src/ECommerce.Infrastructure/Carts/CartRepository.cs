@@ -1,7 +1,6 @@
-using ECommerce.Domain.Cart;
+﻿using ECommerce.Domain.Cart;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Cart.Ports;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 

@@ -1,9 +1,8 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Reviews;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Common;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Search;
 

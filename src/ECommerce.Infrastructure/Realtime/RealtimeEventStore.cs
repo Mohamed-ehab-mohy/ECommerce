@@ -1,5 +1,4 @@
-using ECommerce.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using ECommerce.Infrastructure.Data;
 
 namespace ECommerce.Infrastructure.Realtime;
 

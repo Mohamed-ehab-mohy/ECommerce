@@ -1,5 +1,4 @@
-using ECommerce.Domain.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using ECommerce.Domain.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

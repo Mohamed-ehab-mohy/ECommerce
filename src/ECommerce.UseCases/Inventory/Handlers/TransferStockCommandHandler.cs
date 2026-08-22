@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Exceptions;
 using ECommerce.Domain.Inventory;
@@ -7,8 +7,6 @@ using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Inventory.Commands;
 using ECommerce.UseCases.Inventory.Ports;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Inventory.Handlers;
 

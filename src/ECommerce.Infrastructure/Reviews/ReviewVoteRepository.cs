@@ -1,7 +1,6 @@
-using ECommerce.Domain.Reviews;
+﻿using ECommerce.Domain.Reviews;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Reviews.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Reviews;
 

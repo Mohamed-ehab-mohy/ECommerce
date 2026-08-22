@@ -1,7 +1,6 @@
-using ECommerce.Shared.Authorization;
+﻿using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
-using MediatR;
 
 namespace ECommerce.UseCases.Orders.Commands;
 

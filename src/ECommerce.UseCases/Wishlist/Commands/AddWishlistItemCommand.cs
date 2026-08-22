@@ -1,6 +1,5 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Wishlist.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Wishlist.Commands;
 

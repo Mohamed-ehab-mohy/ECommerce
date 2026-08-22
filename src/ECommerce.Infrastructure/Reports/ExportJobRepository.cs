@@ -1,7 +1,6 @@
-using ECommerce.Domain.Reporting;
+﻿using ECommerce.Domain.Reporting;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Reports.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Reports;
 

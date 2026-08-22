@@ -1,10 +1,9 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using ECommerce.Domain.Catalog;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Catalog.Ports;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Clients.Elasticsearch.Aggregations;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ECommerce.Infrastructure.Search;

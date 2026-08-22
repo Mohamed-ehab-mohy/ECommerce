@@ -1,9 +1,8 @@
-using ECommerce.Domain.Reporting;
+﻿using ECommerce.Domain.Reporting;
 using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reports.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Reports.Commands;
 

@@ -1,6 +1,5 @@
-using ECommerce.UseCases.Catalog.Ports;
+﻿using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;
-using MediatR;
 
 namespace ECommerce.UseCases.Catalog.Handlers;
 

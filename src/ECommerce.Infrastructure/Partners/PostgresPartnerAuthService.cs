@@ -1,6 +1,5 @@
-using ECommerce.Infrastructure.Data;
+﻿using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Partners;
-using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
 namespace ECommerce.Infrastructure.Partners;

@@ -1,10 +1,9 @@
-using ECommerce.Domain.Flags;
+﻿using ECommerce.Domain.Flags;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Flags.Ports;
 using ECommerce.UseCases.Flags.Queries;
 using ECommerce.UseCases.Flags.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Flags.Handlers;
 

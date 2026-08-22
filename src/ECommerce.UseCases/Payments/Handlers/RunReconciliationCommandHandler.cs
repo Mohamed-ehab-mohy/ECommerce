@@ -1,9 +1,8 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Commands;
 using ECommerce.UseCases.Payments.Responses;
 using ECommerce.UseCases.Payments.Services;
-using MediatR;
 
 namespace ECommerce.UseCases.Payments.Handlers;
 

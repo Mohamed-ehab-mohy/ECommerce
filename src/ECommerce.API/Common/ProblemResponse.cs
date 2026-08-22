@@ -1,5 +1,4 @@
-using ECommerce.UseCases.Common;
-using Microsoft.AspNetCore.Mvc;
+﻿using ECommerce.UseCases.Common;
 
 namespace ECommerce.API.Common;
 

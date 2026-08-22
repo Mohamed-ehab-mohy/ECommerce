@@ -1,11 +1,10 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Cart.Responses;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Responses;
 using ECommerce.UseCases.Pricing;
-using MediatR;
 
 namespace ECommerce.UseCases.Cart.Handlers;
 

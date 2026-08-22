@@ -1,11 +1,9 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.UseCases.Payments.Commands;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace ECommerce.API.Controllers;

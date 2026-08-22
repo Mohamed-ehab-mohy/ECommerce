@@ -1,6 +1,5 @@
-using ECommerce.Domain.Reporting;
+﻿using ECommerce.Domain.Reporting;
 using ECommerce.UseCases.Reports.Commands;
-using FluentValidation;
 
 namespace ECommerce.UseCases.Reports.Handlers;
 

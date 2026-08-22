@@ -1,4 +1,4 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Ports;
@@ -7,8 +7,6 @@ using ECommerce.UseCases.Payments.Commands;
 using ECommerce.UseCases.Payments.Options;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Payments.Responses;
-using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 

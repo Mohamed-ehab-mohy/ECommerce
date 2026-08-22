@@ -1,4 +1,4 @@
-using ECommerce.Domain.Integrations;
+﻿using ECommerce.Domain.Integrations;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Commands;
@@ -6,8 +6,6 @@ using ECommerce.UseCases.Integrations.Ports;
 using ECommerce.UseCases.Integrations.Queries;
 using ECommerce.UseCases.Integrations.Responses;
 using ECommerce.UseCases.Integrations.Services;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Integrations.Handlers;
 

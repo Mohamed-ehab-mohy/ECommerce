@@ -1,9 +1,8 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Queries;
 using ECommerce.UseCases.Orders.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Orders.Handlers;
 

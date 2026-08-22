@@ -1,5 +1,4 @@
-using ECommerce.UseCases.Pricing;
-using Microsoft.AspNetCore.Mvc;
+﻿using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.API.Controllers;
 

@@ -1,12 +1,10 @@
-using ECommerce.Domain.Reviews;
+﻿using ECommerce.Domain.Reviews;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reviews.Ports;
 using ECommerce.UseCases.Reviews.Queries;
 using ECommerce.UseCases.Reviews.Responses;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Reviews.Handlers;
 

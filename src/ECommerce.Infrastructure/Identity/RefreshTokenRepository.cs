@@ -1,7 +1,6 @@
-using ECommerce.Domain.Identity;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Identity.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Identity;
 

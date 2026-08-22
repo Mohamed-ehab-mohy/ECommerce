@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Promotions.Commands;
 
 public sealed class CreatePromotionCommandValidator : AbstractValidator<CreatePromotionCommand>

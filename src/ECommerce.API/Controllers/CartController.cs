@@ -1,9 +1,7 @@
-using ECommerce.API.Common;
+﻿using ECommerce.API.Common;
 using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Common;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

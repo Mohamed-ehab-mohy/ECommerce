@@ -1,9 +1,8 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Coupons.Queries;
 using ECommerce.UseCases.Coupons.Responses;
 using ECommerce.UseCases.Promotions.Ports;
-using MediatR;
 
 namespace ECommerce.UseCases.Coupons.Handlers;
 

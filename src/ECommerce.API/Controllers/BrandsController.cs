@@ -1,10 +1,8 @@
-using ECommerce.API.Common;
+﻿using ECommerce.API.Common;
 using ECommerce.UseCases.Catalog.Commands;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Common;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

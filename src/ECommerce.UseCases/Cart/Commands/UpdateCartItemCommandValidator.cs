@@ -1,5 +1,4 @@
-using ECommerce.UseCases.Cart.Commands;
-using FluentValidation;
+﻿using ECommerce.UseCases.Cart.Commands;
 
 namespace ECommerce.UseCases.Cart.Commands;
 

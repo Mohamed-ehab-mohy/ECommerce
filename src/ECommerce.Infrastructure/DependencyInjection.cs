@@ -1,4 +1,4 @@
-using ECommerce.Domain.Events;
+﻿using ECommerce.Domain.Events;
 using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Audit;
 using ECommerce.Infrastructure.Carts;
@@ -62,7 +62,6 @@ using ECommerce.UseCases.Promotions.Ports;
 using ECommerce.UseCases.Reviews.Ports;
 using ECommerce.UseCases.Reports.Ports;
 using ECommerce.UseCases.Wishlist.Ports;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

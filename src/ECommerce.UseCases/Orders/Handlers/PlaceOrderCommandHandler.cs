@@ -1,4 +1,4 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
@@ -11,8 +11,6 @@ using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Responses;
 using ECommerce.UseCases.Payments.Ports;
 using ECommerce.UseCases.Promotions.Ports;
-using FluentValidation;
-using MediatR;
 using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.UseCases.Orders.Handlers;

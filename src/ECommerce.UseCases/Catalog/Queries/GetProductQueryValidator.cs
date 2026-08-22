@@ -1,5 +1,4 @@
-using ECommerce.UseCases.Pricing;
-using FluentValidation;
+﻿using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UseCases.Catalog.Queries;
 

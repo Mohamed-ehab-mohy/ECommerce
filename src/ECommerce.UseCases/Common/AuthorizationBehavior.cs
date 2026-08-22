@@ -1,5 +1,4 @@
-using ECommerce.Domain.Identity;
-using MediatR;
+﻿using ECommerce.Domain.Identity;
 
 namespace ECommerce.UseCases.Common;
 

@@ -1,10 +1,8 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Catalog.Responses;
 using ECommerce.UseCases.Common;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Catalog.Handlers;
 

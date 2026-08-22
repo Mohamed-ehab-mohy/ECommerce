@@ -1,7 +1,6 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Audit.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Audit;
 

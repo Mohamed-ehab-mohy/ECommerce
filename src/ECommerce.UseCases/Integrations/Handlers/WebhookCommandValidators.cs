@@ -1,9 +1,8 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 using ECommerce.Domain.Integrations;
 using ECommerce.UseCases.Integrations.Commands;
 using ECommerce.UseCases.Integrations.Queries;
-using FluentValidation;
 
 namespace ECommerce.UseCases.Integrations.Handlers;
 

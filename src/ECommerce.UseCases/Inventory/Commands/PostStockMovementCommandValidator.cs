@@ -1,5 +1,4 @@
-using ECommerce.Domain.Inventory;
-using FluentValidation;
+﻿using ECommerce.Domain.Inventory;
 
 namespace ECommerce.UseCases.Inventory.Commands;
 

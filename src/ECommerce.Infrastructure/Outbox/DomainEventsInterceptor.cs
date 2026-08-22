@@ -1,7 +1,6 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using ECommerce.Domain.Abstractions;
 using ECommerce.Domain.Common;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.Infrastructure.Outbox;

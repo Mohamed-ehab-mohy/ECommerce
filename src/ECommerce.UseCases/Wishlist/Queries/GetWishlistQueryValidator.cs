@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Wishlist.Queries;
 
 public sealed class GetWishlistQueryValidator : AbstractValidator<GetWishlistQuery>

@@ -1,6 +1,5 @@
-using ECommerce.UseCases.Common;
+﻿using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Ports;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerce.API.Controllers;
 

@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit.Ports;
@@ -6,7 +6,6 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Promotions.Commands;
 using ECommerce.UseCases.Promotions.Ports;
 using ECommerce.UseCases.Promotions.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Promotions.Handlers;
 

@@ -1,7 +1,6 @@
-using ECommerce.Domain.Partners;
+﻿using ECommerce.Domain.Partners;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Partners;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Partners;
 

@@ -1,7 +1,6 @@
-using ECommerce.Domain.Payments;
+﻿using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Payments.Ports;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Infrastructure.Payments;
 

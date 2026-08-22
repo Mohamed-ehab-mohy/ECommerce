@@ -1,4 +1,4 @@
-using ECommerce.Domain.Inventory;
+﻿using ECommerce.Domain.Inventory;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Ports;
@@ -7,7 +7,6 @@ using ECommerce.UseCases.Fulfillment.Responses;
 using ECommerce.UseCases.Fulfillment.Services;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Orders.Ports;
-using MediatR;
 
 namespace ECommerce.UseCases.Fulfillment.Handlers;
 

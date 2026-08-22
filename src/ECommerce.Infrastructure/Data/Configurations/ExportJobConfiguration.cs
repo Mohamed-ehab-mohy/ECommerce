@@ -1,5 +1,4 @@
-using ECommerce.Domain.Reporting;
-using Microsoft.EntityFrameworkCore;
+﻿using ECommerce.Domain.Reporting;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

@@ -1,6 +1,5 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Pricing;
-using FluentValidation;
 
 namespace ECommerce.UseCases.Catalog.Commands;
 

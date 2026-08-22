@@ -1,6 +1,5 @@
-using ECommerce.Domain.Fulfillment;
+﻿using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Orders;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

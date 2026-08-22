@@ -1,6 +1,5 @@
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Orders.Responses;
-using MediatR;
 
 namespace ECommerce.UseCases.Orders.Commands;
 

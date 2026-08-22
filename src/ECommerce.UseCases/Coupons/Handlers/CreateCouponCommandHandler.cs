@@ -1,4 +1,4 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit.Ports;
@@ -6,8 +6,6 @@ using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Coupons.Commands;
 using ECommerce.UseCases.Coupons.Responses;
 using ECommerce.UseCases.Promotions.Ports;
-using FluentValidation;
-using MediatR;
 
 namespace ECommerce.UseCases.Coupons.Handlers;
 

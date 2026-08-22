@@ -1,5 +1,4 @@
-using FluentValidation;
-
+﻿
 namespace ECommerce.UseCases.Payments.Commands;
 
 public sealed class AuthorizePaymentCommandValidator : AbstractValidator<AuthorizePaymentCommand>
