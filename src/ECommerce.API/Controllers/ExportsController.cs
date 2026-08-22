@@ -49,7 +49,7 @@ public sealed class ExportsController(ISender sender, IExportFileStore fileStore
         var export = result.Value;
         if (export.Status != "Completed" || export.FileKey is null)
         {
-            return ProblemResponse.Create(new Error(
+            return ProblemResponse.Create(new ECommerce.Shared.Errors.Error(
                 "Reporting.ExportNotReady",
                 "The export has not completed yet.",
                 ErrorType.Conflict).ToOperationError());
@@ -59,7 +59,7 @@ public sealed class ExportsController(ISender sender, IExportFileStore fileStore
 
         return content is not null
             ? File(content, "text/csv", $"{export.ReportType}-{export.ExportId:N}.csv")
-            : ProblemResponse.Create(new Error(
+            : ProblemResponse.Create(new ECommerce.Shared.Errors.Error(
                 "Reporting.ExportFileMissing",
                 "The export file is missing from storage.",
                 ErrorType.NotFound).ToOperationError());

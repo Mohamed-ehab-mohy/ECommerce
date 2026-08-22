@@ -1,8 +1,10 @@
 using ECommerce.API;
 using ECommerce.API.Common;
+using ECommerce.API.GraphQL;
 using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
 using ECommerce.API.Jobs;
+using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Jobs;
 using Grpc.Core.Interceptors;
 using Hangfire;
@@ -22,6 +24,13 @@ builder.Host.UseSerilog((context, _, configuration) => configuration
     .WriteTo.Seq(context.Configuration["SeqUrl"] ?? "http://localhost:5341"));
 
 builder.Services.AddApi(builder.Configuration);
+
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<ProductQuery>()
+    .AddProjections()
+    .AddFiltering()
+    .AddSorting();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
@@ -193,6 +202,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.MapGraphQL();
 app.MapControllers();
 
 app.MapHub<OrderHub>("/hubs/orders");
