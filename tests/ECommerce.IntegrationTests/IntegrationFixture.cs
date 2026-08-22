@@ -39,7 +39,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         {
             if (_postgres is not null) return;
 
-            _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+            _postgres = new PostgreSqlBuilder("postgres:16-alpine").WithCommand("-c", "max_connections=1000").Build();
             _redis = new RedisBuilder("redis:7-alpine").Build();
             _rabbitMq = new RabbitMqBuilder("rabbitmq:3.13-management").Build();
 

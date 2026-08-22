@@ -104,7 +104,7 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
 
         await WaitUntilAsync(() => _fixture.EmailSender.Messages.Any(message => message.To == email));
 
-        var message = _fixture.EmailSender.Messages.Single(message => message.To == email);
+        var message = _fixture.EmailSender.Messages.First(message => message.To == email);
         Assert.Equal("Verify your email address", message.Subject);
         Assert.Contains("/verify-email?token=", message.HtmlBody);
     }

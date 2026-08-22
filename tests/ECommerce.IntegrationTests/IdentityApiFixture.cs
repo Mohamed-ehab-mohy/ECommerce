@@ -1,3 +1,4 @@
+using System.Data;
 using System.Linq;
 using System.Text.Json;
 using ECommerce.Domain.Abstractions;
@@ -36,9 +37,12 @@ public sealed class IdentityApiFixture : IAsyncLifetime
             return;
         }
 
+        await new IntegrationFixture().InitializeAsync();
+
         var emailSender = new CapturingEmailSender();
         var postgresConnectionString = IntegrationFixture.GetPostgresConnectionString();
         var redisConnectionString = IntegrationFixture.GetRedisConnectionString();
+        var rabbitMqConnectionString = IntegrationFixture.GetRabbitMqConnectionString().Replace("amqp://", "rabbitmq://");
 
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -49,7 +53,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                     {
                         ["ConnectionStrings:Postgres"] = postgresConnectionString,
                         ["ConnectionStrings:Redis"] = redisConnectionString,
-                        ["ConnectionStrings:RabbitMq"] = "",
+                        ["ConnectionStrings:RabbitMq"] = rabbitMqConnectionString,
                         ["Hangfire:Disabled"] = "true"
                     });
                 });
@@ -103,51 +107,58 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync();
+            while (true)
+            {
+                await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
-            var messages = await dbContext.OutboxMessages
-                .FromSqlInterpolated($"""
+                var messages = await dbContext.OutboxMessages
+                    .FromSqlInterpolated($"""
                     SELECT * FROM "outbox_events"
                     WHERE "processed_on" IS NULL
                     ORDER BY "occurred_on"
                     LIMIT 20
                     FOR UPDATE SKIP LOCKED
                     """)
-                .ToListAsync();
+                    .ToListAsync();
 
-            if (messages.Count == 0)
-            {
-                await transaction.RollbackAsync();
-                return;
-            }
-
-            foreach (var message in messages)
-            {
-                try
+                if (messages.Count == 0)
                 {
-                    var domainEvent = Deserialize(message.EventType, message.Content);
-                    if (domainEvent is null)
+                    await transaction.RollbackAsync();
+                    break;
+                }
+
+                Console.WriteLine($"Found {messages.Count} outbox messages");
+                foreach (var message in messages)
+                {
+                    try
                     {
-                        message.Attempts++;
-                        message.Error = $"Unknown event type: {message.EventType}";
-                        message.ProcessedOn = message.Attempts >= 5 ? DateTime.UtcNow : null;
-                        continue;
+                        var domainEvent = Deserialize(message.EventType, message.Content);
+                        Console.WriteLine($"Deserialized {message.EventType} to {domainEvent?.GetType().Name ?? "null"}");
+                        if (domainEvent is null)
+                        {
+                            message.Attempts++;
+                            message.Error = $"Unknown event type: {message.EventType}";
+                            message.ProcessedOn = message.Attempts >= 5 ? DateTime.UtcNow : null;
+                            continue;
+                        }
+
+                        await publisher.PublishAsync(message, domainEvent, CancellationToken.None);
+                        Console.WriteLine($"Published {message.EventType}");
+                        message.ProcessedOn = DateTime.UtcNow;
+                        message.Error = null;
                     }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine($"Exception: {exception}");
+                        message.Attempts++;
+                        message.Error = exception.Message;
+                        message.ProcessedOn = message.Attempts >= 5 ? DateTime.UtcNow : null;
+                    }
+                }
 
-                    await publisher.PublishAsync(message, domainEvent, CancellationToken.None);
-                    message.ProcessedOn = DateTime.UtcNow;
-                    message.Error = null;
-                }
-                catch (Exception exception)
-                {
-                    message.Attempts++;
-                    message.Error = exception.Message;
-                    message.ProcessedOn = message.Attempts >= 5 ? DateTime.UtcNow : null;
-                }
+                await dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            await dbContext.SaveChangesAsync();
-            await transaction.CommitAsync();
             await postCommit.ExecuteAsync();
         });
     }
