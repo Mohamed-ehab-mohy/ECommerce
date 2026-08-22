@@ -42,7 +42,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         var emailSender = new CapturingEmailSender();
         var postgresConnectionString = IntegrationFixture.GetPostgresConnectionString();
         var redisConnectionString = IntegrationFixture.GetRedisConnectionString();
-        var rabbitMqConnectionString = IntegrationFixture.GetRabbitMqConnectionString().Replace("amqp://", "rabbitmq://");
+
 
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -53,7 +53,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                     {
                         ["ConnectionStrings:Postgres"] = postgresConnectionString,
                         ["ConnectionStrings:Redis"] = redisConnectionString,
-                        ["ConnectionStrings:RabbitMq"] = rabbitMqConnectionString,
+                        ["ConnectionStrings:RabbitMq"] = "",
                         ["Hangfire:Disabled"] = "true"
                     });
                 });
