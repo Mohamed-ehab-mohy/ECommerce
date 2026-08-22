@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Errors;
+using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;

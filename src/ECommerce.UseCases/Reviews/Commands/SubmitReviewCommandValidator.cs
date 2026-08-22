@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Reviews.Commands;
 
 public sealed class SubmitReviewCommandValidator : AbstractValidator<SubmitReviewCommand>

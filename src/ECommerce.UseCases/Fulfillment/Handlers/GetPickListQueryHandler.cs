@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Inventory;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Ports;

@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Payments;
+using ECommerce.Domain.Payments;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

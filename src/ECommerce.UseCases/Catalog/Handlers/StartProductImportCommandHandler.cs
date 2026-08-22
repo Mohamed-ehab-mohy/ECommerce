@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ECommerce.Domain.Catalog;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Catalog.Commands;

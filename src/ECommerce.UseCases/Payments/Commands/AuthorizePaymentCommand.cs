@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Primitives;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Payments.Responses;
 
 namespace ECommerce.UseCases.Payments.Commands;

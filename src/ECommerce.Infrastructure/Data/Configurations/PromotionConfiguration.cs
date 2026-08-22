@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

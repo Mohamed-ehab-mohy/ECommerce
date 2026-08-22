@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Catalog.Queries;
 
 public sealed class GetProductImportQueryValidator : AbstractValidator<GetProductImportQuery>

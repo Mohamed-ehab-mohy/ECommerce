@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Inventory;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Inventory.Ports;
 using Hangfire;

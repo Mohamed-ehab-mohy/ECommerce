@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Audit;
 using ECommerce.Infrastructure.Carts;

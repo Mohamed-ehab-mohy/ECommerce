@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Errors;
+using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;
 
 namespace ECommerce.UseCases.Partners;

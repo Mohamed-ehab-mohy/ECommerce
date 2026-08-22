@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Reporting;
+using ECommerce.Domain.Reporting;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Reports.Ports;
 

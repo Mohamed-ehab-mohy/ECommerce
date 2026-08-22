@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.RegularExpressions;
 using ECommerce.Domain.Integrations;
 using ECommerce.UseCases.Integrations.Commands;

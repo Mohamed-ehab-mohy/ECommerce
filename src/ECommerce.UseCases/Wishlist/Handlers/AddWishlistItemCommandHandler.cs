@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Wishlist;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Catalog.Ports;

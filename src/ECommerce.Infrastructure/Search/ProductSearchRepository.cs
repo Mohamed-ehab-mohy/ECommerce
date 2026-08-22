@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Catalog;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Catalog.Ports;
 using NpgsqlTypes;

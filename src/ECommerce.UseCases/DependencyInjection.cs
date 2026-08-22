@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Cart.Services;

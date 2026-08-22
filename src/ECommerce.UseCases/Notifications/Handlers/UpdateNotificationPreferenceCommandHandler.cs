@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Audit;
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Notifications;
 using ECommerce.Shared.Errors;
 using ECommerce.Shared.Primitives;

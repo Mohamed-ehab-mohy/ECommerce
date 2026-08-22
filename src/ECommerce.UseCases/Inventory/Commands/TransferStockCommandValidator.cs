@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Inventory.Commands;
 
 public sealed class TransferStockCommandValidator : AbstractValidator<TransferStockCommand>

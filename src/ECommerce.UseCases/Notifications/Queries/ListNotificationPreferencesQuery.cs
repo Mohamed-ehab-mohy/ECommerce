@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Primitives;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Notifications.Responses;
 
 namespace ECommerce.UseCases.Notifications.Queries;

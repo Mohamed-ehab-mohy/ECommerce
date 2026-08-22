@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ECommerce.Domain.Abstractions;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Messaging;

@@ -1,4 +1,4 @@
-﻿using ECommerce.Infrastructure.Data;
+using ECommerce.Infrastructure.Data;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 

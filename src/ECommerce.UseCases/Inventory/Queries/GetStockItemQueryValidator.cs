@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Inventory.Queries;
 
 public sealed class GetStockItemQueryValidator : AbstractValidator<GetStockItemQuery>

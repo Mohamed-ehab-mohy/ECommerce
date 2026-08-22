@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Cart.Commands;
+using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UseCases.Cart.Commands;

@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Ports;
 
 namespace ECommerce.API.Controllers;

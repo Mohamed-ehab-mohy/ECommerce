@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Authorization;
+using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Catalog.Responses;
 using ECommerce.UseCases.Common;

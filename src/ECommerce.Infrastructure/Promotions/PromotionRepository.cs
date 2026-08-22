@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Pricing;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Promotions.Ports;
 

@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Reports.Queries;
+using ECommerce.UseCases.Reports.Queries;
 
 namespace ECommerce.UseCases.Reports.Handlers;
 

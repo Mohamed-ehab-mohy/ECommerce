@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reports.Commands;

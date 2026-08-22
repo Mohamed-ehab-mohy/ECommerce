@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Checkout;
+using ECommerce.Domain.Checkout;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

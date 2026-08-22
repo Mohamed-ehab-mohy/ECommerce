@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Catalog.Commands;
+using ECommerce.UseCases.Catalog.Commands;
 
 namespace ECommerce.UseCases.Catalog.Handlers;
 

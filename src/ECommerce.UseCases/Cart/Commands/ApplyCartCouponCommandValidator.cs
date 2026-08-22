@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Cart.Commands;
 
 public sealed class ApplyCartCouponCommandValidator : AbstractValidator<ApplyCartCouponCommand>

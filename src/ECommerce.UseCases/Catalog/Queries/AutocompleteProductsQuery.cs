@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Catalog.Queries;
 
 public sealed record AutocompleteProductsQuery(string Query, int Limit = 10) : IRequest<IReadOnlyList<AutocompleteResult>>;

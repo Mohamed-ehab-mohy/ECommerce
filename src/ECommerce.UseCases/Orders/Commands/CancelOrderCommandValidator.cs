@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Orders.Commands;
 
 public sealed class CancelOrderCommandValidator : AbstractValidator<CancelOrderCommand>

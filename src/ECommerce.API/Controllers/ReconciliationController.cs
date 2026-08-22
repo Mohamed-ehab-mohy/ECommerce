@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Commands;
 using Microsoft.AspNetCore.Authorization;

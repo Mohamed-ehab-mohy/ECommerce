@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Flags;
+using ECommerce.Domain.Flags;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Flags.Ports;
 

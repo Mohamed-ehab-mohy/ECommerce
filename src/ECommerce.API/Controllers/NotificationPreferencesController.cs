@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Notifications.Commands;
 using ECommerce.UseCases.Notifications.Queries;

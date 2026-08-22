@@ -1,4 +1,4 @@
-﻿using ECommerce.Infrastructure.Data;
+using ECommerce.Infrastructure.Data;
 
 namespace ECommerce.Infrastructure.Realtime;
 

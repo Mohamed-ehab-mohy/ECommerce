@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;

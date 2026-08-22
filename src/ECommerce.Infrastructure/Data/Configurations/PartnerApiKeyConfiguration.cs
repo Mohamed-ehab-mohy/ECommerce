@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Partners;
+using ECommerce.Domain.Partners;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

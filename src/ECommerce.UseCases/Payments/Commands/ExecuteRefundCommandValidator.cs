@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Payments.Commands;
 
 public sealed class ExecuteRefundCommandValidator : AbstractValidator<ExecuteRefundCommand>

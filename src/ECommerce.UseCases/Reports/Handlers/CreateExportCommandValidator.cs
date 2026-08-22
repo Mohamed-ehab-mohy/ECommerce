@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Reporting;
+using ECommerce.Domain.Reporting;
 using ECommerce.UseCases.Reports.Commands;
 
 namespace ECommerce.UseCases.Reports.Handlers;

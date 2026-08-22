@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Payments;
+using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Payments.Ports;
 

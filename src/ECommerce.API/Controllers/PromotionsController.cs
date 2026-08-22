@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Promotions.Commands;
 using ECommerce.UseCases.Promotions.Queries;

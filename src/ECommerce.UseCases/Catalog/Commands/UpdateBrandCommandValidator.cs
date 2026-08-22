@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Catalog.Commands;
 
 public sealed class UpdateBrandCommandValidator : AbstractValidator<UpdateBrandCommand>

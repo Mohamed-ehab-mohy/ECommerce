@@ -1,4 +1,4 @@
-﻿using ECommerce.Infrastructure.Data;
+using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Messaging.Ports;
 using Npgsql;
 

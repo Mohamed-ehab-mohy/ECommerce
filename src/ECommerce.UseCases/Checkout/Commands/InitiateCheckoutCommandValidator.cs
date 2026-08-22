@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Checkout.Commands;
 
 public sealed class InitiateCheckoutCommandValidator : AbstractValidator<InitiateCheckoutCommand>

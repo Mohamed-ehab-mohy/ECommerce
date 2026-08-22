@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Reporting;
+using ECommerce.Domain.Reporting;
 using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;

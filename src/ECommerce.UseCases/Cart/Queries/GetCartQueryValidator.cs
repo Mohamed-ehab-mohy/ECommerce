@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Cart.Queries;
+using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UseCases.Cart.Queries;

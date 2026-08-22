@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Identity.Commands;
 
 public sealed class VerifyEmailCommandValidator : AbstractValidator<VerifyEmailCommand>

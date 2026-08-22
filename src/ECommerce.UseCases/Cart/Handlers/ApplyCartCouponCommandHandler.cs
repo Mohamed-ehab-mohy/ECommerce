@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Cart;
+using ECommerce.Domain.Cart;
 using ECommerce.Domain.Pricing;
 using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Commands;

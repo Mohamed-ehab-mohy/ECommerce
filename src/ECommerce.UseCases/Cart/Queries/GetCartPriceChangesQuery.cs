@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Primitives;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Responses;
 
 namespace ECommerce.UseCases.Cart.Queries;

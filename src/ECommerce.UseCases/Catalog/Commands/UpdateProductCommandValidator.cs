@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.UseCases.Catalog.Commands;

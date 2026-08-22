@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Orders.Queries;
 
 public sealed class SupportOrderLookupQueryValidator : AbstractValidator<SupportOrderLookupQuery>

@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Pricing;
+using ECommerce.UseCases.Pricing;
 
 namespace ECommerce.API.Controllers;
 

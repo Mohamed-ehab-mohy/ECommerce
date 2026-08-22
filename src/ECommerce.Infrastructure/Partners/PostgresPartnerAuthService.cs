@@ -1,4 +1,4 @@
-﻿using ECommerce.Infrastructure.Data;
+using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Partners;
 using StackExchange.Redis;
 

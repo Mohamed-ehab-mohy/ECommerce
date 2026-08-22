@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Primitives;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Responses;
 
 namespace ECommerce.UseCases.Checkout.Commands;

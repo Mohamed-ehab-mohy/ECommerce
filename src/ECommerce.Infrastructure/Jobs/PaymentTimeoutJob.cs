@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Payments;
+using ECommerce.Domain.Payments;
 using ECommerce.Infrastructure.Data;
 using Hangfire;
 using Microsoft.Extensions.Logging;

@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Wishlist.Commands;
 
 public sealed class AddWishlistItemCommandValidator : AbstractValidator<AddWishlistItemCommand>

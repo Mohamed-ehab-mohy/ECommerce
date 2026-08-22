@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Recommendations;
 using Microsoft.AspNetCore.Authorization;
 

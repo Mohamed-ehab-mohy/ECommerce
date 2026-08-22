@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Audit;
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Identity;
 using ECommerce.Shared.Authorization;
 using ECommerce.Shared.Primitives;

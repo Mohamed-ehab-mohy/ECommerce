@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Cart.Queries;
 using ECommerce.UseCases.Common;

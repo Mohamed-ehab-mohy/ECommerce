@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Audit.Queries;
 
 public sealed class GetAuditLogsQueryValidator : AbstractValidator<GetAuditLogsQuery>

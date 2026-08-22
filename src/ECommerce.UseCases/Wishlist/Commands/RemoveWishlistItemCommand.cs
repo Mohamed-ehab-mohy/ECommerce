@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Primitives;
+using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Wishlist.Responses;
 
 namespace ECommerce.UseCases.Wishlist.Commands;

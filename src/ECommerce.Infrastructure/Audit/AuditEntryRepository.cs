@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Audit;
+using ECommerce.Domain.Audit;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Audit.Ports;
 

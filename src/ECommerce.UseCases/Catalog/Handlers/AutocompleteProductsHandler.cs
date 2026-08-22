@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Catalog.Ports;
+using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;
 
 namespace ECommerce.UseCases.Catalog.Handlers;

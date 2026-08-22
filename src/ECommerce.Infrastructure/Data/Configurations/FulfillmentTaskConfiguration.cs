@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Fulfillment;
+using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Orders;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

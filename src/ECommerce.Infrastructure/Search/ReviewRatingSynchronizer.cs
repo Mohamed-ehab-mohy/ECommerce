@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Reviews;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Common;

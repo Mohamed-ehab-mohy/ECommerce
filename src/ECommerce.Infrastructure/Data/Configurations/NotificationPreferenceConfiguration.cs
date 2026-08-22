@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Notifications;
+using ECommerce.Domain.Notifications;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

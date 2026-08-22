@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Invoicing;
+using ECommerce.Domain.Invoicing;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerce.Infrastructure.Data.Configurations;

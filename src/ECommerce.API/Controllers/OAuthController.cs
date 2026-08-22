@@ -1,4 +1,4 @@
-﻿using ECommerce.API.Common;
+using ECommerce.API.Common;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;

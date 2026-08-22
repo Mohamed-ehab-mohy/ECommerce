@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Promotions.Commands;
 
 public sealed class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotionCommand>
