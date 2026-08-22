@@ -142,17 +142,17 @@ jobs:
           dotnet restore
           dotnet build --no-restore
 
-      - name: Run API server
+      - name: Run API server and Load Test
         run: |
           nohup dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
           echo "API_PID=$!" >> "$GITHUB_ENV"
+          API_PID=$!
 
           echo "Waiting for API to be ready..."
           timeout 60 bash -c 'until curl -sf http://127.0.0.1:8080/health/live >/dev/null 2>&1; do sleep 2; done'
 
-      - uses: grafana/k6-action@v0.3.1
-        with:
-          filename: perf/k6/ci-smoke.js
+          echo "Running Load Test..."
+          docker run --rm -i --user $(id -u):$(id -g) --network host -v $(pwd):/work -w /work grafana/k6:latest run perf/k6/ci-smoke.js --summary-export=summary.json
 
       - name: Upload k6 results
         if: always()
