@@ -67,7 +67,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
       - name: Integration Tests
-        run: dotnet test tests/ECommerce.IntegrationTests --no-build --logger "trx;LogFileName=integration.trx"
+        run: dotnet test tests/ECommerce.IntegrationTests --no-build --logger "console;verbosity=detailed" --blame-hang --blame-hang-timeout 3m
 
   format:
     name: Format Check
