@@ -32,6 +32,8 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        Environment.SetEnvironmentVariable("Telemetry__Disabled", "true");
+
         if (!Docker.IsAvailable)
         {
             return;

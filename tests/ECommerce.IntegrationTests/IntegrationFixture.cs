@@ -31,6 +31,8 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        Environment.SetEnvironmentVariable("Telemetry__Disabled", "true");
+
         if (_postgres is not null) return;
         if (!Docker.IsAvailable) return;
 
