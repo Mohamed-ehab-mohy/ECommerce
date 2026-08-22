@@ -144,7 +144,7 @@ jobs:
 
       - name: Run API server
         run: |
-          dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" &
+          nohup dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
           echo "API_PID=$!" >> "$GITHUB_ENV"
 
           echo "Waiting for API to be ready..."
