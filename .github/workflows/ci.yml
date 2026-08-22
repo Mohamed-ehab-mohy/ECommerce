@@ -145,7 +145,6 @@ jobs:
       - name: Run API server and Load Test
         env:
           Telemetry__Disabled: "true"
-          Hangfire__Disabled: "true"
         run: |
           nohup dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
           echo "API_PID=$!" >> "$GITHUB_ENV"
