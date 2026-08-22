@@ -48,7 +48,16 @@ public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture
             bus.AddConsumer<OrderPlacedConsumer>();
             bus.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(new Uri(_fixture.RabbitMqConnectionString.Replace("amqp://", "rabbitmq://")));
+                var uri = new Uri(_fixture.RabbitMqConnectionString);
+                cfg.Host(uri.Host, (ushort)(uri.Port > 0 ? uri.Port : 5672), "/", h =>
+                {
+                    var userInfo = uri.UserInfo.Split(':');
+                    if (userInfo.Length == 2)
+                    {
+                        h.Username(userInfo[0]);
+                        h.Password(userInfo[1]);
+                    }
+                });
 
                 cfg.ReceiveEndpoint(OrderPlacedConsumer.QueueName, endpoint =>
                 {
@@ -60,7 +69,8 @@ public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture
 
         await using var provider = services.BuildServiceProvider();
         var busControl = provider.GetRequiredService<IBusControl>();
-        await busControl.StartAsync();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        await busControl.StartAsync(cts.Token);
 
         try
         {

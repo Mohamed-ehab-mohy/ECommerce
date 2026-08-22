@@ -13,7 +13,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("RabbitMq")?.Replace("amqp://", "rabbitmq://");
+        var connectionString = configuration.GetConnectionString("RabbitMq");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             return services;
@@ -30,7 +30,16 @@ public static class DependencyInjection
 
             bus.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(new Uri(connectionString));
+                var uri = new Uri(connectionString);
+                cfg.Host(uri.Host, (ushort)(uri.Port > 0 ? uri.Port : 5672), "/", h =>
+                {
+                    var userInfo = uri.UserInfo.Split(':');
+                    if (userInfo.Length == 2)
+                    {
+                        h.Username(userInfo[0]);
+                        h.Password(userInfo[1]);
+                    }
+                });
 
                 cfg.ReceiveEndpoint(OrderPlacedConsumer.QueueName, endpoint =>
                 {
