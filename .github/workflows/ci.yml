@@ -152,7 +152,11 @@ jobs:
           API_PID=$!
 
           echo "Waiting for API to be ready..."
-          timeout 60 bash -c 'until curl -sf http://127.0.0.1:8080/health/live >/dev/null 2>&1; do sleep 2; done'
+          if ! timeout 60 bash -c 'until curl -sf http://127.0.0.1:8080/health/live >/dev/null 2>&1; do sleep 2; done'; then
+            echo "API failed to start. Dumping api.log:"
+            cat api.log
+            exit 1
+          fi
           
           echo "Waiting for Database migrations to complete..."
           if ! timeout 60 bash -c 'until grep -q "Database migrations applied" api.log; do sleep 2; done'; then
