@@ -5,6 +5,7 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class PostgresIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

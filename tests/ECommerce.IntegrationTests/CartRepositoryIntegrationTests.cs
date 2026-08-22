@@ -9,6 +9,7 @@ using StackExchange.Redis;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class CartRepositoryIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

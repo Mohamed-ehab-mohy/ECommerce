@@ -26,6 +26,7 @@ using AddressSnapshot = ECommerce.Domain.Orders.AddressSnapshot;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class FulfillmentFlowIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "FUL-01";

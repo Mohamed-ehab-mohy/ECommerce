@@ -7,6 +7,7 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class CatalogSchemaIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

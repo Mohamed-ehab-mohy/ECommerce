@@ -2,6 +2,7 @@ using StackExchange.Redis;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class RedisIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

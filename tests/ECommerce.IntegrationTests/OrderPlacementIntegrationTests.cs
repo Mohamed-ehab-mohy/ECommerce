@@ -20,6 +20,7 @@ using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "QAS-05";

@@ -3,6 +3,7 @@ using ECommerce.Infrastructure.Payments;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class PaymentProviderContractTests
 {
     private static readonly DateTime Now = new(2026, 8, 7, 12, 0, 0, DateTimeKind.Utc);

@@ -8,6 +8,7 @@ using Npgsql;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class ProductSearchIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

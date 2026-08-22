@@ -6,6 +6,7 @@ using Xunit;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 [Trait("Category", "Integration")]
 public sealed class ReturnRequestIntegrationTests : IClassFixture<IntegrationFixture>
 {

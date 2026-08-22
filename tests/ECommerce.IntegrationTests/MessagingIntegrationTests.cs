@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;

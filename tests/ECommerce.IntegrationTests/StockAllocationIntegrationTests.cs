@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private const string Sku = "QAS-01";

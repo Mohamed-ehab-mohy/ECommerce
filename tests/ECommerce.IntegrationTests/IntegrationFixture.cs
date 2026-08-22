@@ -16,7 +16,11 @@ public sealed class IntegrationFixture : IAsyncLifetime
     private static RabbitMqContainer? _rabbitMq;
     private static ECommerceDbContext? _dbContext;
 
-    public static string GetPostgresConnectionString() => _postgres?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+    public static string GetPostgresConnectionString() =>
+        _postgres is null
+            ? throw new InvalidOperationException("Fixture not initialized")
+            : _postgres.GetConnectionString() + ";Maximum Pool Size=15;Minimum Pool Size=0";
+
     public static string GetRedisConnectionString() => _redis?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
     public static string GetRabbitMqConnectionString() => _rabbitMq?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
 

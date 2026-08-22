@@ -2,6 +2,7 @@ using RabbitMQ.Client;
 
 namespace ECommerce.IntegrationTests;
 
+[Collection("Integration")]
 public sealed class RabbitMqIntegrationTests : IClassFixture<IntegrationFixture>
 {
     private readonly IntegrationFixture _fixture;
