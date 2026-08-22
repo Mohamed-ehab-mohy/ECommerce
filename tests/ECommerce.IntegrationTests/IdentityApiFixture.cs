@@ -152,7 +152,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                         Console.WriteLine($"Exception: {exception}");
                         message.Attempts++;
                         message.Error = exception.Message;
-                        message.ProcessedOn = message.Attempts >= 5 ? DateTime.UtcNow : null;
+                        message.ProcessedOn = DateTime.UtcNow;
                     }
                 }
 
