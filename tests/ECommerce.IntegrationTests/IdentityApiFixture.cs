@@ -174,6 +174,9 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        _factory?.Dispose();
+        if (_factory is not null)
+        {
+            await _factory.DisposeAsync();
+        }
     }
 }
