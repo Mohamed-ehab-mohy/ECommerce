@@ -33,6 +33,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         Environment.SetEnvironmentVariable("Telemetry__Disabled", "true");
+        Environment.SetEnvironmentVariable("ConnectionStrings__RabbitMq", "");
 
         if (!Docker.IsAvailable)
         {
