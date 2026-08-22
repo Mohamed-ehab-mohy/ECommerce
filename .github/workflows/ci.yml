@@ -142,12 +142,6 @@ jobs:
           dotnet restore
           dotnet build --no-restore
 
-      - name: Run Database Migrations
-        run: |
-          dotnet tool install --global dotnet-ef
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          dotnet ef database update --project src/ECommerce.Infrastructure --startup-project src/ECommerce.API
-
       - name: Run API server and Load Test
         run: |
           nohup dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
@@ -156,6 +150,9 @@ jobs:
 
           echo "Waiting for API to be ready..."
           timeout 60 bash -c 'until curl -sf http://127.0.0.1:8080/health/live >/dev/null 2>&1; do sleep 2; done'
+          
+          echo "Waiting for Database migrations to complete..."
+          timeout 60 bash -c 'until grep -q "Database migrations applied" api.log; do sleep 2; done'
 
           echo "Running Load Test..."
           docker run --rm -i --user $(id -u):$(id -g) --network host -v $(pwd):/work -w /work grafana/k6:latest run perf/k6/ci-smoke.js --summary-export=summary.json
