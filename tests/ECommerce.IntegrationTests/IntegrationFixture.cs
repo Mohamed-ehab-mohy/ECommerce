@@ -22,7 +22,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
             : _postgres.GetConnectionString() + ";Maximum Pool Size=15;Minimum Pool Size=0";
 
     public static string GetRedisConnectionString() => _redis?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
-    public static string GetRabbitMqConnectionString() => _rabbitMq?.GetConnectionString() ?? throw new InvalidOperationException("Fixture not initialized");
+    public static string GetRabbitMqConnectionString() => _rabbitMq?.GetConnectionString().Replace("amqp://", "rabbitmq://") ?? throw new InvalidOperationException("Fixture not initialized");
 
     public string PostgresConnectionString => GetPostgresConnectionString();
     public string RedisConnectionString => GetRedisConnectionString();
