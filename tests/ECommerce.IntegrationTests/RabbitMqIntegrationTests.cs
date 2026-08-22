@@ -19,7 +19,8 @@ public sealed class RabbitMqIntegrationTests : IClassFixture<IntegrationFixture>
 
         var factory = new ConnectionFactory
         {
-            Uri = new Uri(_fixture.RabbitMqConnectionString)
+            Uri = new Uri(_fixture.RabbitMqConnectionString),
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(5)
         };
         await using var connection = await factory.CreateConnectionAsync();
         await using var channel = await connection.CreateChannelAsync();

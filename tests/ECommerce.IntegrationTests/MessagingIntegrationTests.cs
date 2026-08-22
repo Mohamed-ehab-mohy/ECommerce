@@ -109,7 +109,8 @@ public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture
         }
         finally
         {
-            await busControl.StopAsync();
+            using var stopCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await busControl.StopAsync(stopCts.Token);
         }
     }
 

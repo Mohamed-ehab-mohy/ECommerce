@@ -107,7 +107,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            while (true)
+            for (int i = 0; i < 100; i++)
             {
                 await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
