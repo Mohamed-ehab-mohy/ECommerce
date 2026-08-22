@@ -115,7 +115,6 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                     .FromSqlInterpolated($"""
                     SELECT * FROM "outbox_events"
                     WHERE "processed_on" IS NULL
-                      AND "event_type" IN ('ECommerce.Domain.Events.CustomerRegistered', 'ECommerce.Domain.Events.PasswordResetRequested')
                     ORDER BY "occurred_on"
                     LIMIT 20
                     FOR UPDATE SKIP LOCKED
