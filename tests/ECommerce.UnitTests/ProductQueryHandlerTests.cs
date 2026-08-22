@@ -3,6 +3,8 @@ using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Catalog.Handlers;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Pricing;
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ECommerce.UnitTests;
 
@@ -14,8 +16,19 @@ public sealed class ProductQueryHandlerTests
 
     private readonly ICurrencyCatalog _currencies = new DefaultCurrencyCatalog();
 
+    private readonly HybridCache _hybridCache;
+
+    public ProductQueryHandlerTests()
+    {
+        var services = new ServiceCollection();
+#pragma warning disable EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        services.AddHybridCache();
+#pragma warning restore EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        _hybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
+    }
+
     private GetProductQueryHandler GetHandler =>
-        new(_products, _locales, _currencies, new GetProductQueryValidator(_currencies, _locales));
+        new(_products, _locales, _currencies, new GetProductQueryValidator(_currencies, _locales), _hybridCache);
 
     private ListProductsQueryHandler ListHandler => new(_products, _locales, _currencies, new ListProductsQueryValidator(_currencies, _locales));
 

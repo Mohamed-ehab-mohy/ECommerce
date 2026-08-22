@@ -3,6 +3,7 @@ using ECommerce.UseCases.Catalog.Commands;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Common;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace ECommerce.API.Controllers;
 
@@ -11,7 +12,7 @@ namespace ECommerce.API.Controllers;
 public sealed class CategoriesController(ISender sender) : ControllerBase
 {
     [HttpGet]
-    [ResponseCache(Duration = 900)]
+    [OutputCache(Duration = 900)]
     public async Task<IActionResult> GetTree(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCategoryTreeQuery(), cancellationToken);

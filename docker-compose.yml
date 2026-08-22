@@ -145,3 +145,65 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Postgres=Host=postgres;Port=5432;Database=${POSTGRES_DB:-ecommerce};Username=${POSTGRES_USER:-ecommerce};Password=${POSTGRES_PASSWORD:-ecommerce_dev_pw};
+      - ConnectionStrings__Redis=redis:6379,abortConnect=false
+      - RabbitMQ__Host=rabbitmq
+      - SeqUrl=http://seq:5341
+      - Email__SmtpServer=mailpit
+      - Email__SmtpPort=1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ecommerce
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: ecommerce-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - ecommerce
+    depends_on:
+      - api
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: ecommerce-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - ecommerce
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: ecommerce-stripe-cli
+    command: "listen --forward-to http://api:8080/api/v1/stripe-webhook"
+    environment:
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+    networks:
+      - ecommerce
+    depends_on:
+      - api

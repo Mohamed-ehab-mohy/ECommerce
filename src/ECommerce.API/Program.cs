@@ -26,6 +26,16 @@ builder.Services.AddApi(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!);
 
+builder.Services.AddOutputCache(options =>
+{
+    options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(1);
+});
+
+builder.Services.AddStackExchangeRedisOutputCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+});
+
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("ecommerce-api"))
     .WithTracing(tracing =>
@@ -84,6 +94,7 @@ app.UseSerilogRequestLogging();
 app.UseSecurityHeaders();
 
 app.UseResponseCaching();
+app.UseOutputCache();
 
 app.UseMiddleware<ApiVersionMiddleware>();
 
