@@ -13,7 +13,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("RabbitMq");
+        var connectionString = configuration.GetConnectionString("RabbitMq")?.Replace("amqp://", "rabbitmq://");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             return services;

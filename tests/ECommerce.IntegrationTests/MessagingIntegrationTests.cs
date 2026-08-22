@@ -48,7 +48,7 @@ public sealed class MessagingIntegrationTests : IClassFixture<IntegrationFixture
             bus.AddConsumer<OrderPlacedConsumer>();
             bus.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(new Uri(_fixture.RabbitMqConnectionString));
+                cfg.Host(new Uri(_fixture.RabbitMqConnectionString.Replace("amqp://", "rabbitmq://")));
 
                 cfg.ReceiveEndpoint(OrderPlacedConsumer.QueueName, endpoint =>
                 {
