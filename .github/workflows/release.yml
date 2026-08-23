@@ -24,13 +24,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        run: dotnet build -c Release
+        run: dotnet build backend/-c Release
 
       - name: Test
-        run: dotnet test -c Release --no-build
+        run: dotnet test backend/-c Release --no-build
 
       - name: Publish API
-        run: dotnet publish src/ECommerce.API/ECommerce.API.csproj -c Release -o publish --no-build
+        run: dotnet publish backend/src/ECommerce.API/ECommerce.API.csproj -c Release -o publish --no-build
 
       - name: Docker meta
         id: meta

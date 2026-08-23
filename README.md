@@ -1,4 +1,23 @@
-# ECommerce
+# E-Commerce Backend
+
+This repository contains the complete backend infrastructure for the E-Commerce platform, built with .NET 10, PostgreSQL, Redis, and RabbitMQ.
+
+## 📂 Repository Structure
+
+- `backend/`: Contains all backend source code, infrastructure as code (`docker-compose.yml`), migrations, and unit tests.
+- `frontend-docs/`: Contains concise, targeted documentation for Frontend developers integrating with this API.
+
+## 🚀 Getting Started for Frontend Developers
+
+If you are a frontend developer looking to integrate with this backend, please start with the **[Frontend Documentation](frontend-docs/01-getting-started.md)**. It contains everything you need to run the system locally, understand the architecture, and consume the APIs.
+
+## 💻 Backend Developers
+
+To run the backend locally for development:
+1. Navigate to the `backend/` directory: `cd backend`
+2. Start the infrastructure: `docker compose up -d postgres redis rabbitmq`
+3. Run the API: `dotnet run --project src/ECommerce.API`
+
 
 Production-scale e-commerce backend built with **.NET 10** and **Clean Architecture**, backed by a one-command local stack
 (PostgreSQL, Redis, RabbitMQ, Seq, Prometheus, Grafana) and a green CI pipeline.

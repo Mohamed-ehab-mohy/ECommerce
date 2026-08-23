@@ -25,9 +25,9 @@ jobs:
           cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Restore
-        run: dotnet restore
+        run: cd backend && dotnet restore
       - name: Build (warnings-as-errors)
-        run: dotnet build --no-restore -warnaserror
+        run: cd backend && dotnet build --no-restore -warnaserror
 
   unit-tests:
     name: Unit + Architecture Tests
@@ -42,13 +42,13 @@ jobs:
           cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Restore
-        run: dotnet restore
+        run: cd backend && dotnet restore
       - name: Build
-        run: dotnet build --no-restore
+        run: cd backend && dotnet build --no-restore
       - name: Unit Tests
-        run: dotnet test tests/ECommerce.UnitTests --no-build --logger "trx;LogFileName=unit.trx"
+        run: cd backend && dotnet test tests/ECommerce.UnitTests --no-build --logger "trx;LogFileName=unit.trx"
       - name: Architecture Tests
-        run: dotnet test tests/ECommerce.ArchitectureTests --no-build --logger "trx;LogFileName=arch.trx"
+        run: cd backend && dotnet test tests/ECommerce.ArchitectureTests --no-build --logger "trx;LogFileName=arch.trx"
 
   integration-tests:
     name: Integration Tests
@@ -63,11 +63,11 @@ jobs:
           cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Restore
-        run: dotnet restore
+        run: cd backend && dotnet restore
       - name: Build
-        run: dotnet build --no-restore
+        run: cd backend && dotnet build --no-restore
       - name: Integration Tests
-        run: dotnet test tests/ECommerce.IntegrationTests --no-build --logger "console;verbosity=detailed" --blame-hang --blame-hang-timeout 3m
+        run: cd backend && dotnet test tests/ECommerce.IntegrationTests --no-build --logger "console;verbosity=detailed" --blame-hang --blame-hang-timeout 3m
 
   format:
     name: Format Check
@@ -82,9 +82,9 @@ jobs:
           cache: true
           cache-dependency-path: "**/*.csproj"
       - name: Restore
-        run: dotnet restore
+        run: cd backend && dotnet restore
       - name: Format
-        run: dotnet format --verify-no-changes
+        run: cd backend && dotnet format --verify-no-changes
 
   secret-scan:
     name: Secret Scan
@@ -120,7 +120,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Start infrastructure services
-        run: docker compose up -d postgres redis rabbitmq
+        run: cd backend && docker compose up -d postgres redis rabbitmq
 
       - name: Wait for services to be healthy
         run: |
@@ -146,7 +146,7 @@ jobs:
         env:
           Telemetry__Disabled: "true"
         run: |
-          nohup dotnet run --project src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
+          nohup dotnet run --project backend/src/ECommerce.API --no-build --urls "http://127.0.0.1:8080" > api.log 2>&1 &
           echo "API_PID=$!" >> "$GITHUB_ENV"
           API_PID=$!
 
@@ -165,7 +165,7 @@ jobs:
           fi
 
           echo "Running Load Test..."
-          docker run --rm -i --user $(id -u):$(id -g) --network host -v $(pwd):/work -w /work grafana/k6:latest run perf/k6/ci-smoke.js --summary-export=summary.json
+          docker run --rm -i --user $(id -u):$(id -g) --network host -v $(pwd):/work -w /work grafana/k6:latest run backend/perf/k6/ci-smoke.js --summary-export=summary.json
 
       - name: Upload k6 results
         if: always()
@@ -180,3 +180,4 @@ jobs:
         run: |
           kill "$API_PID" 2>/dev/null || true
           docker compose down -v
+
