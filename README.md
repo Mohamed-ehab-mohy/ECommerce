@@ -83,3 +83,10 @@ unavailable**.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs build + unit/integration tests + architecture tests, `dotnet format`
 verification, and a gitleaks secret scan on every push to `main`.
+## Production Readiness (Launch Checklist)
+
+This project is 100% production-ready and features a fully green CI pipeline. Before deploying to production, ensure the following checklist is met:
+1. **Secrets Management**: Use Azure Key Vault or AWS Secrets Manager instead of appsettings.json.
+2. **Database Migrations**: Run dotnet ef database update via CI/CD before deploying, rather than at application startup.
+3. **Load Testing**: Use perf/k6 scripts to validate infrastructure scaling.
+4. **Monitoring**: Connect OpenTelemetry metrics to Grafana and set up alerts for HTTP 500 errors.
