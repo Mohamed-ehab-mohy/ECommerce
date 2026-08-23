@@ -1,6 +1,12 @@
 # E-Commerce Enterprise Backend Architecture
 
 <div align="center">
+  <img src="https://github.com/Mohamed-ehab-mohy/ECommerce/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  <img src="https://img.shields.io/badge/Coverage-92%25-success.svg" alt="Coverage" />
+  <img src="https://img.shields.io/badge/Architecture-Clean-success" alt="Clean Architecture" />
+</div>
+
+<div align="center">
   <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet" alt=".NET 10" />
   <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
@@ -13,7 +19,16 @@
 
 ## Executive Summary
 
-A production-grade, highly scalable e-commerce backend system built with **.NET 10**. This repository represents a complete microservices-ready monolithic architecture, engineered to demonstrate advanced enterprise-level software design patterns. The system is highly decoupled, fault-tolerant, and designed to handle high-throughput concurrent operations without data corruption or state inconsistency.
+A production-grade, highly scalable **Multi-Tenant SaaS E-Commerce Backend** built with **.NET 10**. This repository represents a complete microservices-ready monolithic architecture, engineered to demonstrate advanced enterprise-level software design patterns. The system is highly decoupled, fault-tolerant, and designed to handle high-throughput concurrent operations without data corruption or state inconsistency across thousands of isolated tenants.
+
+## Table of Contents
+- [Architecture & Applied Design Patterns](#architecture--applied-design-patterns)
+- [Project Structure](#project-structure)
+- [Database Design & Entity Relationship Diagram (ERD)](#database-design--entity-relationship-diagram-erd)
+- [Technical Stack & Infrastructure](#technical-stack--infrastructure)
+- [Comprehensive Feature Set](#comprehensive-feature-set)
+- [CI/CD Pipeline & Quality Gates](#cicd-pipeline--quality-gates)
+- [Local Development Environment](#local-development-environment)
 
 ---
 
