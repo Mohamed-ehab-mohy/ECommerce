@@ -1,8 +1,8 @@
-# 🚀 E-Commerce Enterprise Backend (Microservices Ready)
+# E-Commerce Enterprise Backend Architecture
 
 <div align="center">
   <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
   <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="RabbitMQ" />
   <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
@@ -11,132 +11,121 @@
 
 <br/>
 
-A production-grade, highly scalable e-commerce backend built with **.NET 10**, strictly adhering to **Clean Architecture**, **Domain-Driven Design (DDD)**, and **CQRS** patterns. Engineered for high performance, fault tolerance, and eventual consistency using the **Outbox Pattern** and **Event-Driven Architecture**.
+## Executive Summary
+
+A production-grade, highly scalable e-commerce backend system built with **.NET 10**. This repository represents a complete microservices-ready monolithic architecture, engineered to demonstrate advanced enterprise-level software design patterns. The system is highly decoupled, fault-tolerant, and designed to handle high-throughput concurrent operations without data corruption or state inconsistency.
 
 ---
 
-## 🏗️ System Architecture & Design Patterns
+## Architecture & Applied Design Patterns
 
-The system is designed with enterprise-level patterns to ensure modularity, testability, and scalability.
+This system strictly adheres to the following architectural principles and patterns to ensure high maintainability, testability, and scalability:
 
-- **Clean Architecture:** Strict separation of concerns (Domain, UseCases, Infrastructure, API). The core business logic is completely isolated from external frameworks.
-- **Domain-Driven Design (DDD):** Rich domain models with encapsulated logic, Aggregate Roots, Value Objects, and Domain Events.
-- **CQRS (Command Query Responsibility Segregation):** Mediated via **MediatR**. Write operations (Commands) are fully separated from Read operations (Queries).
-- **Event-Driven Architecture:** Asynchronous communication using **RabbitMQ** (via **MassTransit**) for decoupling services.
-- **Transactional Outbox Pattern:** Ensures reliable event publishing and eventual consistency between the database and the message broker. 
-- **Idempotency:** Implemented on critical endpoints (e.g., Payments, Order Processing) to safely handle retries and network failures.
+- **Clean Architecture (Onion Architecture):** Strict separation of concerns divided into Domain, Use Cases (Application), Infrastructure, and API Presentation layers. Dependencies point inwards.
+- **Domain-Driven Design (DDD):** Rich, encapsulated domain models utilizing Aggregate Roots, Value Objects, Entities, and Domain Events to represent complex business logic.
+- **CQRS (Command Query Responsibility Segregation):** Mediated via MediatR. Write operations (Commands) are fully separated from Read operations (Queries), allowing for independent scaling and optimization.
+- **Event-Driven Architecture:** Asynchronous inter-module communication using MassTransit and RabbitMQ to decouple services and improve system resilience.
+- **Transactional Outbox Pattern:** Guarantees "at-least-once" delivery of messages to the message broker. Domain events are atomically saved with business transactions to the database and later published asynchronously by a background sweeper.
+- **Idempotency:** Critical mutating endpoints (such as Payment Processing and Order Placement) implement Idempotency-Keys to safely handle network retries and prevent duplicate transactions.
+- **Optimistic Concurrency Control:** Implemented via Entity Framework Core `RowVersion` tokens to prevent race conditions during high-frequency wallet deposits/withdrawals and inventory decrements.
+- **Distributed Locking:** Utilizes Redis distributed locks (RedLock algorithm) to serialize access to highly contested resources (e.g., reserving stock for a specific product variant).
+- **Soft Deletion Mechanism:** Global EF Core query filters and interceptors ensure records are never hard-deleted, maintaining referential integrity and audit trails.
 
 ---
 
-## 🛠️ Tech Stack & Tooling
+## Technical Stack & Infrastructure
 
-### **Core Stack**
 - **Framework:** .NET 10.0 (ASP.NET Core Web API)
 - **Language:** C# 13
-- **ORM:** Entity Framework Core (Code-First)
-- **Database:** PostgreSQL
-- **Caching & Distributed Locking:** Redis
-- **Message Broker:** RabbitMQ (with MassTransit)
-- **Background Jobs:** Hangfire
-
-### **Libraries & Nuget Packages**
-- **MediatR:** For CQRS implementation.
-- **FluentValidation:** For strict input validation pipeline behaviors.
-- **HotChocolate:** For the GraphQL API endpoint.
-- **SignalR:** For Real-Time WebSockets (e.g., Live Order Tracking).
-- **YARP:** Reverse Proxy & API Gateway configuration.
-- **Serilog:** Structured logging.
-- **OpenTelemetry / Prometheus / Grafana:** For full system observability, metrics, and tracing.
+- **ORM:** Entity Framework Core (Code-First Migrations)
+- **Primary Database:** PostgreSQL (Relational Data)
+- **Caching & Locks:** Redis (Distributed Caching, Session State, Distributed Locking)
+- **Message Broker:** RabbitMQ (Asynchronous Messaging)
+- **Service Bus Wrapper:** MassTransit
+- **Background Jobs:** Hangfire (Persistent Scheduled Tasks)
+- **GraphQL Engine:** HotChocolate
+- **Real-Time Communication:** ASP.NET Core SignalR (WebSockets)
+- **Logging:** Serilog (Structured JSON Logging)
+- **Observability:** OpenTelemetry, Prometheus, and Grafana (Metrics & Tracing)
+- **Validation:** FluentValidation (Pipeline Behaviors)
+- **Testing:** xUnit, Moq, FluentAssertions, Testcontainers, Respawn, k6 (Load Testing)
 
 ---
 
-## 🔐 Security & Authentication
+## Comprehensive Feature Set
 
-Security is deeply integrated at multiple layers of the application:
-1. **Identity & Access Management:** 
-   - JWT (JSON Web Token) Bearer authentication.
-   - Role-Based Access Control (RBAC) and Claims-based authorization policies.
-2. **Data Protection:** 
-   - Hashing passwords using secure modern algorithms (Argon2 / PBKDF2).
-   - Sensitive PII masking in logs.
-3. **Application Security:**
-   - **Content-Security-Policy (CSP):** Highly restrictive CSP headers dynamically applied (relaxed only for Swagger/GraphQL UI).
-   - Global Exception Handling to prevent stack trace leaks.
-   - Rate Limiting via ASP.NET Core native Rate Limiter middleware to prevent DDoS & Brute-force attacks.
+### 1. Identity, Security & Access Management
+- **JWT Bearer Authentication:** Secure stateless authentication.
+- **Role-Based Access Control (RBAC):** Claims-based authorization policies for separating Customers and Administrators.
+- **Password Security:** Hashes utilizing Argon2id / PBKDF2.
+- **Rate Limiting:** Global and endpoint-specific rate limiting to prevent Brute-Force and DDoS attacks using ASP.NET Core RateLimiter.
+- **Content-Security-Policy (CSP):** Hardened middleware rejecting inline scripts, cross-origin framing, and enforcing secure resource loading.
 
----
+### 2. Catalog & Search Module
+- Comprehensive management of Products, Brands, Categories, and Variants.
+- **REST & GraphQL:** Dual API exposure. REST for standard management, and GraphQL for highly flexible, client-driven product queries, filtering, and pagination.
+- **Caching Strategy:** Redis-backed caching for frequently accessed catalog read-models.
 
-## 📦 Features Breakdown
+### 3. Shopping Cart & Checkout Workflow
+- **Persistent Distributed Cart:** User shopping carts are stored in Redis for low-latency read/write access.
+- **Complex Checkout Pipeline:** An orchestrated flow that handles validation, stock reservation, price calculation, payment execution, and order generation atomically.
 
-### 1. 🛍️ Catalog & Inventory Management
-- Full CRUD operations for Products, Categories, and Brands.
-- **GraphQL Integration:** For complex filtering and dynamic fetching on the storefront.
-- Real-time stock reservation and inventory decrementing using Redis Distributed Locks.
+### 4. Digital Wallets & Payments
+- **Wallet System:** Users possess internal digital wallets allowing deposits, withdrawals, and direct transfers.
+- **Concurrency Protection:** EF Core Concurrency Tokens ensure that simultaneous transactions cannot overdraw a wallet or corrupt the ledger.
 
-### 2. 🛒 Shopping Cart & Checkout
-- Redis-backed persistent shopping cart.
-- Complex checkout workflow ensuring atomicity (Order Creation -> Stock Reservation -> Payment).
+### 5. Inventory & Warehouse Management
+- Real-time stock tracking per product variant.
+- **Distributed Locking:** Redis locks ensure that if two users attempt to buy the last item simultaneously, only one succeeds.
+- Stock replenishment and low-stock alerts.
 
-### 3. 💳 Payments & Wallets
-- User Digital Wallets with Transaction History (Deposit, Withdraw, Transfer).
-- Concurrency control using EF Core RowVersions (Optimistic Concurrency) to prevent double-spending.
+### 6. Order Management & Real-Time Tracking
+- Comprehensive order state machine (Pending -> Payment Verified -> Processing -> Shipped -> Delivered).
+- **SignalR Integration:** WebSockets push live order status updates directly to the frontend clients without requiring polling.
 
-### 4. 📦 Order Management
-- Order state machine processing (Pending -> Paid -> Shipped -> Delivered).
-- Real-time order status updates pushed to the client via **SignalR**.
-
-### 5. ⚙️ Background Processing
-- **Hangfire** is used for scheduled tasks, cart abandonment emails, and database cleanup.
-- **Outbox Processor** runs as a background hosted service to reliably push domain events to RabbitMQ.
+### 7. Background Processing & Scheduling
+- **Hangfire Jobs:** Recurring and fire-and-forget jobs for tasks such as cleaning up abandoned carts, generating daily sales reports, and sending asynchronous email notifications.
+- **Outbox Sweeper:** A hosted background service that polls the `OutboxMessages` table and publishes pending events to RabbitMQ.
 
 ---
 
-## 🗄️ Database Design (High-Level ERD)
+## CI/CD Pipeline & Quality Gates
 
-The database follows complete normalization (3NF) where required, but denormalizes specific read-models for performance.
+The repository features a fully automated, multi-stage GitHub Actions pipeline designed to enforce extreme code quality and system stability:
 
-- **Users/Identity:** `Users`, `Roles`, `UserRoles`, `Wallets`, `WalletTransactions`
-- **Catalog:** `Products`, `Categories`, `Brands`, `ProductVariants`
-- **Sales:** `Orders`, `OrderItems`, `Shipments`
-- **Infrastructure:** `OutboxMessages` (for the Outbox pattern)
-
-*All migrations are managed automatically through EF Core Migrations on startup.*
+1. **Format Check:** Enforces strict code formatting via `dotnet format`.
+2. **Static Code Analysis (Secret Scanning):** GitLeaks integration prevents accidental committing of sensitive API keys or credentials.
+3. **Unit Tests:** High coverage of domain logic and use-case handlers using mocked dependencies.
+4. **Architecture Tests:** Validates that Clean Architecture rules are not violated (e.g., Domain layer referencing Infrastructure).
+5. **Integration Tests:** Utilizes Testcontainers to spin up real instances of PostgreSQL and Redis to test database interactions and API endpoints.
+6. **Load & Performance Testing:** Uses k6 to execute smoke load tests against the API within the pipeline to prevent performance regressions.
 
 ---
 
-## 🚀 Getting Started
+## Local Development Environment
 
-### 📂 Repository Structure
-- `backend/`: Contains all C# source code, Dockerfiles, and configuration.
-- `frontend-docs/`: Contains integration guides for Frontend Developers.
+The system is configured for a frictionless developer experience using Docker Compose.
 
-### 💻 Running Locally (Docker Compose)
-This project is configured with a fully automated one-click local environment.
+### Requirements
+- Docker Desktop
+- .NET 10 SDK
+
+### Startup Instructions
 
 1. Navigate to the backend directory:
    ```bash
    cd backend
    ```
-2. Start the infrastructure (Postgres, Redis, RabbitMQ):
+2. Spin up the infrastructure dependencies:
    ```bash
    docker compose up -d postgres redis rabbitmq
    ```
-3. Run the API:
+3. Run the application:
    ```bash
    dotnet run --project src/ECommerce.API
    ```
 
-### 🌍 API Endpoints & UIs
-- **Swagger UI (REST):** `http://localhost:5139/swagger`
-- **GraphQL UI (Banana Cake Pop):** `http://localhost:5139/graphql`
+### API Documentation & Diagnostics
+- **Swagger UI (REST APIs):** `http://localhost:5139/swagger`
+- **GraphQL IDE (Banana Cake Pop):** `http://localhost:5139/graphql`
 - **Hangfire Dashboard:** `http://localhost:5139/hangfire`
-
----
-
-## 🧪 CI/CD & Quality Gates
-
-The repository is equipped with a highly robust **GitHub Actions** pipeline that runs on every Push/PR:
-1. **Format Check:** Enforces strict coding standards (`dotnet format`).
-2. **Static Code Analysis:** Secret scanning via GitLeaks.
-3. **Automated Testing:** Runs full suites of Unit, Integration, and Architecture Tests.
-4. **Load Testing (k6):** Spools up the Docker environment and runs a smoke load-test against the API to ensure no performance regressions.
