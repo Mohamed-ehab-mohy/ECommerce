@@ -1,111 +1,142 @@
-# E-Commerce Backend
+# 🚀 E-Commerce Enterprise Backend (Microservices Ready)
 
-This repository contains the complete backend infrastructure for the E-Commerce platform, built with .NET 10, PostgreSQL, Redis, and RabbitMQ.
+<div align="center">
+  <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet" alt=".NET 10" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="Postgres" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="RabbitMQ" />
+  <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white" alt="GraphQL" />
+</div>
 
-## 📂 Repository Structure
+<br/>
 
-- `backend/`: Contains all backend source code, infrastructure as code (`docker-compose.yml`), migrations, and unit tests.
-- `frontend-docs/`: Contains concise, targeted documentation for Frontend developers integrating with this API.
+A production-grade, highly scalable e-commerce backend built with **.NET 10**, strictly adhering to **Clean Architecture**, **Domain-Driven Design (DDD)**, and **CQRS** patterns. Engineered for high performance, fault tolerance, and eventual consistency using the **Outbox Pattern** and **Event-Driven Architecture**.
 
-## 🚀 Getting Started for Frontend Developers
+---
 
-If you are a frontend developer looking to integrate with this backend, please start with the **[Frontend Documentation](frontend-docs/01-getting-started.md)**. It contains everything you need to run the system locally, understand the architecture, and consume the APIs.
+## 🏗️ System Architecture & Design Patterns
 
-## 💻 Backend Developers
+The system is designed with enterprise-level patterns to ensure modularity, testability, and scalability.
 
-To run the backend locally for development:
-1. Navigate to the `backend/` directory: `cd backend`
-2. Start the infrastructure: `docker compose up -d postgres redis rabbitmq`
-3. Run the API: `dotnet run --project src/ECommerce.API`
+- **Clean Architecture:** Strict separation of concerns (Domain, UseCases, Infrastructure, API). The core business logic is completely isolated from external frameworks.
+- **Domain-Driven Design (DDD):** Rich domain models with encapsulated logic, Aggregate Roots, Value Objects, and Domain Events.
+- **CQRS (Command Query Responsibility Segregation):** Mediated via **MediatR**. Write operations (Commands) are fully separated from Read operations (Queries).
+- **Event-Driven Architecture:** Asynchronous communication using **RabbitMQ** (via **MassTransit**) for decoupling services.
+- **Transactional Outbox Pattern:** Ensures reliable event publishing and eventual consistency between the database and the message broker. 
+- **Idempotency:** Implemented on critical endpoints (e.g., Payments, Order Processing) to safely handle retries and network failures.
 
+---
 
-Production-scale e-commerce backend built with **.NET 10** and **Clean Architecture**, backed by a one-command local stack
-(PostgreSQL, Redis, RabbitMQ, Seq, Prometheus, Grafana) and a green CI pipeline.
+## 🛠️ Tech Stack & Tooling
 
-## Architecture
+### **Core Stack**
+- **Framework:** .NET 10.0 (ASP.NET Core Web API)
+- **Language:** C# 13
+- **ORM:** Entity Framework Core (Code-First)
+- **Database:** PostgreSQL
+- **Caching & Distributed Locking:** Redis
+- **Message Broker:** RabbitMQ (with MassTransit)
+- **Background Jobs:** Hangfire
 
-- **Domain** — entities, business rules (zero dependencies)
-- **UseCases** — application logic, depends only on Domain
-- **Infrastructure** — EF Core / Postgres, external integrations
-- **API** — ASP.NET Core host (Serilog, OpenTelemetry, health checks, Prometheus metrics)
+### **Libraries & Nuget Packages**
+- **MediatR:** For CQRS implementation.
+- **FluentValidation:** For strict input validation pipeline behaviors.
+- **HotChocolate:** For the GraphQL API endpoint.
+- **SignalR:** For Real-Time WebSockets (e.g., Live Order Tracking).
+- **YARP:** Reverse Proxy & API Gateway configuration.
+- **Serilog:** Structured logging.
+- **OpenTelemetry / Prometheus / Grafana:** For full system observability, metrics, and tracing.
 
-Layering is enforced by `ECommerce.ArchitectureTests` (NetArchTest) in CI.
+---
 
-## Prerequisites
+## 🔐 Security & Authentication
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Docker](https://www.docker.com/products/docker-desktop/) with Docker Compose v2
-- git
+Security is deeply integrated at multiple layers of the application:
+1. **Identity & Access Management:** 
+   - JWT (JSON Web Token) Bearer authentication.
+   - Role-Based Access Control (RBAC) and Claims-based authorization policies.
+2. **Data Protection:** 
+   - Hashing passwords using secure modern algorithms (Argon2 / PBKDF2).
+   - Sensitive PII masking in logs.
+3. **Application Security:**
+   - **Content-Security-Policy (CSP):** Highly restrictive CSP headers dynamically applied (relaxed only for Swagger/GraphQL UI).
+   - Global Exception Handling to prevent stack trace leaks.
+   - Rate Limiting via ASP.NET Core native Rate Limiter middleware to prevent DDoS & Brute-force attacks.
 
-## Quick start
+---
 
-```bash
-git clone https://github.com/Mohamed-ehab-mohy/ECommerce.git
-cd ECommerce
+## 📦 Features Breakdown
 
-cp .env.example .env        # optional; sane defaults are built in
+### 1. 🛍️ Catalog & Inventory Management
+- Full CRUD operations for Products, Categories, and Brands.
+- **GraphQL Integration:** For complex filtering and dynamic fetching on the storefront.
+- Real-time stock reservation and inventory decrementing using Redis Distributed Locks.
 
-docker compose up -d        # start the dev stack (Postgres, Redis, RabbitMQ, Seq, Prometheus, Grafana)
-dotnet run --project src/ECommerce.API
-```
+### 2. 🛒 Shopping Cart & Checkout
+- Redis-backed persistent shopping cart.
+- Complex checkout workflow ensuring atomicity (Order Creation -> Stock Reservation -> Payment).
 
-The API listens on <http://localhost:5139>. Verify the stack:
+### 3. 💳 Payments & Wallets
+- User Digital Wallets with Transaction History (Deposit, Withdraw, Transfer).
+- Concurrency control using EF Core RowVersions (Optimistic Concurrency) to prevent double-spending.
 
-| URL | Purpose |
-|-----|---------|
-| <http://localhost:5139/health/live> | Liveness probe |
-| <http://localhost:5139/health/ready> | Readiness probe (checks Postgres) |
-| <http://localhost:5139/metrics> | Prometheus metrics endpoint |
-| <http://localhost:5341> | Seq (structured logs + traces) |
-| <http://localhost:9090> | Prometheus |
-| <http://localhost:3000> | Grafana |
+### 4. 📦 Order Management
+- Order state machine processing (Pending -> Paid -> Shipped -> Delivered).
+- Real-time order status updates pushed to the client via **SignalR**.
 
-## Dev stack
+### 5. ⚙️ Background Processing
+- **Hangfire** is used for scheduled tasks, cart abandonment emails, and database cleanup.
+- **Outbox Processor** runs as a background hosted service to reliably push domain events to RabbitMQ.
 
-| Service | Host port | Default credentials |
-|---------|-----------|---------------------|
-| PostgreSQL 16 | `5433` | `ecommerce` / `ecommerce_dev_pw` |
-| Redis 7 | `6379` | — |
-| RabbitMQ 3.13 | `5672` (AMQP), `15672` (management UI) | `ecommerce` / `ecommerce_dev_pw` |
-| Seq | `5341` | `admin` / `ecommerce_dev_pw` |
-| Prometheus | `9090` | — |
-| Grafana | `3000` | `admin` / `admin` |
+---
 
-## Configuration
+## 🗄️ Database Design (High-Level ERD)
 
-Copy `.env.example` to `.env` and adjust. Never commit `.env`. The Postgres connection string used by the API lives in
-`src/ECommerce.API/appsettings.Development.json`.
+The database follows complete normalization (3NF) where required, but denormalizes specific read-models for performance.
 
-> Seq: the admin password is fixed at first boot via `SEQ_ADMINPASSWORDHASH` (hash of `ecommerce_dev_pw`). If you change
-> `SEQ_PASSWORD`, regenerate the hash (`seqsvr config hash`) and update `SEQ_ADMINPASSWORDHASH`, then wipe the `seq-data`
-> volume with `docker compose down -v`.
+- **Users/Identity:** `Users`, `Roles`, `UserRoles`, `Wallets`, `WalletTransactions`
+- **Catalog:** `Products`, `Categories`, `Brands`, `ProductVariants`
+- **Sales:** `Orders`, `OrderItems`, `Shipments`
+- **Infrastructure:** `OutboxMessages` (for the Outbox pattern)
 
-## Tests
+*All migrations are managed automatically through EF Core Migrations on startup.*
 
-```bash
-dotnet build -warnaserror          # builds must be warning-free
-dotnet test                        # unit + integration tests
-dotnet format --verify-no-changes  # style gate (same as CI)
-```
+---
 
-Integration tests spin up real PostgreSQL/Redis/RabbitMQ via Testcontainers and **skip automatically when Docker is
-unavailable**.
+## 🚀 Getting Started
 
-## Documentation
+### 📂 Repository Structure
+- `backend/`: Contains all C# source code, Dockerfiles, and configuration.
+- `frontend-docs/`: Contains integration guides for Frontend Developers.
 
-- `docs/36-developer-onboarding-guide.md` — setup, commands, troubleshooting
-- `docs/06-system-architecture.md`, `docs/06a-domain-model.md` — architecture and domain model
-- `docs/04-software-requirements-specification.md` — requirements
-- `tasks/sprint-01-foundations.md` — sprint backlog
+### 💻 Running Locally (Docker Compose)
+This project is configured with a fully automated one-click local environment.
 
-## CI
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Start the infrastructure (Postgres, Redis, RabbitMQ):
+   ```bash
+   docker compose up -d postgres redis rabbitmq
+   ```
+3. Run the API:
+   ```bash
+   dotnet run --project src/ECommerce.API
+   ```
 
-GitHub Actions (`.github/workflows/ci.yml`) runs build + unit/integration tests + architecture tests, `dotnet format`
-verification, and a gitleaks secret scan on every push to `main`.
-## Production Readiness (Launch Checklist)
+### 🌍 API Endpoints & UIs
+- **Swagger UI (REST):** `http://localhost:5139/swagger`
+- **GraphQL UI (Banana Cake Pop):** `http://localhost:5139/graphql`
+- **Hangfire Dashboard:** `http://localhost:5139/hangfire`
 
-This project is 100% production-ready and features a fully green CI pipeline. Before deploying to production, ensure the following checklist is met:
-1. **Secrets Management**: Use Azure Key Vault or AWS Secrets Manager instead of appsettings.json.
-2. **Database Migrations**: Run dotnet ef database update via CI/CD before deploying, rather than at application startup.
-3. **Load Testing**: Use perf/k6 scripts to validate infrastructure scaling.
-4. **Monitoring**: Connect OpenTelemetry metrics to Grafana and set up alerts for HTTP 500 errors.
+---
+
+## 🧪 CI/CD & Quality Gates
+
+The repository is equipped with a highly robust **GitHub Actions** pipeline that runs on every Push/PR:
+1. **Format Check:** Enforces strict coding standards (`dotnet format`).
+2. **Static Code Analysis:** Secret scanning via GitLeaks.
+3. **Automated Testing:** Runs full suites of Unit, Integration, and Architecture Tests.
+4. **Load Testing (k6):** Spools up the Docker environment and runs a smoke load-test against the API to ensure no performance regressions.
