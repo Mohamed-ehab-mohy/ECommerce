@@ -173,7 +173,7 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
                 {
                     var isDeletedProperty = System.Linq.Expressions.Expression.Property(parameter, "IsDeleted");
                     var isNotDeleted = System.Linq.Expressions.Expression.Equal(isDeletedProperty, System.Linq.Expressions.Expression.Constant(false));
-                    
+
                     filter = filter is null ? isNotDeleted : System.Linq.Expressions.Expression.AndAlso(filter, isNotDeleted);
                 }
 

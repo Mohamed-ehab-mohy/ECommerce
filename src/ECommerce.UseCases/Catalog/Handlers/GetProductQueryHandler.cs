@@ -27,7 +27,7 @@ public sealed class GetProductQueryHandler(
 
         var response = await hybridCache.GetOrCreateAsync(
             $"product_resp:{request.ProductId}:{request.Locale}:{request.Currency}",
-            async cancel => 
+            async cancel =>
             {
                 var p = await products.GetActiveByIdAsync(request.ProductId, cancel);
                 return p is null ? null : ProductResponseFactory.From(p, locales, currencies, request.Locale, request.Currency);
