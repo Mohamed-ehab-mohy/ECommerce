@@ -21,9 +21,9 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
                 Detail = validationException.Message
             };
-            
+
             validationProblem.Extensions.Add("errors", validationException.Errors);
-            
+
             httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             await httpContext.Response.WriteAsJsonAsync(validationProblem, cancellationToken);
             return true;

@@ -26,26 +26,26 @@ public sealed class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
 
         var requestName = typeof(TRequest).Name;
         var cacheKey = cacheableQuery.CacheKey;
-        
+
         var cachedResponse = await _cache.GetStringAsync(cacheKey, cancellationToken);
         if (cachedResponse is null)
         {
             _logger.LogInformation("Cache miss for {RequestName} with key {CacheKey}", requestName, cacheKey);
-            
+
             var response = await next();
-            
+
             var options = new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = cacheableQuery.Expiration ?? TimeSpan.FromMinutes(5)
             };
 
             await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response), options, cancellationToken);
-            
+
             return response;
         }
-        
+
         _logger.LogInformation("Cache hit for {RequestName} with key {CacheKey}", requestName, cacheKey);
-        
+
         var parsedResponse = JsonSerializer.Deserialize<TResponse>(cachedResponse);
         return parsedResponse ?? await next();
     }
