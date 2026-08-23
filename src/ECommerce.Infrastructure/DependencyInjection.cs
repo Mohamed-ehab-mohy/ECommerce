@@ -259,6 +259,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IDbConnectionFactory, DapperReadModelStore>();
         services.AddSingleton<IReadModelStore, DapperReadModelStore>();
+        services.AddScoped<ECommerce.UseCases.Wallets.Ports.IWalletRepository, ECommerce.Infrastructure.Data.Repositories.WalletRepository>();
         services.AddScoped<IPartnerRepository, PostgresPartnerRepository>();
         services.AddScoped<IPartnerAuthService, PostgresPartnerAuthService>();
         services.AddScoped<IRecommendationService, CollaborativeFilteringRecommendationService>();
@@ -289,6 +290,8 @@ public static class DependencyInjection
         {
             services.AddSingleton<IPaymentProvider>(_ => new StripePaymentProvider(paymentOptions.Stripe.SecretKey));
         }
+        
+        services.AddScoped<IPaymentProvider, ECommerce.Infrastructure.Payments.Providers.WalletPaymentProvider>();
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();

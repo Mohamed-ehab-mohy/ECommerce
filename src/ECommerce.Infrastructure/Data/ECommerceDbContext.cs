@@ -138,6 +138,12 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<WebhookDeadLetterEntry> WebhookDeadLetterEntries => Set<WebhookDeadLetterEntry>();
 
+    public DbSet<ECommerce.Domain.Wallets.Wallet> Wallets => Set<ECommerce.Domain.Wallets.Wallet>();
+
+    public DbSet<ECommerce.Domain.Wallets.WalletTransaction> WalletTransactions => Set<ECommerce.Domain.Wallets.WalletTransaction>();
+
+    public DbSet<ECommerce.Domain.Wallets.LoyaltyTransaction> LoyaltyTransactions => Set<ECommerce.Domain.Wallets.LoyaltyTransaction>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pg_trgm");
