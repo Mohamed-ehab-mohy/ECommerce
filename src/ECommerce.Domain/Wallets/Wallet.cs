@@ -13,6 +13,7 @@ public sealed class Wallet : BaseEntity<Guid>
     public decimal Balance { get; private set; }
     public string Currency { get; private set; } = "USD";
     public int LoyaltyPoints { get; private set; }
+    public uint Version { get; private set; }
 
     public IReadOnlyCollection<WalletTransaction> WalletTransactions => _walletTransactions.AsReadOnly();
     public IReadOnlyCollection<LoyaltyTransaction> LoyaltyTransactions => _loyaltyTransactions.AsReadOnly();

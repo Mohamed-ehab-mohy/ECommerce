@@ -14,6 +14,7 @@ public sealed class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         builder.Property(w => w.Balance).HasPrecision(18, 4);
         builder.Property(w => w.Currency).HasMaxLength(3).IsRequired();
         builder.Property(w => w.LoyaltyPoints).IsRequired();
+        builder.Property(w => w.Version).IsRowVersion();
 
         builder.HasMany(w => w.WalletTransactions)
             .WithOne()
