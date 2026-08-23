@@ -28,6 +28,7 @@ builder.Services.AddApi(builder.Configuration);
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<ProductQuery>()
+    .AddType<ProductType>()
     .AddProjections()
     .AddFiltering()
     .AddSorting();
