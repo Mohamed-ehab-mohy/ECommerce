@@ -16,15 +16,15 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             var validationProblem = new ProblemDetails
             {
-                Status = StatusCodes.Status400BadRequest,
+                Status = StatusCodes.Status422UnprocessableEntity,
                 Title = "Validation failed",
-                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Type = "problems/validation-failed",
                 Detail = validationException.Message
             };
 
             validationProblem.Extensions.Add("errors", validationException.Errors);
 
-            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            httpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
             await httpContext.Response.WriteAsJsonAsync(validationProblem, cancellationToken);
             return true;
         }
