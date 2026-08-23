@@ -1,6 +1,5 @@
-using ECommerce.Domain.Identity;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.Shared.Authorization;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Handlers;
 using ECommerce.UseCases.Identity.Queries;

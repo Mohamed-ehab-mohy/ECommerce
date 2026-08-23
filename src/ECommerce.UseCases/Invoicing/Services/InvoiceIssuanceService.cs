@@ -1,7 +1,6 @@
-using ECommerce.Domain.Events;
+﻿using ECommerce.Domain.Events;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Orders;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Invoicing.Ports;
 using ECommerce.UseCases.Orders.Ports;

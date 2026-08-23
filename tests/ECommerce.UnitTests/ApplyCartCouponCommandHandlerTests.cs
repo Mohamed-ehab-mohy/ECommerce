@@ -1,5 +1,4 @@
-using ECommerce.Domain.Pricing;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Pricing;
 using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Cart.Handlers;
 using ECommerce.UseCases.Pricing;

@@ -1,7 +1,6 @@
-using ECommerce.Domain.Invoicing;
+﻿using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Invoicing.Services;
 
 namespace ECommerce.UnitTests;

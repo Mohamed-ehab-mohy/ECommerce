@@ -1,5 +1,4 @@
-using ECommerce.Domain.Catalog;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Catalog.Handlers;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;

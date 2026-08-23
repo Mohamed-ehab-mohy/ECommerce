@@ -1,8 +1,6 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using ECommerce.Domain.Common;
 using ECommerce.Domain.Events;
-using ECommerce.Shared.Errors;
-using ECommerce.Shared.Primitives;
 
 namespace ECommerce.Domain.Identity;
 

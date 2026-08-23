@@ -1,5 +1,4 @@
-using ECommerce.Domain.Inventory;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Inventory;
 
 namespace ECommerce.Domain.Exceptions;
 

@@ -1,5 +1,4 @@
-using ECommerce.Domain.Invoicing;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Invoicing;
 using ECommerce.UseCases.Invoicing.Ports;
 using ECommerce.UseCases.Invoicing.Queries;
 

@@ -1,6 +1,5 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Checkout.Queries;
 using ECommerce.UseCases.Checkout.Responses;

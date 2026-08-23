@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Audit.Queries;
 
 public sealed record GetAuditLogsQuery(

@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Catalog.Commands;
 
 public sealed record UpdateCategoryCommand(

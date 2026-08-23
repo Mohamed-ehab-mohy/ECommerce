@@ -1,5 +1,4 @@
-using ECommerce.Domain.Events;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Events;
 
 namespace ECommerce.Domain.Orders;
 

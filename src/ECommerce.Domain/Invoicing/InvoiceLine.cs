@@ -1,5 +1,4 @@
-using ECommerce.Domain.Common;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Common;
 
 namespace ECommerce.Domain.Invoicing;
 

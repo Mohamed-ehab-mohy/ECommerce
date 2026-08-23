@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.Domain.Pricing;
 
 public enum DiscountType

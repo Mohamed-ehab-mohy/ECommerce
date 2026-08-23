@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Notifications.Commands;
 
 public sealed record UpdateNotificationPreferenceCommand(

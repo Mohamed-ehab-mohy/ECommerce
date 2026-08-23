@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-using ECommerce.UseCases.Common;
+﻿using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Promotions.Ports;
 using ECommerce.UseCases.Promotions.Queries;
 using ECommerce.UseCases.Promotions.Responses;

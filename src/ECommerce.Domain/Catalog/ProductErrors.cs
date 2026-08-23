@@ -1,5 +1,4 @@
-using ECommerce.Shared.Errors;
-
+﻿
 namespace ECommerce.Domain.Catalog;
 
 public static class ProductErrors

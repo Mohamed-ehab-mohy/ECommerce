@@ -1,7 +1,6 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;

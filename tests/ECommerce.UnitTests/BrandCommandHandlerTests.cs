@@ -1,5 +1,4 @@
-using ECommerce.Domain.Catalog;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Catalog.Commands;
 using ECommerce.UseCases.Catalog.Handlers;

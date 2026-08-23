@@ -1,8 +1,7 @@
-using ECommerce.Domain.Cart;
+﻿using ECommerce.Domain.Cart;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Handlers;

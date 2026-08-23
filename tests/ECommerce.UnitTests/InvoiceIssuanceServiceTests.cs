@@ -1,8 +1,7 @@
-using ECommerce.Domain.Events;
+﻿using ECommerce.Domain.Events;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Invoicing.Services;
 

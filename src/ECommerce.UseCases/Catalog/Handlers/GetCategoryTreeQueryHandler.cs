@@ -1,5 +1,4 @@
-using ECommerce.Domain.Catalog;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Catalog.Ports;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Catalog.Responses;

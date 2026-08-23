@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Identity.Commands;
 
 public sealed record SetupMfaCommand(Guid CustomerId) : IRequest<Result<MfaSetupResponse>>;

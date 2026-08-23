@@ -1,6 +1,4 @@
-using ECommerce.Shared.Errors;
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Common;
 
 public sealed record OperationError(

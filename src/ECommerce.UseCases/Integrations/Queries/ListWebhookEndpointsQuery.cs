@@ -1,6 +1,5 @@
-using ECommerce.Domain.Integrations;
+﻿using ECommerce.Domain.Integrations;
 using ECommerce.Shared.Authorization;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Responses;
 

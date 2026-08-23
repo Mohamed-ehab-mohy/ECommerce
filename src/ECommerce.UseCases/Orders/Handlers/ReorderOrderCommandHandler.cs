@@ -1,7 +1,6 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Cart;
 using ECommerce.Domain.Orders;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Cart.Ports;
 using ECommerce.UseCases.Cart.Responses;
 using ECommerce.UseCases.Catalog.Ports;

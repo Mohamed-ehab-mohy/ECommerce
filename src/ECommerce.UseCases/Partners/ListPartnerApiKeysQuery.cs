@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Partners;
 
 public sealed record ListPartnerApiKeysQuery(Guid PartnerId) : IRequest<Result<IReadOnlyList<PartnerApiKeyDto>>>;

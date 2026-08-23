@@ -1,4 +1,4 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
@@ -14,7 +14,6 @@ using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Shipping;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Commands;
 using ECommerce.UseCases.Fulfillment.Handlers;

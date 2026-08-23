@@ -1,6 +1,4 @@
-using ECommerce.Shared.Errors;
-using ECommerce.Shared.Primitives;
-using ECommerce.UseCases.Identity.Commands;
+﻿using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
 
 namespace ECommerce.UseCases.Identity.Handlers;

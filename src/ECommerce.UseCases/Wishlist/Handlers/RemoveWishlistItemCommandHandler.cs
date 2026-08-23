@@ -1,5 +1,4 @@
-using ECommerce.Domain.Wishlist;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Wishlist;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Wishlist.Commands;
 using ECommerce.UseCases.Wishlist.Ports;

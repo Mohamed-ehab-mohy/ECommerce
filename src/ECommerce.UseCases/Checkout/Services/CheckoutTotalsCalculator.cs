@@ -1,6 +1,5 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Checkout.Ports;
 
 namespace ECommerce.UseCases.Checkout.Services;

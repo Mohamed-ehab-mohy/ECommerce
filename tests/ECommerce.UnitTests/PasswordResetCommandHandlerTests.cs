@@ -1,6 +1,5 @@
-using ECommerce.Domain.Events;
+﻿using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;

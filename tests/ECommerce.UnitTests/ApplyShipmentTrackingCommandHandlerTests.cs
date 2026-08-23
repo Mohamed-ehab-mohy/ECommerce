@@ -1,6 +1,5 @@
-using ECommerce.Domain.Fulfillment;
+﻿using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Orders;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Fulfillment.Commands;
 using ECommerce.UseCases.Fulfillment.Handlers;
 using ECommerce.UseCases.Fulfillment.Responses;

@@ -66,7 +66,11 @@ public sealed class PaymentProviderContractTests
         var secretKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
         Skip.If(string.IsNullOrWhiteSpace(secretKey), "STRIPE_SECRET_KEY is not set");
 
-        var provider = new StripePaymentProvider(secretKey);
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddHttpClient();
+        var sp = services.BuildServiceProvider();
+        var factory = sp.GetRequiredService<System.Net.Http.IHttpClientFactory>();
+        var provider = new StripePaymentProvider(secretKey, factory);
 
         var intent = await provider.CreateIntentAsync(
             new PaymentIntentRequest(129.90m, "USD", $"contract-{Guid.NewGuid():N}", "card", null),

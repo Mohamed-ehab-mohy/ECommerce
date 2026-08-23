@@ -1,5 +1,4 @@
-using ECommerce.Domain.Inventory;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Inventory;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Inventory.Commands;
 using ECommerce.UseCases.Inventory.Handlers;

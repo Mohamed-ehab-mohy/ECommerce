@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Orders.Commands;
 
 public sealed record GetReturnRequestQuery(Guid ReturnRequestId) : IRequest<Result<ReturnRequestResponse>>;

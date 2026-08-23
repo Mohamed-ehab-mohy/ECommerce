@@ -1,5 +1,4 @@
-using ECommerce.Shared.Primitives;
-
+﻿
 namespace ECommerce.UseCases.Inventory.Ports;
 
 public sealed record AllocationRequestItem(string Sku, int Quantity);

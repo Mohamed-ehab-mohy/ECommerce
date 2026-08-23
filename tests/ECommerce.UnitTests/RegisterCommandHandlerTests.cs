@@ -1,5 +1,4 @@
-using ECommerce.Shared.Errors;
-using ECommerce.Domain.Identity;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Handlers;
 using ECommerce.UseCases.Pricing;

@@ -1,8 +1,7 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Exceptions;
 using ECommerce.Domain.Inventory;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Inventory.Commands;

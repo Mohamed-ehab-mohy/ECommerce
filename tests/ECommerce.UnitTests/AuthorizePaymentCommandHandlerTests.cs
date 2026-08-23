@@ -1,6 +1,5 @@
-using ECommerce.Domain.Orders;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Payments.Commands;
 using ECommerce.UseCases.Payments.Handlers;
 using ECommerce.UseCases.Payments.Options;

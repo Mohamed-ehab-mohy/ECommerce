@@ -1,5 +1,4 @@
-using ECommerce.Domain.Audit;
-using ECommerce.Shared.Errors;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Audit.Queries;

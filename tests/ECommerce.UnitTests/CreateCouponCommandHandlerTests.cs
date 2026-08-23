@@ -1,6 +1,5 @@
-using ECommerce.Domain.Audit;
+﻿using ECommerce.Domain.Audit;
 using ECommerce.Domain.Pricing;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Coupons.Commands;
 using ECommerce.UseCases.Coupons.Handlers;
 

@@ -1,5 +1,4 @@
-using ECommerce.Domain.Orders;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Orders;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Queries;

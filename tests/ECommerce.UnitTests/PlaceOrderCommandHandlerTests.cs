@@ -1,8 +1,7 @@
-using ECommerce.Domain.Catalog;
+﻿using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
-using ECommerce.Shared.Errors;
 using ECommerce.UseCases.Inventory.Ports;
 using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Handlers;

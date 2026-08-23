@@ -1,5 +1,4 @@
-using ECommerce.Domain.Wallets;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Wallets;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Wallets.Ports;
 

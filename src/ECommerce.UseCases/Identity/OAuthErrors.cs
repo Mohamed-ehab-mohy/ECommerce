@@ -1,5 +1,4 @@
-using ECommerce.Shared.Errors;
-
+﻿
 namespace ECommerce.UseCases.Identity;
 
 public static class OAuthErrors

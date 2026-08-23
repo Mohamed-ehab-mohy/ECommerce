@@ -1,5 +1,4 @@
-using ECommerce.Shared.Authorization;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Shared.Authorization;
 using ECommerce.UseCases.Common;
 
 namespace ECommerce.UseCases.Flags.Commands;

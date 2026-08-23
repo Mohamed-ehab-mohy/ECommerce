@@ -1,6 +1,5 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using ECommerce.Domain.Reporting;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reports.Commands;
 using ECommerce.UseCases.Reports.Ports;

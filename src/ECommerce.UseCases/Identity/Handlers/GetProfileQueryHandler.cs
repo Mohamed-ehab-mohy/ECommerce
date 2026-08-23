@@ -1,5 +1,4 @@
-using ECommerce.Domain.Identity;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Identity;
 using ECommerce.UseCases.Identity.Ports;
 using ECommerce.UseCases.Identity.Queries;
 using ECommerce.UseCases.Identity.Responses;

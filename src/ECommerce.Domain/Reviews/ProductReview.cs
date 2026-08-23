@@ -1,6 +1,5 @@
-using ECommerce.Domain.Common;
+﻿using ECommerce.Domain.Common;
 using ECommerce.Domain.Events;
-using ECommerce.Shared.Primitives;
 
 namespace ECommerce.Domain.Reviews;
 

@@ -1,7 +1,5 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
-using ECommerce.Shared.Errors;
-using ECommerce.Shared.Primitives;
 
 namespace ECommerce.UseCases.Common;
 

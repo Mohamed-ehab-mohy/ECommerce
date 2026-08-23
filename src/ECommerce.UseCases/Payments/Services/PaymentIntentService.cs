@@ -1,5 +1,4 @@
-using ECommerce.Domain.Payments;
-using ECommerce.Shared.Primitives;
+﻿using ECommerce.Domain.Payments;
 using ECommerce.UseCases.Payments.Ports;
 
 namespace ECommerce.UseCases.Payments.Services;

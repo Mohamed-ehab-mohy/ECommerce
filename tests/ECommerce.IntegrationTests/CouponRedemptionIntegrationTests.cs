@@ -1,4 +1,4 @@
-using ECommerce.Domain.Inventory;
+﻿using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;
@@ -10,7 +10,6 @@ using ECommerce.Infrastructure.Orders;
 using ECommerce.Infrastructure.Outbox;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.Infrastructure.Promotions;
-using ECommerce.Shared.Primitives;
 using ECommerce.UseCases.Orders.Commands;
 using ECommerce.UseCases.Orders.Handlers;
 using ECommerce.UseCases.Orders.Responses;
