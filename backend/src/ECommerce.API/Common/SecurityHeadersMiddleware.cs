@@ -13,7 +13,7 @@ public static class SecurityHeadersExtensions
             headers["X-XSS-Protection"] = "0";
             headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
-            var isUiPath = context.Request.Path.StartsWithSegments("/swagger") || 
+            var isUiPath = context.Request.Path.StartsWithSegments("/swagger") ||
                            context.Request.Path.StartsWithSegments("/hangfire") ||
                            context.Request.Path.StartsWithSegments("/graphql");
 
