@@ -8,12 +8,19 @@ namespace ECommerce.Infrastructure.Data;
 public sealed class MigrateOnStartupHostedService(
     IServiceScopeFactory scopeFactory,
     IConfiguration configuration,
+    IHostEnvironment environment,
     ILogger<MigrateOnStartupHostedService> logger) : BackgroundService
 {
     private const int DefaultMaxAttempts = 40;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (environment.IsProduction())
+        {
+            logger.LogInformation("Skipping database migrations on startup in Production environment.");
+            return;
+        }
+
         var maxAttempts = configuration.GetValue("Database:MigrationStartupMaxAttempts", DefaultMaxAttempts);
 
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
