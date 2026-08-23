@@ -291,13 +291,13 @@ public static class DependencyInjection
             services.AddHttpClient("Stripe")
                     .AddStandardResilienceHandler();
 
-            services.AddSingleton<IPaymentProvider>(sp => 
+            services.AddSingleton<IPaymentProvider>(sp =>
             {
                 var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
                 return new StripePaymentProvider(paymentOptions.Stripe.SecretKey, httpClientFactory);
             });
         }
-        
+
         services.AddScoped<IPaymentProvider, ECommerce.Infrastructure.Wallets.WalletPaymentProvider>();
 
         services.AddScoped<IPaymentProviderFactory, PaymentProviderFactory>();

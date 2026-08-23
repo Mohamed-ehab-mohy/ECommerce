@@ -11,11 +11,11 @@ public sealed class WalletTransaction
     private WalletTransaction() { } // EF Core
 
     public WalletTransaction(
-        Guid id, 
-        Guid walletId, 
-        decimal amount, 
-        WalletTransactionType type, 
-        string referenceId, 
+        Guid id,
+        Guid walletId,
+        decimal amount,
+        WalletTransactionType type,
+        string referenceId,
         decimal balanceAfter)
     {
         Id = id;

@@ -17,7 +17,7 @@ public sealed class GetMyWalletQueryHandler(
         }
 
         var wallet = await wallets.GetByCustomerIdAsNoTrackingAsync(currentUser.UserId.Value, cancellationToken);
-        
+
         return wallet is null
             ? Result<Queries.WalletResponse>.Success(new Queries.WalletResponse(0, "USD", 0))
             : Result<Queries.WalletResponse>.Success(new Queries.WalletResponse(

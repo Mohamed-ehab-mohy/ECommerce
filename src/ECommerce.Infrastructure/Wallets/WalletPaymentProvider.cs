@@ -71,7 +71,7 @@ public sealed class WalletPaymentProvider(ECommerceDbContext dbContext) : IPayme
         // We look up the original transaction to find the wallet.
         var transaction = await dbContext.WalletTransactions
             .FirstOrDefaultAsync(t => t.ReferenceId == request.ProviderReference && t.Type == WalletTransactionType.Debit, cancellationToken);
-            
+
         if (transaction is null)
         {
             return new PaymentRefundResult(false, null, "Wallet.TransactionNotFound");

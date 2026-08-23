@@ -24,7 +24,7 @@ public sealed class WalletConfiguration : IEntityTypeConfiguration<Wallet>
             .WithOne()
             .HasForeignKey(lt => lt.WalletId)
             .OnDelete(DeleteBehavior.Cascade);
-            
+
         builder.HasIndex(w => w.CustomerId).IsUnique();
     }
 }

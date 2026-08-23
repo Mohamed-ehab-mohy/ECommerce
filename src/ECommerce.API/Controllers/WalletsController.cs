@@ -19,7 +19,7 @@ public sealed class WalletsController(ISender sender) : ControllerBase
     public async Task<IActionResult> GetMyWallet(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetMyWalletQuery(), cancellationToken);
-        
+
         return result.IsFailure
             ? ToProblem(result.ToOperationError())
             : Ok(result.Value);

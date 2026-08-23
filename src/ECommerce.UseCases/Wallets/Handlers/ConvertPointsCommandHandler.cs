@@ -33,7 +33,7 @@ public sealed class ConvertPointsCommandHandler(
 
         var amountToCredit = (decimal)request.Points / PointsPerDollar;
         var creditResult = wallet.Credit(amountToCredit, $"Convert_{Guid.NewGuid()}");
-        
+
         if (creditResult.IsFailure)
         {
             return creditResult;

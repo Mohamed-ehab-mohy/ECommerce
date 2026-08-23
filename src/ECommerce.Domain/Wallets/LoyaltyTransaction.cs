@@ -12,11 +12,11 @@ public sealed class LoyaltyTransaction
     private LoyaltyTransaction() { } // EF Core
 
     public LoyaltyTransaction(
-        Guid id, 
-        Guid walletId, 
-        int points, 
-        LoyaltyTransactionType type, 
-        string referenceId, 
+        Guid id,
+        Guid walletId,
+        int points,
+        LoyaltyTransactionType type,
+        string referenceId,
         int pointsAfter)
     {
         Id = id;

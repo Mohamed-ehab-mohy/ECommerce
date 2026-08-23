@@ -38,7 +38,7 @@ public sealed class Wallet : BaseEntity<Guid>
             return Result.Failure(new Error("Wallet.InvalidAmount", "Credit amount must be greater than zero.", ErrorType.Validation));
 
         Balance += amount;
-        
+
         _walletTransactions.Add(new WalletTransaction(
             Guid.NewGuid(), Id, amount, WalletTransactionType.Credit, referenceId, Balance));
 
@@ -54,7 +54,7 @@ public sealed class Wallet : BaseEntity<Guid>
             return Result.Failure(WalletErrors.InsufficientFunds);
 
         Balance -= amount;
-        
+
         _walletTransactions.Add(new WalletTransaction(
             Guid.NewGuid(), Id, amount, WalletTransactionType.Debit, referenceId, Balance));
 
@@ -67,7 +67,7 @@ public sealed class Wallet : BaseEntity<Guid>
             return Result.Failure(new Error("Loyalty.InvalidPoints", "Points must be greater than zero.", ErrorType.Validation));
 
         LoyaltyPoints += points;
-        
+
         _loyaltyTransactions.Add(new LoyaltyTransaction(
             Guid.NewGuid(), Id, points, LoyaltyTransactionType.Earned, referenceId, LoyaltyPoints));
 
@@ -83,7 +83,7 @@ public sealed class Wallet : BaseEntity<Guid>
             return Result.Failure(WalletErrors.InsufficientPoints);
 
         LoyaltyPoints -= points;
-        
+
         _loyaltyTransactions.Add(new LoyaltyTransaction(
             Guid.NewGuid(), Id, points, LoyaltyTransactionType.Redeemed, referenceId, LoyaltyPoints));
 
