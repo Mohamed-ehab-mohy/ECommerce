@@ -16,7 +16,7 @@ public sealed class GetMyWalletQueryHandler(
             return Result<Queries.WalletResponse>.Failure(ECommerce.Domain.Wallets.WalletErrors.NotFound);
         }
 
-        var wallet = await wallets.GetByCustomerIdAsync(currentUser.UserId.Value, cancellationToken);
+        var wallet = await wallets.GetByCustomerIdAsNoTrackingAsync(currentUser.UserId.Value, cancellationToken);
         
         return wallet is null
             ? Result<Queries.WalletResponse>.Success(new Queries.WalletResponse(0, "USD", 0))

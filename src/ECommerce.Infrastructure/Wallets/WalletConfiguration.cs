@@ -2,7 +2,7 @@ using ECommerce.Domain.Wallets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ECommerce.Infrastructure.Data.Configurations;
+namespace ECommerce.Infrastructure.Wallets;
 
 public sealed class WalletConfiguration : IEntityTypeConfiguration<Wallet>
 {

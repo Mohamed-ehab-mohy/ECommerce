@@ -3,7 +3,7 @@ using ECommerce.Domain.Wallets;
 using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace ECommerce.Infrastructure.Payments.Providers;
+namespace ECommerce.Infrastructure.Wallets;
 
 public sealed class WalletPaymentProvider(ECommerceDbContext dbContext) : IPaymentProvider
 {
