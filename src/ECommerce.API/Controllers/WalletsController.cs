@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 
 using ECommerce.UseCases.Common;
 using ECommerce.API.Common;
+using ECommerce.API.Filters;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Authorize]
 [Route("api/v1/wallets")]
+[Idempotent]
 public sealed class WalletsController(ISender sender) : ControllerBase
 {
     [HttpGet("me")]

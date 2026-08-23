@@ -2,10 +2,13 @@ using ECommerce.API.Common;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Commands;
 
+using ECommerce.API.Filters;
+
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/v1/payments")]
+[Idempotent]
 public sealed class PaymentsController(ISender sender) : ControllerBase
 {
     [HttpPost("{paymentId:guid}/authorize")]

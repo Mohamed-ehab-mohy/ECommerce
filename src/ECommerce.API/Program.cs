@@ -46,6 +46,12 @@ builder.Services.AddStackExchangeRedisOutputCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.InstanceName = "ECommerce_Idempotency_";
+});
+
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("ecommerce-api"))
     .WithTracing(tracing =>
