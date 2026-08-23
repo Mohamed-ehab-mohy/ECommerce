@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Queries;

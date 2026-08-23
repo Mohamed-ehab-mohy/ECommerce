@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 
 namespace ECommerce.Domain.Orders;
 

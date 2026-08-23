@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Pricing;
+using ECommerce.Domain.Pricing;
 
 namespace ECommerce.UseCases.Promotions.Responses;
 

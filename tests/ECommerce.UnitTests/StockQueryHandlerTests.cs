@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Inventory;
 using ECommerce.UseCases.Inventory.Handlers;
 using ECommerce.UseCases.Inventory.Queries;
 

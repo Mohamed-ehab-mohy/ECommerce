@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Orders;
+using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
 using ECommerce.UseCases.Checkout.Ports;
 

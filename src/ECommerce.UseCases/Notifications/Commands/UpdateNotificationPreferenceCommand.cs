@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Notifications.Commands;
 
 public sealed record UpdateNotificationPreferenceCommand(

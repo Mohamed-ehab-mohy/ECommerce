@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Checkout.Responses;
+using ECommerce.UseCases.Checkout.Responses;
 
 namespace ECommerce.UseCases.Checkout.Commands;
 

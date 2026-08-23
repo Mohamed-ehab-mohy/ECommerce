@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Wallets.Queries;
 
 public sealed record GetMyWalletQuery() : IRequest<Result<WalletResponse>>;

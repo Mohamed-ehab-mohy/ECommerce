@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Inventory;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Pricing;

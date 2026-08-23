@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using ECommerce.Domain.Common;
 using ECommerce.Domain.Events;
 

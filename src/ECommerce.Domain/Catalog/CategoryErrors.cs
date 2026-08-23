@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Catalog;
 
 public static class CategoryErrors

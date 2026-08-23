@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Identity;
 
 public static class AuthErrors

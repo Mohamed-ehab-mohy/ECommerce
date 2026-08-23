@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Integrations;
 
 public static class WebhookErrors

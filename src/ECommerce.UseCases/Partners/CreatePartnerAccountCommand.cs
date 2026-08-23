@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Partners;
+using ECommerce.Domain.Partners;
 
 namespace ECommerce.UseCases.Partners;
 

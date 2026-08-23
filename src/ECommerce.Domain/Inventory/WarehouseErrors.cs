@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Inventory;
 
 public static class WarehouseErrors

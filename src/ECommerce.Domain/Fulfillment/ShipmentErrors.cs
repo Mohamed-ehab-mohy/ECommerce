@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Fulfillment;
 
 public static class ShipmentErrors

@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Audit;
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Catalog.Commands;

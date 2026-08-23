@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Orders.Queries;
+using ECommerce.UseCases.Orders.Queries;
 using ECommerce.UseCases.Orders.Ports;
 using ECommerce.UseCases.Orders.Responses;
 

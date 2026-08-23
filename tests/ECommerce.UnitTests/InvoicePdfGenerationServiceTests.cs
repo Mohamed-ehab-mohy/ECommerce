@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Invoicing;
+using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Pricing;
 using ECommerce.UseCases.Invoicing.Services;

@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Partners;
 
 public sealed record RevokePartnerApiKeyCommand(Guid ApiKeyId) : IRequest<Result>;

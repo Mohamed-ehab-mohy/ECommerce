@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Integrations;
+using ECommerce.Domain.Integrations;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Commands;
 using ECommerce.UseCases.Integrations.Ports;

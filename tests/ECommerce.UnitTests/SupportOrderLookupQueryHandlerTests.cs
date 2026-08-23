@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Orders;
+using ECommerce.Domain.Orders;
 using ECommerce.UseCases.Orders.Handlers;
 using ECommerce.UseCases.Orders.Queries;
 

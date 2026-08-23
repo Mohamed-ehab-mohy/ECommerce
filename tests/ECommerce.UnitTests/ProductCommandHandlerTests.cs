@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Events;
 using ECommerce.UseCases.Audit;
 using ECommerce.UseCases.Catalog.Commands;

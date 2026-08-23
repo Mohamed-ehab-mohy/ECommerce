@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Orders.Responses;
+using ECommerce.UseCases.Orders.Responses;
 
 namespace ECommerce.UseCases.Orders.Queries;
 

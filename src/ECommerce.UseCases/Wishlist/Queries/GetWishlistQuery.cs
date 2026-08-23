@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Wishlist.Responses;
+using ECommerce.UseCases.Wishlist.Responses;
 
 namespace ECommerce.UseCases.Wishlist.Queries;
 

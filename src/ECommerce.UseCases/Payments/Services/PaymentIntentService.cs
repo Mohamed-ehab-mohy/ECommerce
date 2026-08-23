@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Payments;
+using ECommerce.Domain.Payments;
 using ECommerce.UseCases.Payments.Ports;
 
 namespace ECommerce.UseCases.Payments.Services;

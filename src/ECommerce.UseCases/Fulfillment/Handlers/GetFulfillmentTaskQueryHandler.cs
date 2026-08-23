@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Fulfillment;
+using ECommerce.Domain.Fulfillment;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Fulfillment.Ports;
 using ECommerce.UseCases.Fulfillment.Queries;

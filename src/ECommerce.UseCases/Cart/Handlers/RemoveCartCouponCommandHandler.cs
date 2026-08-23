@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Cart;
+using ECommerce.Domain.Cart;
 using ECommerce.Domain.Pricing;
 using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Cart.Ports;

@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Common;
+using ECommerce.Domain.Common;
 using ECommerce.Domain.Events;
 
 namespace ECommerce.Domain.Reviews;

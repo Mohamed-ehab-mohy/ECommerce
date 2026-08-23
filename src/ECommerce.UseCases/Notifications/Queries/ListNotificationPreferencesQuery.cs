@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Notifications.Responses;
+using ECommerce.UseCases.Notifications.Responses;
 
 namespace ECommerce.UseCases.Notifications.Queries;
 

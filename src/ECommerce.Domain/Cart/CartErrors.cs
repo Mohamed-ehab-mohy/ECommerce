@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Cart;
 
 public static class CartErrors

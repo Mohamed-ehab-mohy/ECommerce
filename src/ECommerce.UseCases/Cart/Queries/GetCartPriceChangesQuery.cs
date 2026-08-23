@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Cart.Responses;
+using ECommerce.UseCases.Cart.Responses;
 
 namespace ECommerce.UseCases.Cart.Queries;
 

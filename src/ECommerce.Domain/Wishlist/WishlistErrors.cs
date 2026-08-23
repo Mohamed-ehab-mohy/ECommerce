@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Wishlist;
 
 public static class WishlistErrors

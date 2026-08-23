@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UseCases.Common;
 
 public sealed record OperationError(

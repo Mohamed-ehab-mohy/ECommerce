@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Reviews;
 
 public static class ProductReviewErrors

@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Exceptions;
+using ECommerce.Domain.Exceptions;
 
 namespace ECommerce.UnitTests;
 

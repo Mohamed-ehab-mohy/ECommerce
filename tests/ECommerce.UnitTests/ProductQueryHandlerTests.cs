@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Catalog;
+using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Catalog.Handlers;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Pricing;

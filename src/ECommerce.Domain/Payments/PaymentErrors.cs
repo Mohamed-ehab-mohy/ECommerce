@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Payments;
 
 public static class PaymentErrors

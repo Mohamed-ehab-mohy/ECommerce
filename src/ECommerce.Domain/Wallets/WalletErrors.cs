@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Wallets;
 
 public static class WalletErrors

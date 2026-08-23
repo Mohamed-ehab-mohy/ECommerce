@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Shared.Primitives;
 
 public sealed class Result

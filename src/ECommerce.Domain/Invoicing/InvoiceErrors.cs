@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Invoicing;
 
 public static class InvoiceErrors

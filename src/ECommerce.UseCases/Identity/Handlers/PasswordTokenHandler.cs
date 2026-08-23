@@ -1,4 +1,4 @@
-﻿using ECommerce.UseCases.Identity.Commands;
+using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
 
 namespace ECommerce.UseCases.Identity.Handlers;

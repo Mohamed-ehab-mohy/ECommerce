@@ -1,4 +1,4 @@
-﻿using ECommerce.Shared.Authorization;
+using ECommerce.Shared.Authorization;
 using ECommerce.UseCases.Common;
 
 namespace ECommerce.UseCases.Inventory.Commands;

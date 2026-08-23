@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Exceptions;
 
 public abstract class DomainException : Exception

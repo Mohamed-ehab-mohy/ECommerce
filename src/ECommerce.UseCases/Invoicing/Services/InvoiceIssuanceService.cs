@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Invoicing;
 using ECommerce.Domain.Orders;
 using ECommerce.UseCases.Common;

@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Reporting;
 
 public static class ExportErrors

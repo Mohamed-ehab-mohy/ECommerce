@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ECommerce.Domain.Reporting;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Reports.Commands;

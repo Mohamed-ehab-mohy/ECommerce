@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.UnitTests;
 
 public sealed class ResultTests

@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Events;
+using ECommerce.Domain.Events;
 using ECommerce.Domain.Identity;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;

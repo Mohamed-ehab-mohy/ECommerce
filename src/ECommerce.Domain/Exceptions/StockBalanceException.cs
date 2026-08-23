@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Inventory;
+using ECommerce.Domain.Inventory;
 
 namespace ECommerce.Domain.Exceptions;
 

@@ -1,4 +1,4 @@
-﻿
+
 namespace ECommerce.Domain.Orders;
 
 public static class CheckoutErrors
