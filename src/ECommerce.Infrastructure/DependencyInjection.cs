@@ -288,7 +288,14 @@ public static class DependencyInjection
 
         if (paymentOptions.Stripe.Enabled && !string.IsNullOrWhiteSpace(paymentOptions.Stripe.SecretKey))
         {
-            services.AddSingleton<IPaymentProvider>(_ => new StripePaymentProvider(paymentOptions.Stripe.SecretKey));
+            services.AddHttpClient("Stripe")
+                    .AddStandardResilienceHandler();
+
+            services.AddSingleton<IPaymentProvider>(sp => 
+            {
+                var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                return new StripePaymentProvider(paymentOptions.Stripe.SecretKey, httpClientFactory);
+            });
         }
         
         services.AddScoped<IPaymentProvider, ECommerce.Infrastructure.Wallets.WalletPaymentProvider>();

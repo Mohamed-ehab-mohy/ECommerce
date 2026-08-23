@@ -3,9 +3,11 @@ using Stripe;
 
 namespace ECommerce.Infrastructure.Payments;
 
-public sealed class StripePaymentProvider(string secretKey) : IPaymentProvider
+public sealed class StripePaymentProvider(string secretKey, IHttpClientFactory httpClientFactory) : IPaymentProvider
 {
-    private readonly IStripeClient _client = new StripeClient(apiKey: secretKey);
+    private readonly IStripeClient _client = new StripeClient(
+        apiKey: secretKey,
+        httpClient: new Stripe.SystemNetHttpClient(httpClientFactory.CreateClient("Stripe")));
 
     public string Key => "stripe";
 
