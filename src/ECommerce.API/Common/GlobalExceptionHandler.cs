@@ -12,6 +12,23 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     {
         logger.LogError(exception, "Unhandled exception for {Method} {Path}", httpContext.Request.Method, httpContext.Request.Path);
 
+        if (exception is ECommerce.UseCases.Common.Exceptions.ValidationException validationException)
+        {
+            var validationProblem = new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation failed",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Detail = validationException.Message
+            };
+            
+            validationProblem.Extensions.Add("errors", validationException.Errors);
+            
+            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await httpContext.Response.WriteAsJsonAsync(validationProblem, cancellationToken);
+            return true;
+        }
+
         var problem = new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,

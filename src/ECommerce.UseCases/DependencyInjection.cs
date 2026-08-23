@@ -5,6 +5,7 @@ using ECommerce.UseCases.Cart.Services;
 using ECommerce.UseCases.Catalog.Services;
 using ECommerce.UseCases.Checkout.Services;
 using ECommerce.UseCases.Common;
+using ECommerce.UseCases.Common.Behaviors;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Events;
 using ECommerce.UseCases.Invoicing.Services;
@@ -23,6 +24,9 @@ public static class DependencyInjection
         services.AddMediatR(configuration =>
         {
             configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            configuration.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(CachingBehavior<,>));
             configuration.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
         });
 
