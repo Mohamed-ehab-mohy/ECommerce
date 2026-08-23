@@ -1321,6 +1321,7 @@
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
           "Hangfire.AspNetCore": "[1.8.24, )",
           "Hangfire.PostgreSql": "[1.21.1, )",
+          "HotChocolate.Data.EntityFramework": "[16.6.1, )",
           "MailKit": "[4.17.0, )",
           "MassTransit.RabbitMQ": "[8.5.10, )",
           "Microsoft.Data.SqlClient": "[7.0.2, )",

@@ -5,7 +5,7 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
 
-namespace ECommerce.API.GraphQL;
+namespace ECommerce.Infrastructure.GraphQL;
 
 public class ProductQuery
 {

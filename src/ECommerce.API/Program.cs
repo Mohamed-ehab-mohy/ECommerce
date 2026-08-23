@@ -1,6 +1,6 @@
 using ECommerce.API;
 using ECommerce.API.Common;
-using ECommerce.API.GraphQL;
+using ECommerce.Infrastructure.GraphQL;
 using ECommerce.API.Grpc;
 using ECommerce.API.Hubs;
 using ECommerce.API.Jobs;
