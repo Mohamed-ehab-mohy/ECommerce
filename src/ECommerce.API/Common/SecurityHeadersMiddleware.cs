@@ -13,13 +13,19 @@ public static class SecurityHeadersExtensions
             headers["X-XSS-Protection"] = "0";
             headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
             headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
-            headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
+            var isUiPath = context.Request.Path.StartsWithSegments("/swagger") || 
+                           context.Request.Path.StartsWithSegments("/hangfire") ||
+                           context.Request.Path.StartsWithSegments("/graphql");
 
-            if (!context.Request.Path.StartsWithSegments("/hangfire") &&
-                !context.Request.Path.StartsWithSegments("/swagger"))
+            if (!isUiPath)
             {
+                headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
                 headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
                 headers["Pragma"] = "no-cache";
+            }
+            else
+            {
+                headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ws: wss:;";
             }
 
             await next();
