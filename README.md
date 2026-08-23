@@ -21,6 +21,7 @@ A production-grade, highly scalable e-commerce backend system built with **.NET 
 
 This system strictly adheres to the following architectural principles and patterns to ensure high maintainability, testability, and scalability:
 
+- **Multi-Tenancy (SaaS Ready):** Designed as a Shared Database, Shared Schema architecture. Every core entity implements a `TenantId` discriminator. Entity Framework Core Global Query Filters are applied automatically by the `ITenantService` to guarantee strict data isolation across different tenants seamlessly.
 - **Clean Architecture (Onion Architecture):** Strict separation of concerns divided into Domain, Use Cases (Application), Infrastructure, and API Presentation layers. Dependencies point inwards.
 - **Domain-Driven Design (DDD):** Rich, encapsulated domain models utilizing Aggregate Roots, Value Objects, Entities, and Domain Events to represent complex business logic.
 - **CQRS (Command Query Responsibility Segregation):** Mediated via MediatR. Write operations (Commands) are fully separated from Read operations (Queries), allowing for independent scaling and optimization.
@@ -30,6 +31,62 @@ This system strictly adheres to the following architectural principles and patte
 - **Optimistic Concurrency Control:** Implemented via Entity Framework Core `RowVersion` tokens to prevent race conditions during high-frequency wallet deposits/withdrawals and inventory decrements.
 - **Distributed Locking:** Utilizes Redis distributed locks (RedLock algorithm) to serialize access to highly contested resources (e.g., reserving stock for a specific product variant).
 - **Soft Deletion Mechanism:** Global EF Core query filters and interceptors ensure records are never hard-deleted, maintaining referential integrity and audit trails.
+
+---
+
+## Project Structure
+
+The project follows a standard Clean Architecture folder structure:
+
+```text
+backend/
+├── src/
+│   ├── ECommerce.Domain/          # Enterprise business rules (Entities, Value Objects, Domain Events)
+│   ├── ECommerce.UseCases/        # Application business rules (CQRS Handlers, Validation, Ports)
+│   ├── ECommerce.Infrastructure/  # Frameworks & Drivers (EF Core, RabbitMQ, Redis, Background Jobs)
+│   ├── ECommerce.Gateway/         # YARP Reverse Proxy for advanced routing
+│   ├── ECommerce.Shared/          # Cross-cutting concerns (Exceptions, Constants, Result pattern)
+│   └── ECommerce.API/             # Entry point, Controllers, Middlewares, GraphQL endpoints
+├── tests/
+│   ├── ECommerce.UnitTests/         # Isolated logic tests
+│   ├── ECommerce.IntegrationTests/  # DB/Broker tests using TestContainers
+│   └── ECommerce.ArchitectureTests/ # Validates dependency rules (NetArchTest)
+├── perf/                            # k6 Load Testing scripts
+└── docker-compose.yml               # Local infrastructure orchestration
+```
+
+---
+
+## Database Design & Entity Relationship Diagram (ERD)
+
+The relational database is carefully normalized while maintaining performance read-models. Below is a high-level representation of the core Schema and Relationships. Note the implicit `TenantId` across all primary aggregates.
+
+```mermaid
+erDiagram
+    TENANT ||--o{ USER : manages
+    USER ||--o{ WALLET : owns
+    WALLET ||--o{ WALLET_TRANSACTION : contains
+    
+    TENANT ||--o{ CATEGORY : manages
+    TENANT ||--o{ PRODUCT : manages
+    CATEGORY ||--o{ PRODUCT : categorizes
+    
+    PRODUCT ||--o{ PRODUCT_VARIANT : has
+    PRODUCT ||--o{ PRODUCT_REVIEW : receives
+    PRODUCT_VARIANT ||--o{ STOCK_ITEM : tracked_by
+    
+    USER ||--o{ CART : maintains
+    CART ||--o{ CART_ITEM : contains
+    PRODUCT_VARIANT ||--o{ CART_ITEM : added_to
+    
+    USER ||--o{ ORDER : places
+    ORDER ||--o{ ORDER_ITEM : contains
+    ORDER ||--o{ PAYMENT : requires
+    PAYMENT ||--o| REFUND : may_have
+    
+    ORDER ||--o{ SHIPMENT : split_into
+    ORDER ||--o{ FULFILLMENT_TASK : generates
+```
 
 ---
 
@@ -55,6 +112,7 @@ This system strictly adheres to the following architectural principles and patte
 ## Comprehensive Feature Set
 
 ### 1. Identity, Security & Access Management
+- **Multi-Tenancy:** Secure data isolation using Entity Framework Core Global Query Filters bound to `TenantId`.
 - **JWT Bearer Authentication:** Secure stateless authentication.
 - **Role-Based Access Control (RBAC):** Claims-based authorization policies for separating Customers and Administrators.
 - **Password Security:** Hashes utilizing Argon2id / PBKDF2.
