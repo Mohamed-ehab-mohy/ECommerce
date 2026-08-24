@@ -134,17 +134,21 @@ erDiagram
 - **Rate Limiting:** Global and endpoint-specific rate limiting to prevent Brute-Force and DDoS attacks using ASP.NET Core RateLimiter.
 - **Content-Security-Policy (CSP):** Hardened middleware rejecting inline scripts, cross-origin framing, and enforcing secure resource loading.
 
-### 2. Catalog & Search Module
+### 2. Catalog, Search & Localization
 - Comprehensive management of Products, Brands, Categories, and Variants.
+- **Localization:** Native support for Product Translations allowing multi-language product names and descriptions.
 - **REST & GraphQL:** Dual API exposure. REST for standard management, and GraphQL for highly flexible, client-driven product queries, filtering, and pagination.
 - **Caching Strategy:** Redis-backed caching for frequently accessed catalog read-models.
 
-### 3. Shopping Cart & Checkout Workflow
+### 3. Shopping Cart, Wishlist & Checkout Workflow
 - **Persistent Distributed Cart:** User shopping carts are stored in Redis for low-latency read/write access.
+- **Wishlist:** Users can save products for later via the Wishlists module.
 - **Complex Checkout Pipeline:** An orchestrated flow that handles validation, stock reservation, price calculation, payment execution, and order generation atomically.
 
-### 4. Digital Wallets & Payments
+### 4. Digital Wallets, Payments & Promotions
 - **Wallet System:** Users possess internal digital wallets allowing deposits, withdrawals, and direct transfers.
+- **External Payment Gateways:** Real integration with Stripe for processing credit card payments.
+- **Coupons & Promotions:** Advanced promotional engine for discounts and coupon codes.
 - **Concurrency Protection:** EF Core Concurrency Tokens ensure that simultaneous transactions cannot overdraw a wallet or corrupt the ledger.
 
 ### 5. Inventory & Warehouse Management
@@ -152,13 +156,23 @@ erDiagram
 - **Distributed Locking:** Redis locks ensure that if two users attempt to buy the last item simultaneously, only one succeeds.
 - Stock replenishment and low-stock alerts.
 
-### 6. Order Management & Real-Time Tracking
+### 6. Order Management, Shipping & Notifications
 - Comprehensive order state machine (Pending -> Payment Verified -> Processing -> Shipped -> Delivered).
+- **Shipping Integrations:** Integrations with Aramex and DHL for real-time shipment handling.
+- **Notifications Engine:** Integration with SendGrid (Email) and Twilio (SMS) for customer notifications on order state changes.
 - **SignalR Integration:** WebSockets push live order status updates directly to the frontend clients without requiring polling.
 
 ### 7. Background Processing & Scheduling
 - **Hangfire Jobs:** Recurring and fire-and-forget jobs for tasks such as cleaning up abandoned carts, generating daily sales reports, and sending asynchronous email notifications.
 - **Outbox Sweeper:** A hosted background service that polls the `OutboxMessages` table and publishes pending events to RabbitMQ.
+
+---
+
+## Roadmap & Upcoming Features
+
+While the backend infrastructure is extremely robust, the following components are scheduled for future implementation to complete the ecosystem:
+
+- **CMS (Content Management System):** Backend module for managing Home Page Banners, dynamic layouts, and static pages (About Us, Terms & Conditions).
 
 ---
 
