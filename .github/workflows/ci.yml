@@ -127,7 +127,11 @@ jobs:
           echo "Waiting for Postgres..."
           timeout 60 bash -c 'until docker compose -f backend/docker-compose.yml exec -T postgres pg_isready -U ecommerce -d ecommerce >/dev/null 2>&1; do sleep 2; done'
           echo "Waiting for Redis..."
-          timeout 30 bash -c 'until docker compose -f backend/docker-compose.yml exec -T redis redis-cli ping >/dev/null 2>&1; do sleep 2; done'
+          if ! timeout 60 bash -c 'until docker compose -f backend/docker-compose.yml exec -T redis redis-cli ping >/dev/null 2>&1; do sleep 2; done'; then
+            echo "Redis failed to start. Dumping logs:"
+            docker compose -f backend/docker-compose.yml logs redis
+            exit 1
+          fi
           echo "Waiting for RabbitMQ..."
           timeout 60 bash -c 'until docker compose -f backend/docker-compose.yml exec -T rabbitmq rabbitmq-diagnostics -q ping >/dev/null 2>&1; do sleep 2; done'
 
