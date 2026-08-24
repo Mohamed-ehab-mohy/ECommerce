@@ -144,6 +144,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<ECommerce.Domain.Wallets.LoyaltyTransaction> LoyaltyTransactions => Set<ECommerce.Domain.Wallets.LoyaltyTransaction>();
 
+    public DbSet<ECommerce.Domain.Tenants.Tenant> Tenants => Set<ECommerce.Domain.Tenants.Tenant>();
+
+    public DbSet<ECommerce.Domain.Tenants.TenantSettings> TenantSettings => Set<ECommerce.Domain.Tenants.TenantSettings>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pg_trgm");

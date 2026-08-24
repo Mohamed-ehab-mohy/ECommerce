@@ -21,6 +21,25 @@ public sealed class TenantMiddleware(RequestDelegate next)
         {
             tenantId = claimTenantId;
         }
+        else
+        {
+            // Resolve by Hostname
+            var host = context.Request.Host.Host.ToLowerInvariant();
+            if (!string.IsNullOrEmpty(host) && host != "localhost" && host != "127.0.0.1")
+            {
+                // We need to resolve ECommerceDbContext from DI to check domains
+                var dbContext = context.RequestServices.GetService<ECommerce.Infrastructure.Data.ECommerceDbContext>();
+                if (dbContext != null)
+                {
+                    // Cache should ideally be used here in production to avoid DB hits on every request
+                    var tenant = dbContext.Tenants.FirstOrDefault(t => t.CustomDomain == host || host.StartsWith(t.Subdomain + "."));
+                    if (tenant != null)
+                    {
+                        tenantId = tenant.Id;
+                    }
+                }
+            }
+        }
 
         if (tenantId.HasValue)
         {
