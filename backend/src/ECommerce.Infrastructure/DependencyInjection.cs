@@ -173,6 +173,7 @@ public static class DependencyInjection
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         services.AddScoped<ICouponRepository, CouponRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();
+        services.AddScoped<ECommerce.UseCases.Content.Ports.IContentRepository, ECommerce.Infrastructure.Content.ContentRepository>();
         services.AddScoped<IFulfillmentTaskRepository, FulfillmentTaskRepository>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
         services.AddSingleton<IShippingRateCache, InMemoryShippingRateCache>();
