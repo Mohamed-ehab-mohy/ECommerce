@@ -22,8 +22,8 @@ public sealed class TenantsController(ISender sender) : ControllerBase
             request.CustomDomain);
 
         var result = await sender.Send(command, cancellationToken);
-        return result.IsSuccess 
-            ? Created($"/api/v1/tenants/{result.Value.Id}", result.Value) 
+        return result.IsSuccess
+            ? Created($"/api/v1/tenants/{result.Value.Id}", result.Value)
             : BadRequest(result.Error);
     }
 }

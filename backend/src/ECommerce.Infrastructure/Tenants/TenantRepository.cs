@@ -32,7 +32,7 @@ internal sealed class TenantRepository(ECommerceDbContext dbContext) : ITenantRe
         var tenant = await dbContext.Tenants
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(t => t.CustomDomain == domain || domain.StartsWith(t.Subdomain + "."), cancellationToken);
-        
+
         return tenant?.Id;
     }
 }
