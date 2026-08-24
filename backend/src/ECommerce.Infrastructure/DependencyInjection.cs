@@ -261,6 +261,7 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory, DapperReadModelStore>();
         services.AddSingleton<IReadModelStore, DapperReadModelStore>();
         services.AddScoped<ECommerce.UseCases.Wallets.Ports.IWalletRepository, ECommerce.Infrastructure.Wallets.WalletRepository>();
+        services.AddScoped<ECommerce.UseCases.Tenants.Ports.ITenantRepository, ECommerce.Infrastructure.Tenants.TenantRepository>();
         services.AddScoped<IPartnerRepository, PostgresPartnerRepository>();
         services.AddScoped<IPartnerAuthService, PostgresPartnerAuthService>();
         services.AddScoped<IRecommendationService, CollaborativeFilteringRecommendationService>();
