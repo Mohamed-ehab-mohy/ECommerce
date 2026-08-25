@@ -55,4 +55,9 @@ public sealed class TenantSubscription : BaseEntity<Guid>
         return Status == SubscriptionStatus.Active || 
                (Status == SubscriptionStatus.Trial && CurrentPeriodEnd >= DateTime.UtcNow);
     }
+
+    public void ChangePlan(Guid planId)
+    {
+        PlanId = planId;
+    }
 }

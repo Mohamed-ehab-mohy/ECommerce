@@ -42,9 +42,9 @@ public sealed class Tenant : BaseEntity<Guid>
         Status = TenantStatus.Suspended;
     }
 
-    public void SetCustomDomain(string domain)
+    public void SetCustomDomain(string? domain)
     {
-        CustomDomain = domain.ToLowerInvariant();
+        CustomDomain = domain?.ToLowerInvariant();
     }
 
     public void SetSettings(TenantSettings settings)

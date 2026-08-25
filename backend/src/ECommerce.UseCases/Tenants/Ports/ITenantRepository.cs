@@ -8,6 +8,7 @@ public interface ITenantRepository
     Task<Tenant?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Tenant>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<ECommerce.Domain.Tenants.SubscriptionPlan?> GetSubscriptionPlanAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task<ECommerce.Domain.Tenants.SubscriptionPlan?> GetPlanByIdAsync(Guid planId, CancellationToken cancellationToken = default);
     Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default);
     Task<bool> IsCustomDomainUniqueAsync(string customDomain, CancellationToken cancellationToken = default);
     Task<Guid?> GetIdByDomainAsync(string domain, CancellationToken cancellationToken = default);

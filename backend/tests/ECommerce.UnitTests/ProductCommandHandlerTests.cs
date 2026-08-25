@@ -29,6 +29,7 @@ public sealed class ProductCommandHandlerTests
         public Task<ECommerce.Domain.Tenants.Tenant?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.Tenant?>(null);
         public Task<IEnumerable<ECommerce.Domain.Tenants.Tenant>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IEnumerable<ECommerce.Domain.Tenants.Tenant>>(Array.Empty<ECommerce.Domain.Tenants.Tenant>());
         public Task<ECommerce.Domain.Tenants.SubscriptionPlan?> GetSubscriptionPlanAsync(Guid tenantId, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.SubscriptionPlan?>(null);
+        public Task<ECommerce.Domain.Tenants.SubscriptionPlan?> GetPlanByIdAsync(Guid planId, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.SubscriptionPlan?>(null);
         public Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> IsCustomDomainUniqueAsync(string customDomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<Guid?> GetIdByDomainAsync(string domain, CancellationToken cancellationToken = default) => Task.FromResult<Guid?>(null);
