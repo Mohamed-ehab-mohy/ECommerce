@@ -35,7 +35,7 @@ public sealed class CheckTrialExpirationsJob(
         foreach (var subscription in expiredTrials)
         {
             subscription.Cancel();
-            
+
             var tenant = await dbContext.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.Id == subscription.TenantId, cancellationToken);
             if (tenant != null)
             {

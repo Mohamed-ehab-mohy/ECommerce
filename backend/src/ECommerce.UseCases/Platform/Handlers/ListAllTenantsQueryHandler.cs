@@ -16,7 +16,7 @@ internal sealed class ListAllTenantsQueryHandler(ITenantRepository tenantReposit
     public async Task<Result<IEnumerable<TenantResponse>>> Handle(ListAllTenantsQuery request, CancellationToken cancellationToken)
     {
         var tenants = await tenantRepository.GetAllAsync(cancellationToken);
-        
+
         var responses = tenants.Select(t => new TenantResponse(
             t.Id,
             t.Name,

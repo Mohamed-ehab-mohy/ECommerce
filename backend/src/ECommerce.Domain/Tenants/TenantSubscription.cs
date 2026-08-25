@@ -15,7 +15,7 @@ public sealed class TenantSubscription : BaseEntity<Guid>
 {
     public Guid PlanId { get; private set; }
     public SubscriptionPlan Plan { get; private set; } = null!;
-    
+
     public SubscriptionStatus Status { get; private set; }
     public DateTime? CurrentPeriodEnd { get; private set; }
     public string? StripeSubscriptionId { get; private set; }
@@ -52,7 +52,7 @@ public sealed class TenantSubscription : BaseEntity<Guid>
 
     public bool IsActiveOrTrial()
     {
-        return Status == SubscriptionStatus.Active || 
+        return Status == SubscriptionStatus.Active ||
                (Status == SubscriptionStatus.Trial && CurrentPeriodEnd >= DateTime.UtcNow);
     }
 

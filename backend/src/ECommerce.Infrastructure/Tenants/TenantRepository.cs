@@ -32,7 +32,7 @@ internal sealed class TenantRepository(ECommerceDbContext dbContext) : ITenantRe
             .Include(ts => ts.Plan)
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(ts => ts.TenantId == tenantId, cancellationToken);
-            
+
         return subscription?.Plan;
     }
 

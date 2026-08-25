@@ -18,14 +18,14 @@ public sealed class TenantSubscriptionWebhookController(ISender sender) : Contro
         // In a real application, we read the body, verify Stripe signature using StripeConfiguration.WebhookSecret,
         // and parse the StripeEvent.
         // Here, we provide the scaffold for processing subscription updates.
-        
+
         var mockStripeEvent = new { Type = "customer.subscription.updated" }; // Simulated parsed event
 
         if (mockStripeEvent.Type is "customer.subscription.updated" or "customer.subscription.deleted")
         {
             // Map Stripe payload to command
             var command = new HandleSubscriptionUpdatedCommand(
-                StripeCustomerId: "cus_mock", 
+                StripeCustomerId: "cus_mock",
                 StripeSubscriptionId: "sub_mock",
                 Status: "active",
                 CurrentPeriodEndEpoch: 1672531199
