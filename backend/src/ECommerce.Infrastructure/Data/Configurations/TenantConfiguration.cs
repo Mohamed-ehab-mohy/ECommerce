@@ -22,5 +22,10 @@ internal sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .WithOne()
             .HasForeignKey<TenantSettings>(x => x.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Subscription)
+            .WithOne()
+            .HasForeignKey<TenantSubscription>(x => x.TenantId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

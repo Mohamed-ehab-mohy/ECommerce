@@ -16,6 +16,7 @@ public sealed class Tenant : BaseEntity<Guid>
     public string? CustomDomain { get; private set; }
     public TenantStatus Status { get; private set; }
     public TenantSettings Settings { get; private set; } = null!;
+    public TenantSubscription? Subscription { get; private set; }
 
     private Tenant() // For EF Core
     {
@@ -49,5 +50,10 @@ public sealed class Tenant : BaseEntity<Guid>
     public void SetSettings(TenantSettings settings)
     {
         Settings = settings;
+    }
+
+    public void SetSubscription(TenantSubscription subscription)
+    {
+        Subscription = subscription;
     }
 }

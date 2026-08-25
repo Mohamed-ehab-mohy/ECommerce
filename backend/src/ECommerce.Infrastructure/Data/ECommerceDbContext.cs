@@ -148,6 +148,10 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
     public DbSet<ECommerce.Domain.Tenants.TenantSettings> TenantSettings => Set<ECommerce.Domain.Tenants.TenantSettings>();
 
+    public DbSet<ECommerce.Domain.Tenants.TenantSubscription> TenantSubscriptions => Set<ECommerce.Domain.Tenants.TenantSubscription>();
+
+    public DbSet<ECommerce.Domain.Tenants.SubscriptionPlan> SubscriptionPlans => Set<ECommerce.Domain.Tenants.SubscriptionPlan>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("pg_trgm");
