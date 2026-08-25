@@ -19,7 +19,9 @@ public sealed class TenantsController(ISender sender) : ControllerBase
         var command = new CreateTenantCommand(
             request.Name,
             request.Subdomain,
-            request.CustomDomain);
+            request.CustomDomain,
+            request.AdminEmail,
+            request.AdminPassword);
 
         var result = await sender.Send(command, cancellationToken);
         return result.IsSuccess
@@ -31,4 +33,6 @@ public sealed class TenantsController(ISender sender) : ControllerBase
 public sealed record CreateTenantRequest(
     string Name,
     string Subdomain,
-    string? CustomDomain);
+    string? CustomDomain,
+    string AdminEmail,
+    string AdminPassword);

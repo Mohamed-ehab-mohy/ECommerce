@@ -7,4 +7,6 @@ namespace ECommerce.UseCases.Tenants.Commands;
 public sealed record CreateTenantCommand(
     string Name,
     string Subdomain,
-    string? CustomDomain) : IRequest<Result<TenantResponse>>;
+    string? CustomDomain,
+    string AdminEmail,
+    string AdminPassword) : IRequest<Result<TenantResponse>>;

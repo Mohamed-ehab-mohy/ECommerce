@@ -10,7 +10,9 @@ namespace ECommerce.UseCases.Tenants.Handlers;
 
 internal sealed class CreateTenantCommandHandler(
     ITenantRepository tenantRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ISender sender,
+    ITenantService tenantService)
     : IRequestHandler<CreateTenantCommand, Result<TenantResponse>>
 {
     public async Task<Result<TenantResponse>> Handle(CreateTenantCommand request, CancellationToken cancellationToken)
@@ -39,8 +41,39 @@ internal sealed class CreateTenantCommandHandler(
         var settings = new TenantSettings(tenant.Id);
         tenant.SetSettings(settings);
 
+        // Fetch or create a Free Trial Subscription Plan (Assuming one exists or we mock it for now)
+        // For SaaS MVP, we will just create a default plan here if needed, or query it.
+        // As a shortcut for now, we'll assume a PlanId.
+        var defaultPlanId = Guid.NewGuid(); // TODO: Fetch from Db
+        var subscription = new TenantSubscription(tenant.Id, defaultPlanId);
+        tenant.SetSubscription(subscription);
+
         await tenantRepository.AddAsync(tenant, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Auto-provision the tenant admin user
+        var previousTenant = tenantService.GetCurrentTenantId();
+        try
+        {
+            tenantService.SetCurrentTenantId(tenant.Id);
+            var registerResult = await sender.Send(new ECommerce.UseCases.Identity.Commands.RegisterCommand(
+                request.AdminEmail,
+                request.AdminPassword,
+                "Store Admin",
+                "en",
+                "USD"
+            ), cancellationToken);
+
+            if (registerResult.IsFailure)
+            {
+                // In a real system, you might compensate or return a partial success warning.
+                return Result<TenantResponse>.Failure(registerResult.Error);
+            }
+        }
+        finally
+        {
+            tenantService.SetCurrentTenantId(previousTenant);
+        }
 
         var response = new TenantResponse(
             tenant.Id,
