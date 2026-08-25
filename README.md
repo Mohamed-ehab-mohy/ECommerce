@@ -126,7 +126,13 @@ erDiagram
 
 ## Comprehensive Feature Set
 
-### 1. Identity, Security & Access Management
+### 1. SaaS & Platform Management (New)
+- **Tenant-Based Rate Limiting:** Prevents the "Noisy Neighbor" problem by enforcing API quotas based on the tenant's subscription plan.
+- **Automated Billing & Webhooks:** Integrated with Stripe Webhooks to automatically handle subscription upgrades, downgrades, and cancellations (`customer.subscription.updated`).
+- **Trial Management:** Automated background jobs via Hangfire that scan for expired trials and automatically suspend inactive tenants.
+- **Custom Domains & SSL:** Infrastructure ready with Traefik Docker Compose, allowing wildcard domain routing and automatic Let's Encrypt SSL provisioning for tenant custom domains.
+
+### 2. Identity, Security & Access Management
 - **Multi-Tenancy:** Secure data isolation using Entity Framework Core Global Query Filters bound to `TenantId`.
 - **JWT Bearer Authentication:** Secure stateless authentication.
 - **Role-Based Access Control (RBAC):** Claims-based authorization policies for separating Customers and Administrators.
