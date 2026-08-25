@@ -17,9 +17,29 @@ public sealed class ProductCommandHandlerTests
     private readonly ILocaleCatalog _locales = new DefaultLocaleCatalog();
     private readonly ICurrencyCatalog _currencies = new DefaultCurrencyCatalog();
 
+    private sealed class DummyTenantService : ECommerce.UseCases.Common.ITenantService
+    {
+        public Guid? GetCurrentTenantId() => null;
+        public void SetCurrentTenantId(Guid? tenantId) { }
+    }
+
+    private sealed class DummyTenantRepository : ECommerce.UseCases.Tenants.Ports.ITenantRepository
+    {
+        public Task AddAsync(ECommerce.Domain.Tenants.Tenant tenant, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<ECommerce.Domain.Tenants.Tenant?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.Tenant?>(null);
+        public Task<IEnumerable<ECommerce.Domain.Tenants.Tenant>> GetAllAsync(CancellationToken cancellationToken = default) => Task.FromResult<IEnumerable<ECommerce.Domain.Tenants.Tenant>>(Array.Empty<ECommerce.Domain.Tenants.Tenant>());
+        public Task<ECommerce.Domain.Tenants.SubscriptionPlan?> GetSubscriptionPlanAsync(Guid tenantId, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.SubscriptionPlan?>(null);
+        public Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> IsCustomDomainUniqueAsync(string customDomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<Guid?> GetIdByDomainAsync(string domain, CancellationToken cancellationToken = default) => Task.FromResult<Guid?>(null);
+    }
+
+    private readonly DummyTenantService _tenantService = new();
+    private readonly DummyTenantRepository _tenantRepository = new();
+
     private CreateProductCommandHandler CreateHandler =>
         new(_products, _unitOfWork, _timeProvider, new CreateProductCommandValidator(_currencies, _locales),
-            new AuditLogWriter(_auditEntries, _auditContext));
+            new AuditLogWriter(_auditEntries, _auditContext), _tenantService, _tenantRepository);
 
     private UpdateProductCommandHandler UpdateHandler =>
         new(_products, _unitOfWork, _timeProvider, new UpdateProductCommandValidator(_currencies, _locales),

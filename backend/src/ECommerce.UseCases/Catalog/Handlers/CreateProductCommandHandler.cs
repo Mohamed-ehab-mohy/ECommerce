@@ -12,7 +12,9 @@ public sealed class CreateProductCommandHandler(
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
     IValidator<CreateProductCommand> validator,
-    IAuditLogWriter auditLogWriter) : IRequestHandler<CreateProductCommand, Result<Guid>>
+    IAuditLogWriter auditLogWriter,
+    ECommerce.UseCases.Common.ITenantService tenantService,
+    ECommerce.UseCases.Tenants.Ports.ITenantRepository tenantRepository) : IRequestHandler<CreateProductCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
@@ -20,6 +22,20 @@ public sealed class CreateProductCommandHandler(
         if (!validation.IsValid)
         {
             return validation.ToResult<Guid>();
+        }
+
+        var tenantId = tenantService.GetCurrentTenantId();
+        if (tenantId.HasValue)
+        {
+            var plan = await tenantRepository.GetSubscriptionPlanAsync(tenantId.Value, cancellationToken);
+            if (plan != null)
+            {
+                var currentCount = await products.CountAsync(cancellationToken);
+                if (currentCount >= plan.MaxProducts)
+                {
+                    return Result<Guid>.Failure(new Error("Subscription.LimitReached", "You have reached the maximum number of products allowed by your current subscription plan."));
+                }
+            }
         }
 
         var sku = request.Sku.Trim().ToUpperInvariant();

@@ -26,6 +26,16 @@ internal sealed class TenantRepository(ECommerceDbContext dbContext) : ITenantRe
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<SubscriptionPlan?> GetSubscriptionPlanAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var subscription = await dbContext.TenantSubscriptions
+            .Include(ts => ts.Plan)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(ts => ts.TenantId == tenantId, cancellationToken);
+            
+        return subscription?.Plan;
+    }
+
     public async Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default)
     {
         // Using IgnoreQueryFilters to ensure uniqueness across all tenants (even if global filter is somehow active)

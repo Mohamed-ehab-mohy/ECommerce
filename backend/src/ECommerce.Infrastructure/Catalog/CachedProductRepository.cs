@@ -132,6 +132,9 @@ public sealed class CachedProductRepository(
     public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>
         inner.SlugExistsAsync(slug, cancellationToken);
 
+    public Task<int> CountAsync(CancellationToken cancellationToken) =>
+        inner.CountAsync(cancellationToken);
+
     public async Task<IReadOnlyList<Product>> ListActiveAsync(
         int page,
         int pageSize,

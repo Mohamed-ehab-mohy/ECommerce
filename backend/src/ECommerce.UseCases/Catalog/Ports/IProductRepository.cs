@@ -22,5 +22,7 @@ public interface IProductRepository
 
     Task<int> CountActiveAsync(CancellationToken cancellationToken);
 
+    Task<int> CountAsync(CancellationToken cancellationToken);
+
     void Add(Product product);
 }

@@ -76,5 +76,8 @@ public sealed class ProductRepository(ECommerceDbContext dbContext) : IProductRe
             product => product.Status == ProductStatus.Active && !product.IsDeleted,
             cancellationToken);
 
+    public Task<int> CountAsync(CancellationToken cancellationToken) =>
+        dbContext.Set<Product>().CountAsync(cancellationToken);
+
     public void Add(Product product) => dbContext.Set<Product>().Add(product);
 }

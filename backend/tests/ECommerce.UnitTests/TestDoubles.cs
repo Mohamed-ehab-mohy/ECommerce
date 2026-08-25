@@ -139,6 +139,9 @@ internal sealed class FakeProductRepository : IProductRepository
         Task.FromResult(Products.Count(
             product => product.Status == ProductStatus.Active && !product.IsDeleted));
 
+    public Task<int> CountAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Products.Count);
+
     public void Add(Product product) => Products.Add(product);
 }
 
