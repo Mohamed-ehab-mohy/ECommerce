@@ -10,6 +10,7 @@ You can explore and test all available endpoints using **Swagger UI**:
 - `Cart`: `/api/v1/carts/me`
 - `Checkout & Orders`: `/api/v1/checkouts`, `/api/v1/orders`
 - `Wallets`: `/api/v1/wallets/me`
+- `SaaS/Tenants`: `/api/v1/billing/summary`, `/api/v1/billing/change-plan`, `/api/v1/webhooks/stripe`
 
 ## GraphQL API
 For complex queries (specifically for the Catalog), you can use the GraphQL endpoint:

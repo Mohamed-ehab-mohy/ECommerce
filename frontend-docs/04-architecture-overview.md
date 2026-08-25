@@ -24,4 +24,11 @@ Certain endpoints (like Payments or Order Placement) are idempotent. If the fron
 Some actions (like sending emails or publishing events) don't happen immediately during the HTTP request. They are saved to an "Outbox" and processed in the background. If you place an order, the immediate HTTP response is just an acknowledgement, while the actual payment processing might happen seconds later. This is why you should listen to **SignalR WebSockets** (see `03-real-time-events.md`) to get the final status.
 
 ### 4. Rate Limiting
-The API enforces rate limits to prevent abuse. If you send too many requests, you will receive a `429 Too Many Requests` response. Ensure your frontend handles this gracefully by implementing retry logic with exponential backoff.
+The API enforces rate limits to prevent abuse (e.g., 50 requests per 60 seconds). Crucially, these limits are **Tenant-Based**; they are tied to the active subscription plan of the tenant. If you send too many requests, you will receive a `429 Too Many Requests` response. Ensure your frontend handles this gracefully by implementing retry logic with exponential backoff.
+
+### 5. SaaS & Multi-Tenancy
+This application acts as a SaaS platform. All data is scoped to a specific `TenantId`. As a frontend developer:
+- Some API endpoints may require you to pass a custom header or domain to identify the tenant.
+- Billing is handled via Stripe Webhooks natively in the backend (`/api/v1/webhooks/stripe`).
+- Trial expirations and plan downgrades happen automatically in the background using Hangfire.
+- SSL and custom domains are handled by the infrastructure via Traefik.
