@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik_proxy
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@your-saas.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+
+  ecommerce-api:
+    build: 
+      context: .
+      dockerfile: backend/Dockerfile
+    labels:
+      - "traefik.enable=true"
+      # Match all incoming domains (both your main platform and custom tenant domains)
+      - "traefik.http.routers.ecommerce.rule=HostRegexp(\"{host:.+}\")"
+      - "traefik.http.routers.ecommerce.entrypoints=websecure"
+      - "traefik.http.routers.ecommerce.tls.certresolver=myresolver"
+      # Redirect HTTP to HTTPS
+      - "traefik.http.routers.ecommerce-http.rule=HostRegexp(\"{host:.+}\")"
+      - "traefik.http.routers.ecommerce-http.entrypoints=web"
+      - "traefik.http.routers.ecommerce-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+volumes:
+  letsencrypt:

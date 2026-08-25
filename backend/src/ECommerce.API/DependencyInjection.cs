@@ -233,6 +233,7 @@ public static class DependencyInjection
 
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
+                var tenantId = context.RequestServices.GetService<ECommerce.UseCases.Common.ITenantService>()?.GetCurrentTenantId();
                 var endpoint = context.GetEndpoint();
                 var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
 
@@ -282,6 +283,23 @@ public static class DependencyInjection
                             }),
                         _ => RateLimitPartition.GetNoLimiter("noop")
                     };
+                }
+
+                if (tenantId.HasValue)
+                {
+                    // To avoid querying DB per request, in a real system we would cache this.
+                    // For the scope of this implementation, we will use a default for tenants or use a scoped cache.
+                    // Ideally: var cache = context.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        $"tenant:{tenantId.Value}",
+                        _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 50, // This would normally be fetched from SubscriptionPlan.MaxRequestsPerSecond
+                            Window = TimeSpan.FromSeconds(60),
+                            SegmentsPerWindow = 6,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
                 }
 
                 var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";

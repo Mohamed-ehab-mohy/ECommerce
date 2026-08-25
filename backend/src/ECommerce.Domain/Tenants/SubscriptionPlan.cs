@@ -11,6 +11,7 @@ public sealed class SubscriptionPlan : BaseEntity<Guid>
     public int MaxUsers { get; private set; }
     public bool SupportsCustomDomain { get; private set; }
     public bool AdvancedAnalytics { get; private set; }
+    public int MaxRequestsPerSecond { get; private set; }
     public bool IsActive { get; private set; }
 
     private SubscriptionPlan()
@@ -18,7 +19,7 @@ public sealed class SubscriptionPlan : BaseEntity<Guid>
         Name = null!;
     }
 
-    public SubscriptionPlan(string name, decimal monthlyPrice, int maxProducts, int maxUsers, bool supportsCustomDomain, bool advancedAnalytics)
+    public SubscriptionPlan(string name, decimal monthlyPrice, int maxProducts, int maxUsers, bool supportsCustomDomain, bool advancedAnalytics, int maxRequestsPerSecond = 50)
     {
         Id = Guid.NewGuid();
         Name = name;
@@ -27,6 +28,7 @@ public sealed class SubscriptionPlan : BaseEntity<Guid>
         MaxUsers = maxUsers;
         SupportsCustomDomain = supportsCustomDomain;
         AdvancedAnalytics = advancedAnalytics;
+        MaxRequestsPerSecond = maxRequestsPerSecond;
         IsActive = true;
     }
 

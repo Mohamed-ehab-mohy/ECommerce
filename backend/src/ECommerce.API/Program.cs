@@ -193,6 +193,11 @@ if (!builder.Environment.IsDevelopment() && !hangfireDisabled)
         "payment-timeout",
         job => job.ExecuteAsync(CancellationToken.None),
         PaymentTimeoutJob.Schedule);
+
+    RecurringJob.AddOrUpdate<ECommerce.Infrastructure.Tenants.Jobs.CheckTrialExpirationsJob>(
+        "check-trial-expirations",
+        job => job.ExecuteAsync(CancellationToken.None),
+        ECommerce.Infrastructure.Tenants.Jobs.CheckTrialExpirationsJob.Schedule);
 }
 
 app.MapGrpcService<OrderStatusGrpcService>();
