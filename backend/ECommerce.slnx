@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/ECommerce.API/ECommerce.API.csproj" />
+    <Project Path="src/ECommerce.DataSeeder/ECommerce.DataSeeder.csproj" />
     <Project Path="src/ECommerce.Domain/ECommerce.Domain.csproj" />
     <Project Path="src/ECommerce.Gateway/ECommerce.Gateway.csproj" />
     <Project Path="src/ECommerce.Infrastructure/ECommerce.Infrastructure.csproj" />

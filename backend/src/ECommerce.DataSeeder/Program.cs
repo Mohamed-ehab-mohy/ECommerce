@@ -30,7 +30,7 @@ internal class Program
             .AddEnvironmentVariables()
             .Build();
 
-        var connectionString = configuration.GetConnectionString("Postgres") 
+        var connectionString = configuration.GetConnectionString("Postgres")
             ?? "Host=127.0.0.1;Port=5433;Database=ecommerce;Username=ecommerce;Password=ecommerce_dev_pw";
 
         Console.WriteLine($"Using Database Connection: {connectionString}");
@@ -66,14 +66,14 @@ internal class Program
         }
 
         Console.WriteLine("Generating Mock Data using Bogus...");
-        
+
         var utcNow = DateTime.UtcNow;
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("Password123!", 12);
 
         // 1. Tenants
         var tenantFaker = new Faker<Tenant>()
             .CustomInstantiator(f => new Tenant(f.Company.CompanyName(), f.Internet.DomainName()));
-            
+
         var tenants = tenantFaker.Generate(3);
         await context.Tenants.AddRangeAsync(tenants);
         await context.SaveChangesAsync();
@@ -102,7 +102,7 @@ internal class Program
                     utcNow.AddDays(1),
                     "fake-token"
                 ));
-            
+
             var customersList = customerFaker.Generate(10);
             foreach (var c in customersList)
             {
@@ -112,10 +112,10 @@ internal class Program
             await context.SaveChangesAsync();
 
             // Link Users to Customer Role
-            foreach(var c in customersList)
+            foreach (var c in customersList)
             {
                 context.UserRoles.Add(UserRole.Create(c.Id, customerRole.Id));
-                
+
                 // Seed Wallet
                 var wallet = Wallet.Create(c.Id, "USD");
                 wallet.Credit(new Faker().Random.Number(100, 5000), Guid.NewGuid().ToString());
@@ -137,7 +137,7 @@ internal class Program
                     "UTC",
                     WarehouseStatus.Active,
                     utcNow));
-            
+
             var warehouses = warehouseFaker.Generate(2);
             await context.Warehouses.AddRangeAsync(warehouses);
             await context.SaveChangesAsync();
@@ -146,12 +146,12 @@ internal class Program
             var categoryFaker = new Faker<Category>()
                 .CustomInstantiator(f => Category.Create(
                     f.Commerce.Categories(1)[0],
-                    f.Commerce.Categories(1)[0].ToLower().Replace(" ", "-") + f.Random.Number(1,999),
+                    f.Commerce.Categories(1)[0].ToLower().Replace(" ", "-") + f.Random.Number(1, 999),
                     null,
                     f.Random.Number(1, 10),
                     1,
                     utcNow));
-            
+
             var categories = categoryFaker.Generate(5);
             await context.Categories.AddRangeAsync(categories);
             await context.SaveChangesAsync();
@@ -190,17 +190,17 @@ internal class Program
                         f.Commerce.Ean8() + f.Random.Number(1, 999),
                         utcNow
                     ));
-                
+
                 var variants = variantFaker.Generate(new Faker().Random.Number(1, 4));
                 await context.ProductVariants.AddRangeAsync(variants);
                 await context.SaveChangesAsync();
-                
+
                 allVariants.AddRange(variants);
 
                 // Generate stock for variants
                 foreach (var variant in variants)
                 {
-                    foreach(var warehouse in warehouses)
+                    foreach (var warehouse in warehouses)
                     {
                         var stockItem = StockItem.Create(variant.Sku, warehouse.Id, utcNow);
                         context.Entry(stockItem).Property("OnHand").CurrentValue = new Faker().Random.Number(10, 1000);
@@ -216,37 +216,37 @@ internal class Program
             {
                 var pickedVariant = allVariants[new Faker().Random.Number(0, allVariants.Count - 1)];
                 var lineItem = new PriceSnapshotItem(
-                    pickedVariant.ProductId, 
-                    pickedVariant.Sku, 
-                    "Product Name", 
-                    100m, 
-                    100m, 
-                    2, 
+                    pickedVariant.ProductId,
+                    pickedVariant.Sku,
+                    "Product Name",
+                    100m,
+                    100m,
+                    2,
                     null);
-                
-                
+
+
                 var totals = new TotalsSnapshot(200m, 0m, 0m, 10m, 21m, 231m, 0.1m);
                 var snapshot = new PriceSnapshot(new List<PriceSnapshotItem> { lineItem }, totals);
                 var addr = new AddressSnapshot("Jane Doe", "123 Main St", string.Empty, "City", "State", "Country", "12345");
-                
+
                 var order = Order.Create(
-                    Guid.NewGuid(), 
-                    Guid.NewGuid(), 
-                    oc.Id, 
-                    oc.Email, 
-                    "USD", 
-                    $"ORD-{new Faker().Random.Number(1000, 9999)}", 
-                    snapshot, 
-                    addr, 
-                    addr, 
-                    Guid.NewGuid().ToString(), 
-                    Guid.NewGuid(), 
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    oc.Id,
+                    oc.Email,
+                    "USD",
+                    $"ORD-{new Faker().Random.Number(1000, 9999)}",
+                    snapshot,
+                    addr,
+                    addr,
+                    Guid.NewGuid().ToString(),
+                    Guid.NewGuid(),
                     utcNow);
-                
+
                 context.Orders.Add(order);
             }
             await context.SaveChangesAsync();
-            
+
             Console.WriteLine($"Seeded Tenant: {tenant.Name} with complete data (Users, Wallets, Catalog, Inventory, Orders).");
         }
 

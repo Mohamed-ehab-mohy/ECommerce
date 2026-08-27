@@ -213,12 +213,38 @@ The system is configured for a frictionless developer experience using Docker Co
    ```bash
    docker compose up -d postgres redis rabbitmq
    ```
-3. Run the application:
+3. **(Optional) Seed the Database with Fake Data:**
+   To populate the database with realistic mock data (Tenants, Users, Wallets, Carts, Products, Orders, Stock, etc.) for testing:
+   ```bash
+   dotnet run --project src/ECommerce.DataSeeder
+   ```
+   *Warning: This will truncate existing records and generate a fresh dataset.*
+   *(Note: Generated users can be logged into using the default password `Password123!`)*
+4. Run the application:
    ```bash
    dotnet run --project src/ECommerce.API
    ```
 
-### API Documentation & Diagnostics
-- **Swagger UI (REST APIs):** `http://localhost:5139/swagger`
-- **GraphQL IDE (Banana Cake Pop):** `http://localhost:5139/graphql`
-- **Hangfire Dashboard:** `http://localhost:5139/hangfire`
+### Local Dashboards & Testing Guide
+
+Once the infrastructure and API are running, you can access the following dashboards to monitor and test the system:
+
+#### 1. API Endpoints & Background Jobs
+- **Swagger UI (REST APIs):** [http://localhost:5139/swagger](http://localhost:5139/swagger)
+  - *How to test:* Click `Authorize` to enter a JWT token, or execute public endpoints (e.g., GET Products) to verify API functionality.
+- **GraphQL IDE (Banana Cake Pop):** [http://localhost:5139/graphql](http://localhost:5139/graphql)
+  - *How to test:* Write a sample query in the left pane (e.g., `query { products { nodes { id name } } }`) and click run.
+- **Hangfire Dashboard (Background Jobs):** [http://localhost:5139/hangfire](http://localhost:5139/hangfire)
+  - *How to test:* Navigate to "Recurring Jobs", select a job like `CheckTrialExpirationsJob`, and click "Trigger Now" to manually run it and check for success.
+
+#### 2. Infrastructure & Monitoring
+- **RabbitMQ Management (Event Bus):** [http://localhost:15672](http://localhost:15672) (User: `ecommerce` | Pass: `ecommerce_dev_pw`)
+  - *How to test:* Open the "Queues" tab. Trigger an event (like placing an order via Swagger) and watch the message count spike as it enters and leaves the queues.
+- **Seq (Structured Logging):** [http://localhost:5341](http://localhost:5341) (No password required locally)
+  - *How to test:* Trigger a bad request (e.g., 400 Validation Error) in Swagger, then open Seq. You will see a detailed, structured JSON log of the exact error and stack trace.
+- **Grafana (Metrics & Performance):** [http://localhost:3000](http://localhost:3000) (User: `admin` | Pass: `admin`)
+  - *How to test:* Generate some load by hitting an endpoint repeatedly (e.g., refresh Swagger multiple times). Open the default .NET metrics dashboard in Grafana to see the live CPU/Memory and Request/Sec spikes.
+- **Mailpit (Local Email Testing):** [http://localhost:8025](http://localhost:8025)
+  - *How to test:* Trigger an action that sends an email (e.g., Request Password Reset). Open Mailpit to view the intercepted HTML email visually without needing an actual SMTP provider.
+- **ElasticSearch (Search Engine Nodes):** [http://localhost:9200/_cat/indices?v](http://localhost:9200/_cat/indices?v)
+  - *How to test:* Visit this link to confirm that the ElasticSearch indexes (like `products`) have been created and are syncing data properly.

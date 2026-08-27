@@ -16,7 +16,15 @@ Welcome to the E-Commerce Backend! This document explains how you, as a frontend
    ```bash
    docker compose up -d postgres redis rabbitmq
    ```
-3. Run the API:
+3. **(Optional) Seed the Database:**
+   If this is your first time running the project and you want realistic test data (Tenants, Users, Products, Carts, Orders, Wallets), run the Data Seeder tool:
+   ```bash
+   dotnet run --project src/ECommerce.DataSeeder
+   ```
+   *Note: This will completely wipe any existing data and re-generate fake data.*
+   *(Login info: Generated users use the default password `Password123!`)*
+
+4. Run the API:
    ```bash
    dotnet run --project src/ECommerce.API
    ```
