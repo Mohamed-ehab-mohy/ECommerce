@@ -157,7 +157,9 @@ if (!hangfireDisabled)
 {
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
-        Authorization = [new OpsRoleDashboardAuthorizationFilter()],
+        Authorization = app.Environment.IsDevelopment()
+            ? [new AllowAllDashboardAuthorizationFilter()]
+            : [new OpsRoleDashboardAuthorizationFilter()],
         StatsPollingInterval = 5000
     });
 }

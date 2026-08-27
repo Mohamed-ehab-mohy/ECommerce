@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ECommerce.API.Controllers;
 
 [ApiController]
-[Route("api/v1/webhooks/stripe")]
+[Route("api/v1/webhooks/stripe/subscription")]
 [AllowAnonymous]
 public sealed class TenantSubscriptionWebhookController(ISender sender) : ControllerBase
 {
