@@ -143,8 +143,9 @@ jobs:
 
       - name: Restore & Build
         run: |
-          cd backend && dotnet restore
-          cd backend && dotnet build --no-restore
+          cd backend
+          dotnet restore
+          dotnet build --no-restore
 
       - name: Run API server and Load Test
         env:
