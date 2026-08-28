@@ -187,131 +187,93 @@ public static class DependencyInjection
                 return new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken));
             };
 
-            options.AddFixedWindowLimiter("fixed", limiterOptions =>
-            {
-                limiterOptions.PermitLimit = 100;
-                limiterOptions.Window = TimeSpan.FromSeconds(10);
-                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                limiterOptions.QueueLimit = 0;
-            });
-
-            options.AddSlidingWindowLimiter("auth", slidingOptions =>
-            {
-                slidingOptions.PermitLimit = 10;
-                slidingOptions.Window = TimeSpan.FromSeconds(60);
-                slidingOptions.SegmentsPerWindow = 6;
-                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                slidingOptions.QueueLimit = 0;
-            });
-
-            options.AddSlidingWindowLimiter("api-read", slidingOptions =>
-            {
-                slidingOptions.PermitLimit = 60;
-                slidingOptions.Window = TimeSpan.FromSeconds(60);
-                slidingOptions.SegmentsPerWindow = 4;
-                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                slidingOptions.QueueLimit = 0;
-            });
-
-            options.AddSlidingWindowLimiter("api-write", slidingOptions =>
-            {
-                slidingOptions.PermitLimit = 30;
-                slidingOptions.Window = TimeSpan.FromSeconds(60);
-                slidingOptions.SegmentsPerWindow = 4;
-                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                slidingOptions.QueueLimit = 0;
-            });
-
-            options.AddSlidingWindowLimiter("api-heavy", slidingOptions =>
-            {
-                slidingOptions.PermitLimit = 10;
-                slidingOptions.Window = TimeSpan.FromSeconds(60);
-                slidingOptions.SegmentsPerWindow = 2;
-                slidingOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                slidingOptions.QueueLimit = 0;
-            });
-
-            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-            {
-                var tenantId = context.RequestServices.GetService<ECommerce.UseCases.Common.ITenantService>()?.GetCurrentTenantId();
-                var endpoint = context.GetEndpoint();
-                var policyName = endpoint?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
-
-                if (policyName is not null)
+            // Layered (multi-dimensional) rate limiting. Every request is evaluated
+            // against ALL layers simultaneously via PartitionedRateLimiter.CreateChained;
+            // exceeding any single layer rejects the request (429). This protects
+            // against brute force (auth), per-user abuse, per-IP abuse, and the
+            // multi-tenant "noisy neighbor" problem at the same time.
+            options.GlobalLimiter = PartitionedRateLimiter.CreateChained<HttpContext>(
+            [
+                // Layer 1: strict brute-force protection on credential endpoints.
+                // Tighter per-IP quota applies only to /api/v1/auth/* paths.
+                PartitionedRateLimiter.Create<HttpContext, string>(context =>
                 {
-                    return policyName switch
+                    var path = context.Request.Path.Value ?? string.Empty;
+                    if (!path.StartsWith("/api/v1/auth/", StringComparison.OrdinalIgnoreCase))
                     {
-                        "auth" => RateLimitPartition.GetSlidingWindowLimiter(
-                            "auth",
-                            _ => new SlidingWindowRateLimiterOptions
-                            {
-                                PermitLimit = 10,
-                                Window = TimeSpan.FromSeconds(60),
-                                SegmentsPerWindow = 6,
-                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                                QueueLimit = 0
-                            }),
-                        "api-read" => RateLimitPartition.GetSlidingWindowLimiter(
-                            GetPartitionKey(context),
-                            _ => new SlidingWindowRateLimiterOptions
-                            {
-                                PermitLimit = 60,
-                                Window = TimeSpan.FromSeconds(60),
-                                SegmentsPerWindow = 4,
-                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                                QueueLimit = 0
-                            }),
-                        "api-write" => RateLimitPartition.GetSlidingWindowLimiter(
-                            GetPartitionKey(context),
-                            _ => new SlidingWindowRateLimiterOptions
-                            {
-                                PermitLimit = 30,
-                                Window = TimeSpan.FromSeconds(60),
-                                SegmentsPerWindow = 4,
-                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                                QueueLimit = 0
-                            }),
-                        "api-heavy" => RateLimitPartition.GetSlidingWindowLimiter(
-                            GetPartitionKey(context),
-                            _ => new SlidingWindowRateLimiterOptions
-                            {
-                                PermitLimit = 10,
-                                Window = TimeSpan.FromSeconds(60),
-                                SegmentsPerWindow = 2,
-                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                                QueueLimit = 0
-                            }),
-                        _ => RateLimitPartition.GetNoLimiter("noop")
-                    };
-                }
+                        return RateLimitPartition.GetNoLimiter("non-auth");
+                    }
 
-                if (tenantId.HasValue)
-                {
-                    // A per-tenant sliding-window limiter keyed on the tenant id.
+                    var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                     return RateLimitPartition.GetSlidingWindowLimiter(
-                        $"tenant:{tenantId.Value}",
+                        $"auth-ip:{clientIp}",
                         _ => new SlidingWindowRateLimiterOptions
                         {
-                            PermitLimit = 50, // This would normally be fetched from SubscriptionPlan.MaxRequestsPerSecond
-                            Window = TimeSpan.FromSeconds(60),
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromMinutes(1),
                             SegmentsPerWindow = 6,
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             QueueLimit = 0
                         });
-                }
+                }),
 
-                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                return RateLimitPartition.GetSlidingWindowLimiter(
-                    ipAddress,
-                    _ => new SlidingWindowRateLimiterOptions
-                    {
-                        PermitLimit = 100,
-                        Window = TimeSpan.FromSeconds(60),
-                        SegmentsPerWindow = 6,
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                        QueueLimit = 0
-                    });
-            });
+                // Layer 2: per-authenticated-user quota.
+                PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    var userId = context.User?.Identity?.IsAuthenticated == true
+                        ? context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        : null;
+
+                    return string.IsNullOrEmpty(userId)
+                        ? RateLimitPartition.GetNoLimiter("anonymous-no-user")
+                        : RateLimitPartition.GetSlidingWindowLimiter(
+                            $"user:{userId}",
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 120,
+                                Window = TimeSpan.FromMinutes(1),
+                                SegmentsPerWindow = 4,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            });
+                }),
+
+                // Layer 3: per-IP quota applied to everyone (anonymous + authenticated).
+                PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetSlidingWindowLimiter(
+                        $"ip:{clientIp}",
+                        _ => new SlidingWindowRateLimiterOptions
+                        {
+                            PermitLimit = 300,
+                            Window = TimeSpan.FromMinutes(1),
+                            SegmentsPerWindow = 4,
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                }),
+
+                // Layer 4: per-tenant quota (noisy-neighbor protection). Only applies
+                // when the request is resolved to a tenant.
+                PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    var tenantId = context.RequestServices.GetService<ECommerce.UseCases.Common.ITenantService>()?.GetCurrentTenantId();
+
+                    return !tenantId.HasValue
+                        ? RateLimitPartition.GetNoLimiter("anonymous-no-tenant")
+                        : RateLimitPartition.GetSlidingWindowLimiter(
+                            $"tenant:{tenantId.Value}",
+                            _ => new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 600,
+                                Window = TimeSpan.FromMinutes(1),
+                                SegmentsPerWindow = 6,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            });
+                })
+            ]);
         });
 
         services.AddCors(options =>
@@ -327,20 +289,5 @@ public static class DependencyInjection
         });
 
         return services;
-    }
-
-    private static string GetPartitionKey(HttpContext context)
-    {
-        var user = context.User;
-        if (user?.Identity?.IsAuthenticated == true)
-        {
-            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userId))
-            {
-                return $"user:{userId}";
-            }
-        }
-
-        return $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
     }
 }

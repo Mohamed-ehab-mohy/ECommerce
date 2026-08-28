@@ -136,7 +136,7 @@ erDiagram
 - **JWT Bearer Authentication:** Secure stateless authentication.
 - **Role-Based Access Control (RBAC):** Claims-based authorization policies for separating Customers and Administrators.
 - **Password Security:** Hashes utilizing Argon2id / PBKDF2.
-- **Rate Limiting:** Global and endpoint-specific rate limiting to prevent Brute-Force and DDoS attacks using ASP.NET Core RateLimiter.
+- **Multi-Dimensional Rate Limiting:** Every request is evaluated against multiple chained layers using ASP.NET Core`s `PartitionedRateLimiter.CreateChained` — strict per-IP brute-force protection on `/api/v1/auth/*` (10/min), per-user quotas (120/min), per-IP quotas (300/min), and per-tenant "noisy neighbor" quotas (600/min). Exceeding any single layer returns `429 Too Many Requests`, protecting against brute force, per-user abuse, per-IP abuse, and cross-tenant resource starvation simultaneously.
 - **Content-Security-Policy (CSP):** Hardened middleware rejecting inline scripts, cross-origin framing, and enforcing secure resource loading.
 
 ### 3. Catalog, Search & Localization
