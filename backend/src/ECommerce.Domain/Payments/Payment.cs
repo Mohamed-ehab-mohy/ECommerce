@@ -50,7 +50,7 @@ public sealed class Payment : BaseEntity<Guid>
     public DateTime? RetryAfterUtc { get; private set; }
 
     /// <summary>Concurrency token used to prevent concurrent capture/refund races.</summary>
-    public uint Version { get; private set; }
+    public long Version { get; private set; }
 
     public IReadOnlyCollection<PaymentAttempt> Attempts => _attempts;
 

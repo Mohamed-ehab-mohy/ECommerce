@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,13 +11,12 @@ namespace ECommerce.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<uint>(
-                name: "xmin",
+            migrationBuilder.AddColumn<long>(
+                name: "version",
                 table: "payments",
-                type: "xid",
-                rowVersion: true,
+                type: "bigint",
                 nullable: false,
-                defaultValue: 0u);
+                defaultValue: 0L);
 
             migrationBuilder.CreateTable(
                 name: "SubscriptionPlans",
@@ -101,7 +100,7 @@ namespace ECommerce.Infrastructure.Migrations
                 name: "SubscriptionPlans");
 
             migrationBuilder.DropColumn(
-                name: "xmin",
+                name: "version",
                 table: "payments");
         }
     }
