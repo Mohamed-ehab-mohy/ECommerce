@@ -50,7 +50,7 @@ public sealed class Payment : BaseEntity<Guid>
     public DateTime? RetryAfterUtc { get; private set; }
 
     /// <summary>Concurrency token used to prevent concurrent capture/refund races.</summary>
-    public byte[]? Version { get; private set; }
+    public uint Version { get; private set; }
 
     public IReadOnlyCollection<PaymentAttempt> Attempts => _attempts;
 
@@ -214,7 +214,7 @@ public sealed class Payment : BaseEntity<Guid>
         return Result.Success();
     }
 
-    /// <summary>Completes a refund for a payment in <see cref="PaymentStatus.Refunding"/> (US-I-002).</summary>
+    /// <summary>Completes a refund for a payment in <see cref="PaymentStatus.Refunding"/>.</summary>
     public Result MarkRefunded(DateTime utcNow, string? providerReference = null)
     {
         if (Status != PaymentStatus.Refunding)

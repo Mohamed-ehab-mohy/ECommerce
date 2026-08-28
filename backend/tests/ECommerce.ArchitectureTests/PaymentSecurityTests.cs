@@ -5,7 +5,7 @@ namespace ECommerce.ArchitectureTests;
 
 /// <summary>
 /// No-PAN regression guard : no raw card number may ever be defined as a persistent field.
-/// Payment data must be stored as provider tokens only (FRS-G-006).
+/// Payment data must be stored as provider tokens only.
 /// </summary>
 public sealed class PaymentSecurityTests
 {

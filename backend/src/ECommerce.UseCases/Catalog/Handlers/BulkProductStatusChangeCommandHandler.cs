@@ -9,8 +9,7 @@ using ECommerce.UseCases.Common;
 namespace ECommerce.UseCases.Catalog.Handlers;
 
 /// <summary>
-/// Applies a bulk product status change and reports partial success per item (US-M-008, BR-2308,
-/// FR-13-008).
+/// Applies a bulk product status change and reports partial success per item.
 /// </summary>
 public sealed class BulkProductStatusChangeCommandHandler(
     IProductRepository products,

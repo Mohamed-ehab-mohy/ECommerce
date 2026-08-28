@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 namespace ECommerce.Infrastructure.Payments;
 
 /// <summary>
-/// Per-provider circuit breaker (US-G-003). Closed → trips open after <see cref="CircuitBreakerOptions.FailureThreshold"/>
+/// Per-provider circuit breaker. Closed → trips open after <see cref="CircuitBreakerOptions.FailureThreshold"/>
 /// consecutive failures, stays open for <see cref="CircuitBreakerOptions.Cooldown"/>, then half-open trial; a success
 /// closes the circuit, a failure reopens it.
 /// </summary>

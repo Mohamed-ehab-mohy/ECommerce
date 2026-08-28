@@ -1,7 +1,7 @@
 namespace ECommerce.UseCases.Checkout.Ports;
 
 /// <summary>
-/// Resolves the effective tax rate (0..1) for a destination country/currency. US-I-003:
+/// Resolves the effective tax rate (0..1) for a destination country/currency:
 /// integration provider with local fallback rules.
 /// </summary>
 public interface ITaxRateProvider

@@ -21,7 +21,7 @@ using CheckoutAggregate = ECommerce.Domain.Orders.Checkout;
 namespace ECommerce.IntegrationTests;
 
 /// <summary>
-/// QAS-02: coupon redemption is atomic. When the usage limit is N, exactly N concurrent
+/// Coupon redemption is atomic. When the usage limit is N, exactly N concurrent
 /// place-order attempts succeed; the remainder fail with COUPON_EXHAUSTED.
 /// </summary>
 [Collection("Integration")]

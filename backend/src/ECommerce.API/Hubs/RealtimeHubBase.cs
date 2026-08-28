@@ -6,7 +6,7 @@ namespace ECommerce.API.Hubs;
 
 /// <summary>
 /// Shared reconnect behavior: adds the connection to its target group and replays missed events
-/// from <c>?lastEventId=&lt;opaque&gt;</c> (T-DAT-016, docs/08-api-design.md §9).
+/// from <c>?lastEventId=&lt;opaque&gt;</c> (see docs/08-api-design.md §9).
 /// </summary>
 public abstract class RealtimeHubBase(IRealtimeEventStore store) : Hub
 {

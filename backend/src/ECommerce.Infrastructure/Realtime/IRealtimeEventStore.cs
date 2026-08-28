@@ -2,7 +2,7 @@ namespace ECommerce.Infrastructure.Realtime;
 
 /// <summary>
 /// Stores and replays real-time events per target group so clients can resume missed events
-/// on reconnect via <c>?lastEventId=</c> (T-DAT-016, docs/08-api-design.md §9).
+/// on reconnect via <c>?lastEventId=</c> (see docs/08-api-design.md §9).
 /// </summary>
 public interface IRealtimeEventStore
 {

@@ -177,7 +177,7 @@ public sealed class PlaceOrderCommandHandler(
             return markPlacedResult.Error;
         }
 
-        // QAS-02: atomic coupon redemption inside the same transaction. Concurrent place-order attempts
+        // Atomic coupon redemption inside the same transaction. Concurrent place-order attempts
         // race on `UPDATE coupons SET used_count = used_count + 1 WHERE used_count < total_uses`.
         if (checkout.AppliedCouponId is { } couponId && checkout.CustomerId is { } customerId)
         {

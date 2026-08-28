@@ -6,7 +6,7 @@ namespace ECommerce.Infrastructure.Payments;
 
 /// <summary>
 /// Routes payment traffic to the primary PSP, failing over to the configured backup when the primary's
-/// circuit is open (health-based failover, US-G-003). Throws <see cref="PaymentProvidersUnavailableException"/>
+/// circuit is open (health-based failover). Throws <see cref="PaymentProvidersUnavailableException"/>
 /// when every candidate is unavailable.
 /// </summary>
 public sealed class PaymentProviderFactory(

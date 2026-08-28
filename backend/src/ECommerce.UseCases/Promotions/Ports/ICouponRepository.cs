@@ -21,7 +21,7 @@ public interface ICouponRepository
 
     /// <summary>
     /// Atomically claims a coupon use: <c>UPDATE ... WHERE used_count &lt; total_uses</c> within the caller's
-    /// transaction (QAS-02). Returns <see cref="CouponRedemptionResult.AlreadyApplied"/> when the order already
+    /// transaction. Returns <see cref="CouponRedemptionResult.AlreadyApplied"/> when the order already
     /// redeemed the coupon.
     /// </summary>
     Task<CouponRedemptionResult> TryRedeemAsync(
