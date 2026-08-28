@@ -8,9 +8,9 @@ public interface IPaymentRepository
 
     /// <summary>
     /// Locks the payment row for the duration of the current transaction
-    /// (SELECT ... FOR UPDATE SKIP LOCKED), so concurrent capture attempts
-    /// are serialized instead of racing on the same authorized payment.
-    /// Returns <c>null</c> when the row is already locked by another writer.
+    /// (SELECT ... FOR UPDATE), so concurrent capture attempts wait and then
+    /// observe the latest committed status instead of racing on the same
+    /// authorized payment.
     /// </summary>
     Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken);
 

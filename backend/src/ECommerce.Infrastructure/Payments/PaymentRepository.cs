@@ -14,7 +14,7 @@ public sealed class PaymentRepository(ECommerceDbContext dbContext) : IPaymentRe
 
     public Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Set<Payment>()
-            .FromSqlInterpolated($"""SELECT * FROM "payments" WHERE "id" = {id} FOR UPDATE SKIP LOCKED""")
+            .FromSqlInterpolated($"""SELECT * FROM "payments" WHERE "id" = {id} FOR UPDATE""")
             .Include(payment => payment.Attempts)
             .Include(payment => payment.Ledger)
             .SingleOrDefaultAsync(cancellationToken);
