@@ -9,9 +9,9 @@ using ECommerce.UseCases.Payments.Responses;
 namespace ECommerce.UseCases.Payments.Handlers;
 
 /// <summary>
-/// Creates a refund request against an order (US-I-004). The amount must not exceed the payment's
+/// Creates a refund request against an order. The amount must not exceed the payment's
 /// remaining refundable balance (paid − already refunded), and the idempotency key makes the create
-/// replay-safe (QAS-04).
+/// replay-safe.
 /// </summary>
 public sealed class RequestRefundCommandHandler(
     IOrderRepository orders,
@@ -37,7 +37,7 @@ public sealed class RequestRefundCommandHandler(
             return RefundErrors.OrderNotFound;
         }
 
-        // Idempotency: a repeated create with the same key replays the stored refund (QAS-04).
+        // Idempotency: a repeated create with the same key replays the stored refund.
         var existing = await refunds.GetByIdempotencyKeyAsync(request.IdempotencyKey, cancellationToken);
         if (existing is not null)
         {

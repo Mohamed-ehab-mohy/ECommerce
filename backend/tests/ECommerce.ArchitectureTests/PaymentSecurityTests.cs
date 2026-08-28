@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace ECommerce.ArchitectureTests;
 
 /// <summary>
-/// No-PAN regression guard (US-G-006): no raw card number may ever be defined as a persistent field.
+/// No-PAN regression guard : no raw card number may ever be defined as a persistent field.
 /// Payment data must be stored as provider tokens only (FRS-G-006).
 /// </summary>
 public sealed class PaymentSecurityTests

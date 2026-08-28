@@ -11,7 +11,7 @@ public sealed record PromotionReportFilter(DateTime From, DateTime To);
 public sealed record FulfillmentReportFilter(DateTime From, DateTime To);
 
 /// <summary>
-/// Read-model query service for analytics reports (T-DAT-017). Implementations query the read
+/// Read-model query service for analytics reports. Implementations query the read
 /// models with covering indexes so reports stay within budget on large datasets.
 /// </summary>
 public interface IReportingQueryService

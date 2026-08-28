@@ -5,7 +5,7 @@ namespace ECommerce.Infrastructure.Orders;
 
 /// <summary>
 /// Computes tax for a taxable base using an <see cref="ITaxRateProvider"/> and returns both the
-/// effective rate and the rounded amount (US-I-003, FR-09-003).
+/// effective rate and the rounded amount.
 /// </summary>
 public sealed class TaxCalculator : ITaxCalculator
 {

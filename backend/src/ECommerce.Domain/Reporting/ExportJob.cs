@@ -11,7 +11,7 @@ public enum ExportJobStatus
 }
 
 /// <summary>
-/// An async report export job (T-DAT-017, US-L-007). The generated file is written to storage and
+/// An async report export job. The generated file is written to storage and
 /// referenced by <see cref="FileKey"/> so the status endpoint can stream it back.
 /// </summary>
 public sealed class ExportJob : BaseEntity<Guid>

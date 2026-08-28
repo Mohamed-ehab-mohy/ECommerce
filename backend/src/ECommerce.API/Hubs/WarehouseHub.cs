@@ -7,7 +7,7 @@ namespace ECommerce.API.Hubs;
 
 /// <summary>
 /// Pushes <c>NewFulfillmentTask</c>, <c>TaskStatusChanged</c> and <c>StockAlert</c> to a warehouse's
-/// <c>wh:{id}</c> group; role-gated to operations staff (US-N-002, US-N-004). The client supplies the
+/// <c>wh:{id}</c> group; role-gated to operations staff. The client supplies the
 /// warehouse via <c>?warehouseId=</c>.
 /// </summary>
 [Authorize]

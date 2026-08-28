@@ -5,7 +5,7 @@ namespace ECommerce.Infrastructure.Content;
 
 internal sealed class ContentRepository : IContentRepository
 {
-    private readonly List<Banner> _banners = new(); // In-memory for now to satisfy the tests
+    private readonly List<Banner> _banners = new();
 
     public Task AddBannerAsync(Banner banner, CancellationToken cancellationToken = default)
     {

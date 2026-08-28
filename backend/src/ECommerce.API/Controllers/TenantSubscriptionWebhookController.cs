@@ -1,41 +1,74 @@
+using System.Text.Json;
+using ECommerce.Infrastructure.Payments;
 using ECommerce.UseCases.Tenants.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/v1/webhooks/stripe/subscription")]
-[AllowAnonymous]
-public sealed class TenantSubscriptionWebhookController(ISender sender) : ControllerBase
+public sealed class TenantSubscriptionWebhookController(
+    ISender sender,
+    IOptions<StripeWebhookOptions> webhookOptions,
+    ILogger<TenantSubscriptionWebhookController> logger) : ControllerBase
 {
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> HandleWebhook(CancellationToken cancellationToken)
     {
-        // In a real application, we read the body, verify Stripe signature using StripeConfiguration.WebhookSecret,
-        // and parse the StripeEvent.
-        // Here, we provide the scaffold for processing subscription updates.
+        using var reader = new StreamReader(Request.Body);
+        var rawBody = await reader.ReadToEndAsync(cancellationToken);
 
-        var mockStripeEvent = new { Type = "customer.subscription.updated" }; // Simulated parsed event
-
-        if (mockStripeEvent.Type is "customer.subscription.updated" or "customer.subscription.deleted")
+        if (!Request.Headers.TryGetValue("Stripe-Signature", out var signatureHeader))
         {
-            // Map Stripe payload to command
-            var command = new HandleSubscriptionUpdatedCommand(
-                StripeCustomerId: "cus_mock",
-                StripeSubscriptionId: "sub_mock",
-                Status: "active",
-                CurrentPeriodEndEpoch: 1672531199
-            );
+            logger.LogWarning("Subscription webhook received without signature header");
+            return Unauthorized();
+        }
 
-            var result = await sender.Send(command, cancellationToken);
+        if (!StripeSignatureVerifier.Verify(rawBody, signatureHeader.ToString(), webhookOptions.Value.WebhookSecret))
+        {
+            logger.LogWarning("Subscription webhook signature verification failed");
+            return Unauthorized();
+        }
+
+        using var doc = JsonDocument.Parse(rawBody);
+        var root = doc.RootElement;
+        var eventType = root.GetProperty("type").GetString();
+
+        if (eventType is "customer.subscription.updated" or "customer.subscription.deleted")
+        {
+            var sub = root.GetProperty("data").GetProperty("object");
+
+            var stripeCustomerId = sub.GetProperty("customer").GetString();
+            var stripeSubscriptionId = sub.GetProperty("id").GetString();
+            var status = sub.GetProperty("status").GetString();
+
+            if (string.IsNullOrWhiteSpace(stripeCustomerId) ||
+                string.IsNullOrWhiteSpace(stripeSubscriptionId) ||
+                string.IsNullOrWhiteSpace(status))
+            {
+                logger.LogWarning("Subscription webhook payload is missing required fields");
+                return BadRequest();
+            }
+            var currentPeriodEndEpoch = sub.TryGetProperty("current_period_end", out var periodProp)
+                ? periodProp.GetInt64()
+                : 0L;
+
+            var result = await sender.Send(
+                new HandleSubscriptionUpdatedCommand(
+                    stripeCustomerId,
+                    stripeSubscriptionId,
+                    status,
+                    currentPeriodEndEpoch),
+                cancellationToken);
+
             if (result.IsFailure)
             {
-                // Log failure, depending on error either return 400 or 500 to tell Stripe to retry
-                return BadRequest();
+                logger.LogWarning("Subscription webhook processing failed: {Error}", result.Error?.Description);
+                return BadRequest(result.Error?.Description);
             }
         }
 

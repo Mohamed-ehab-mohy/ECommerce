@@ -5,7 +5,7 @@ namespace ECommerce.Domain.Events;
 
 /// <summary>
 /// Raised when a reconciliation record is flagged Drift or Unmatched; consumed by the real-time
-/// layer to push <c>ReconciliationDrift</c> to the admin group (US-N-003, FR-12).
+/// layer to push <c>ReconciliationDrift</c> to the admin group.
 /// </summary>
 public sealed record ReconciliationDriftDetected(
     Guid RecordId,

@@ -1,8 +1,8 @@
 namespace ECommerce.Domain.Payments;
 
 /// <summary>
-/// Append-only payment ledger entry (US-G-007). Records intent/authorize/capture/void events exactly once;
-/// rows are never updated or deleted, giving an audit trail that is reconciliation-ready (T-DAT-010).
+/// Append-only payment ledger entry. Records intent/authorize/capture/void events exactly once;
+/// rows are never updated or deleted, giving an audit trail that is reconciliation-ready.
 /// </summary>
 public sealed class PaymentLedgerEntry
 {

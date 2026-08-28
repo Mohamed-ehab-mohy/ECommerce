@@ -10,10 +10,10 @@ public interface IPromotionRepository
 
     Task<IReadOnlyList<Promotion>> GetAllAsync(CancellationToken cancellationToken);
 
-    /// <summary>Draft campaigns whose schedule has started but not ended; the scheduler activates these (US-E-007).</summary>
+    /// <summary>Draft campaigns whose schedule has started but not ended; the scheduler activates these.</summary>
     Task<IReadOnlyList<Promotion>> GetDueForActivationAsync(DateTime utcNow, CancellationToken cancellationToken);
 
-    /// <summary>Active campaigns whose schedule has ended; the scheduler pauses these (US-E-007).</summary>
+    /// <summary>Active campaigns whose schedule has ended; the scheduler pauses these.</summary>
     Task<IReadOnlyList<Promotion>> GetDueForPauseAsync(DateTime utcNow, CancellationToken cancellationToken);
 
     void Add(Promotion promotion);

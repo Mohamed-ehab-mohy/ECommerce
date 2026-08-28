@@ -12,7 +12,7 @@ namespace ECommerce.UseCases.Catalog.Services;
 
 /// <summary>
 /// Processes a bulk product import batch: validates every row, creates the valid products, and
-/// records per-row errors so partial success is reported (US-B-007, BR-1207, FR-02-007).
+/// records per-row errors so partial success is reported.
 /// </summary>
 public sealed class ProductImportService(
     IProductImportRepository imports,

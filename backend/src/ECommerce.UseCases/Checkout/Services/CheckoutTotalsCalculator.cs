@@ -13,7 +13,7 @@ public sealed record CheckoutTotals(
     decimal GrandTotal,
     decimal TaxRate);
 
-/// <summary>Promotion-aware totals with the applied rule ids snapshot (T-DAT-009).</summary>
+/// <summary>Promotion-aware totals with the applied rule ids snapshot.</summary>
 public sealed record PromotionAwareTotals(
     CheckoutTotals Totals,
     IReadOnlyList<Guid> AppliedPromotionIds,

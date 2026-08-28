@@ -5,7 +5,7 @@ using ECommerce.UseCases.Reports.Responses;
 
 namespace ECommerce.UseCases.Reports.Commands;
 
-/// <summary>Starts an async report export job (US-L-007, docs/08 §6.9).</summary>
+/// <summary>Starts an async report export job (docs/08 §6.9).</summary>
 public sealed record CreateExportCommand(
     string ReportType,
     DateTime? From,

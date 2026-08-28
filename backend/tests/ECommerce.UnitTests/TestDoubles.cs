@@ -403,6 +403,9 @@ internal sealed class FakePaymentRepository : IPaymentRepository
     public Task<Payment?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Payments.FirstOrDefault(payment => payment.Id == id));
 
+    public Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Payments.FirstOrDefault(payment => payment.Id == id));
+
     public Task<Payment?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
         Task.FromResult(Payments.FirstOrDefault(payment => payment.OrderId == orderId));
 

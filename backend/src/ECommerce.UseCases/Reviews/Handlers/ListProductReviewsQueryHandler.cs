@@ -9,7 +9,7 @@ namespace ECommerce.UseCases.Reviews.Handlers;
 
 /// <summary>
 /// Lists published reviews for an active product and returns the aggregated rating across all of
-/// them (US-K-003). Reviews of deactivated products are retained in storage but hidden here.
+/// them. Reviews of deactivated products are retained in storage but hidden here.
 /// </summary>
 public sealed class ListProductReviewsQueryHandler(
     IProductRepository products,

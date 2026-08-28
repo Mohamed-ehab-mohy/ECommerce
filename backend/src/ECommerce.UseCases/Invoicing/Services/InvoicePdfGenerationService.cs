@@ -7,7 +7,7 @@ using ECommerce.UseCases.Orders.Ports;
 namespace ECommerce.UseCases.Invoicing.Services;
 
 /// <summary>
-/// Renders and stores an invoice PDF (T-DAT-014). Idempotent: skips invoices that already have a
+/// Renders and stores an invoice PDF. Idempotent: skips invoices that already have a
 /// stored document.
 /// </summary>
 public sealed class InvoicePdfGenerationService(

@@ -7,7 +7,7 @@ namespace ECommerce.API.Hubs;
 
 /// <summary>
 /// Pushes <c>LiveOrderMetrics</c>, <c>StockAlerts</c> and <c>ReconciliationDrift</c> to the <c>admins</c>
-/// group; gated to Admin/SuperAdmin roles (US-N-003).
+/// group; gated to Admin/SuperAdmin roles.
 /// </summary>
 [Authorize]
 public sealed class AdminHub(IRealtimeEventStore store) : RealtimeHubBase(store)

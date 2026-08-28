@@ -8,7 +8,7 @@ public sealed record PromotionScheduleEnforcementResult(int Activated, int Pause
 
 /// <summary>
 /// Enforces promotion schedules on a clock: activates Draft campaigns whose window has started
-/// and pauses Active campaigns whose window has ended. Manual pauses are never overridden (US-E-007).
+/// and pauses Active campaigns whose window has ended. Manual pauses are never overridden.
 /// </summary>
 public sealed class PromotionScheduleEnforcer(
     IPromotionRepository promotions,

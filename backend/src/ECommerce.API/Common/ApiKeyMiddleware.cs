@@ -9,12 +9,10 @@ namespace ECommerce.API.Common;
 public sealed class ApiKeyMiddleware(RequestDelegate next)
 {
     private const string ApiKeyHeader = "X-Api-Key";
-    private const string ApiKeyQuery = "api_key";
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var headerValue)
-            && !context.Request.Query.TryGetValue(ApiKeyQuery, out headerValue))
+        if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var headerValue))
         {
             await next(context);
             return;

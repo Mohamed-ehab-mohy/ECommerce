@@ -39,7 +39,7 @@ public sealed record InventoryReportResponse(
     int TotalOnHand,
     IReadOnlyList<WarehouseInventory> Warehouses);
 
-/// <summary>Finance totals for a single currency (matches the payment ledger, US-L-006).</summary>
+/// <summary>Finance totals for a single currency (matches the payment ledger).</summary>
 public sealed record FinanceLine(
     string Currency,
     decimal Collected,
@@ -52,7 +52,7 @@ public sealed record FinanceReportResponse(
     DateTime To,
     IReadOnlyList<FinanceLine> Lines);
 
-/// <summary>Promotion performance line (US-L-004).</summary>
+/// <summary>Promotion performance line.</summary>
 public sealed record PromotionLine(
     Guid PromotionId,
     string Name,
@@ -69,7 +69,7 @@ public sealed record PromotionReportResponse(
     decimal TotalDiscount,
     IReadOnlyList<PromotionLine> Promotions);
 
-/// <summary>Fulfillment SLA warehouse line (US-L-005).</summary>
+/// <summary>Fulfillment SLA warehouse line.</summary>
 public sealed record FulfillmentWarehouseLine(
     Guid WarehouseId,
     string WarehouseCode,

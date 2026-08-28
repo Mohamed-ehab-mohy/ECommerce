@@ -8,7 +8,7 @@ public interface IRefundRepository
 
     Task<Refund?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken);
 
-    /// <summary>All non-rejected refunds for a payment, for computing the remaining refundable amount (RF-1).</summary>
+    /// <summary>All non-rejected refunds for a payment, for computing the remaining refundable amount.</summary>
     Task<IReadOnlyList<Refund>> GetByPaymentIdAsync(Guid paymentId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<Refund>> ListFailedAsync(CancellationToken cancellationToken);

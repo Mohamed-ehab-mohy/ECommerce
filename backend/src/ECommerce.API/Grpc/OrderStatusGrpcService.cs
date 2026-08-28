@@ -51,7 +51,7 @@ public sealed class OrderStatusGrpcService(
         IServerStreamWriter<Protos.OrderStatusEvent> responseStream,
         ServerCallContext context)
     {
-        logger.LogInformation("gRPC Subscribe called for order {OrderNumber} (placeholder stream)", request.OrderNumber);
+        logger.LogInformation("gRPC Subscribe called for order {OrderNumber}", request.OrderNumber);
 
         await Task.Delay(Timeout.Infinite, context.CancellationToken);
     }

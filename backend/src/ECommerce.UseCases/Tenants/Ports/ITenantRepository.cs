@@ -12,4 +12,5 @@ public interface ITenantRepository
     Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default);
     Task<bool> IsCustomDomainUniqueAsync(string customDomain, CancellationToken cancellationToken = default);
     Task<Guid?> GetIdByDomainAsync(string domain, CancellationToken cancellationToken = default);
+    Task<TenantSubscription?> GetSubscriptionByStripeCustomerIdAsync(string stripeCustomerId, CancellationToken cancellationToken = default);
 }

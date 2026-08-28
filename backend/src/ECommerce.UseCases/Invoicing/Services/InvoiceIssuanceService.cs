@@ -9,7 +9,7 @@ namespace ECommerce.UseCases.Invoicing.Services;
 
 /// <summary>
 /// Creates invoices when payments are captured and credit notes when refunds complete
-/// (US-I-001, US-I-002; FR-09-001, FR-09-002).
+///.
 /// </summary>
 public sealed class InvoiceIssuanceService(
     IOrderRepository orders,

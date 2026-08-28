@@ -66,4 +66,12 @@ internal sealed class TenantRepository(ECommerceDbContext dbContext) : ITenantRe
 
         return tenant?.Id;
     }
+
+    public async Task<TenantSubscription?> GetSubscriptionByStripeCustomerIdAsync(string stripeCustomerId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TenantSubscriptions
+            .Include(ts => ts.Plan)
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(ts => ts.StripeCustomerId == stripeCustomerId, cancellationToken);
+    }
 }

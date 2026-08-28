@@ -100,7 +100,7 @@ public sealed class AuthorizePaymentCommandHandler(
             else
             {
                 // Bounded retry: schedule a retry window unless the attempt budget is exhausted
-                // (US-G-004); a provider_unavailable signal is a transport failure, not a decline.
+                // a provider_unavailable signal is a transport failure, not a decline.
                 var retry = payment.PlanRetry(
                     retryOptions.Value.Cooldown,
                     retryOptions.Value.MaxAttempts,

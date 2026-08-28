@@ -33,6 +33,7 @@ public sealed class ProductCommandHandlerTests
         public Task<bool> IsSubdomainUniqueAsync(string subdomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> IsCustomDomainUniqueAsync(string customDomain, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<Guid?> GetIdByDomainAsync(string domain, CancellationToken cancellationToken = default) => Task.FromResult<Guid?>(null);
+        public Task<ECommerce.Domain.Tenants.TenantSubscription?> GetSubscriptionByStripeCustomerIdAsync(string stripeCustomerId, CancellationToken cancellationToken = default) => Task.FromResult<ECommerce.Domain.Tenants.TenantSubscription?>(null);
     }
 
     private readonly DummyTenantService _tenantService = new();

@@ -4,7 +4,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Commands;
 
-/// <summary>Rejects a pending review with a reason (US-K-002).</summary>
+/// <summary>Rejects a pending review with a reason.</summary>
 public sealed class RejectReviewCommand(
     Guid reviewId,
     Guid? moderatorId,

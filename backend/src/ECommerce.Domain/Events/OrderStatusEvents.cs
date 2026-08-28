@@ -5,7 +5,7 @@ namespace ECommerce.Domain.Events;
 
 /// <summary>
 /// Raised whenever an order's status transitions; consumed by the real-time layer to push
-/// <c>OrderStatusChanged</c> to the owning customer's group (US-N-001, FR-12).
+/// <c>OrderStatusChanged</c> to the owning customer's group.
 /// </summary>
 public sealed record OrderStatusChanged(
     Guid OrderId,
@@ -19,7 +19,7 @@ public sealed record OrderStatusChanged(
 
 /// <summary>
 /// Raised whenever the order's timeline changes (status log entry or shipping-address correction);
-/// consumed by the real-time layer to push <c>OrderTimelineUpdated</c> (US-N-001, FR-12).
+/// consumed by the real-time layer to push <c>OrderTimelineUpdated</c>.
 /// </summary>
 public sealed record OrderTimelineUpdated(
     Guid OrderId,

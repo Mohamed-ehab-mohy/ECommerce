@@ -287,9 +287,7 @@ public static class DependencyInjection
 
                 if (tenantId.HasValue)
                 {
-                    // To avoid querying DB per request, in a real system we would cache this.
-                    // For the scope of this implementation, we will use a default for tenants or use a scoped cache.
-                    // Ideally: var cache = context.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+                    // A per-tenant sliding-window limiter keyed on the tenant id.
                     return RateLimitPartition.GetSlidingWindowLimiter(
                         $"tenant:{tenantId.Value}",
                         _ => new SlidingWindowRateLimiterOptions

@@ -1,6 +1,6 @@
 namespace ECommerce.UseCases.Payments.Options;
 
-/// <summary>Bounded-retry policy for declined payments (US-G-004). Bound under <c>Payments:Retry</c>.</summary>
+/// <summary>Bounded-retry policy for declined payments. Bound under <c>Payments:Retry</c>.</summary>
 public sealed class PaymentRetryOptions
 {
     public const string SectionName = "Payments:Retry";

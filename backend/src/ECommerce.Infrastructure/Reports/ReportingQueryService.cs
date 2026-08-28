@@ -10,7 +10,7 @@ using ECommerce.UseCases.Reports.Responses;
 namespace ECommerce.Infrastructure.Reports;
 
 /// <summary>
-/// Read-model query service for analytics reports (T-DAT-017). Aggregations run in the database on
+/// Read-model query service for analytics reports. Aggregations run in the database on
 /// covering indexes (orders by PlacedAt, ledger entries by OccurredAt, stock by warehouse/sku).
 /// </summary>
 public sealed class ReportingQueryService(ECommerceDbContext dbContext) : IReportingQueryService

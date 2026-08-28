@@ -8,7 +8,7 @@ using ECommerce.UseCases.Integrations.Services;
 
 namespace ECommerce.UseCases.Integrations.Handlers;
 
-/// <summary>Registers a webhook endpoint and returns the signing secret exactly once (US-M-004).</summary>
+/// <summary>Registers a webhook endpoint and returns the signing secret exactly once.</summary>
 public sealed class CreateWebhookEndpointCommandHandler(
     IWebhookEndpointRepository endpoints,
     IUnitOfWork unitOfWork,
@@ -169,7 +169,7 @@ public sealed class ListWebhookEndpointsQueryHandler(
     }
 }
 
-/// <summary>Returns the delivery log for an endpoint (T-DAT-018).</summary>
+/// <summary>Returns the delivery log for an endpoint.</summary>
 public sealed class ListWebhookDeliveriesQueryHandler(
     IWebhookEndpointRepository endpoints,
     IWebhookDeliveryRepository deliveries,

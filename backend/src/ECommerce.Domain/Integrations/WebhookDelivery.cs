@@ -11,7 +11,7 @@ public enum WebhookDeliveryStatus
 }
 
 /// <summary>
-/// A single outbound webhook delivery attempt log entry (T-DAT-018, FR-13-004). Stores the signed
+/// A single outbound webhook delivery attempt log entry. Stores the signed
 /// payload so it can be replayed unchanged, plus the retry/backoff bookkeeping.
 /// </summary>
 public sealed class WebhookDelivery : BaseEntity<Guid>

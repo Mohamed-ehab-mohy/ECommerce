@@ -8,7 +8,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Handlers;
 
-/// <summary>Rejects a pending review with a reason (US-K-002).</summary>
+/// <summary>Rejects a pending review with a reason.</summary>
 public sealed class RejectReviewCommandHandler(
     IProductReviewRepository reviews,
     IUnitOfWork unitOfWork,

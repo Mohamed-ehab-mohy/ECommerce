@@ -1,7 +1,7 @@
 namespace ECommerce.UseCases.Invoicing.Ports;
 
 /// <summary>
-/// Object-store persistence for generated finance documents (T-DAT-014). Keys are relative
+/// Object-store persistence for generated finance documents. Keys are relative
 /// document references (e.g. <c>invoices/I-20260814-000001.pdf</c>).
 /// </summary>
 public interface IInvoiceDocumentStore

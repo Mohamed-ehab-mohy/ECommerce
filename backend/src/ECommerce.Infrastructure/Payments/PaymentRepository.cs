@@ -12,6 +12,13 @@ public sealed class PaymentRepository(ECommerceDbContext dbContext) : IPaymentRe
             .Include(payment => payment.Ledger)
             .SingleOrDefaultAsync(payment => payment.Id == id, cancellationToken);
 
+    public Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.Set<Payment>()
+            .FromSqlInterpolated($"""SELECT * FROM "payments" WHERE "id" = {id} FOR UPDATE SKIP LOCKED""")
+            .Include(payment => payment.Attempts)
+            .Include(payment => payment.Ledger)
+            .SingleOrDefaultAsync(cancellationToken);
+
     public Task<Payment?> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken) =>
         dbContext.Set<Payment>()
             .Include(payment => payment.Attempts)

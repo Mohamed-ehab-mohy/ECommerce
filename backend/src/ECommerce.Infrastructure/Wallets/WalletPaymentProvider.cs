@@ -96,8 +96,8 @@ public sealed class WalletPaymentProvider(ECommerceDbContext dbContext) : IPayme
 
     public Task<IReadOnlyList<ProviderTransaction>> ListTransactionsAsync(DateTime fromUtc, DateTime toUtc, CancellationToken cancellationToken)
     {
-        // For wallets, we could query the DB, but usually wallets are internal and don't need external reconciliation 
-        // in the same way Stripe/PayPal do. We'll return empty for now.
+        // Wallet funds are internal and do not require external provider reconciliation,
+        // so there is no external transaction ledger to list.
         return Task.FromResult<IReadOnlyList<ProviderTransaction>>([]);
     }
 }

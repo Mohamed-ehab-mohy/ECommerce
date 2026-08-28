@@ -39,7 +39,7 @@ public sealed class Order : BaseEntity<Guid>
 
     public decimal TaxTotal { get; private set; }
 
-    /// <summary>Effective tax rate (0..1) applied to the taxable base, snapshot at order time (FR-09-003).</summary>
+    /// <summary>Effective tax rate (0..1) applied to the taxable base, snapshot at order time.</summary>
     public decimal TaxRate { get; private set; }
 
     public decimal GrandTotal { get; private set; }

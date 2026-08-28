@@ -6,7 +6,7 @@ using ECommerce.UseCases.Payments.Responses;
 
 namespace ECommerce.UseCases.Payments.Handlers;
 
-/// <summary>Approves a requested refund per policy (US-I-004, BR-1608).</summary>
+/// <summary>Approves a requested refund per policy.</summary>
 public sealed class ApproveRefundCommandHandler(
     IRefundRepository refunds,
     IUnitOfWork unitOfWork,

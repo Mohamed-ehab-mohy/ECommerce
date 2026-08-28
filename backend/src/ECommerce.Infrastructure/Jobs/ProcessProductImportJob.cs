@@ -3,7 +3,7 @@ using Hangfire;
 
 namespace ECommerce.Infrastructure.Jobs;
 
-/// <summary>Processes a bulk product import batch (US-B-007, BR-1207).</summary>
+/// <summary>Processes a bulk product import batch.</summary>
 [AutomaticRetry(Attempts = 2)]
 public sealed class ProcessProductImportJob(ProductImportService service)
 {

@@ -11,8 +11,8 @@ public enum ProductImportStatus
 }
 
 /// <summary>
-/// A bulk product import batch (BR-1207, FRS-B-007). Rows are stored as JSON, validated per row,
-/// and the run records per-row errors for partial success (US-B-007).
+/// A bulk product import batch (FRS-B-007). Rows are stored as JSON, validated per row,
+/// and the run records per-row errors for partial success.
 /// </summary>
 public sealed class ProductImport : BaseEntity<Guid>
 {
@@ -98,7 +98,7 @@ public sealed class ProductImport : BaseEntity<Guid>
     }
 }
 
-/// <summary>A single per-row import error for the error report (US-B-007, BR-1207).</summary>
+/// <summary>A single per-row import error for the error report.</summary>
 public sealed class ProductImportError
 {
     public Guid Id { get; internal set; }

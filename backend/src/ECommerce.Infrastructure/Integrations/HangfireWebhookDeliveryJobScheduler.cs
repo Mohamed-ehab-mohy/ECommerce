@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Integrations;
 
-/// <summary>Enqueues or schedules a webhook delivery job into Hangfire (T-DAT-018).</summary>
+/// <summary>Enqueues or schedules a webhook delivery job into Hangfire.</summary>
 public sealed class HangfireWebhookDeliveryJobScheduler(
     IBackgroundJobClient? backgroundJobClient,
     PostCommitActions? postCommitActions,

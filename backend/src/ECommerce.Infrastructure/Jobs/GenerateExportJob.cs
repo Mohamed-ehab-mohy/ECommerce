@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Jobs;
 
-/// <summary>Generates a report export asynchronously and stores the CSV file (T-DAT-017, US-L-007).</summary>
+/// <summary>Generates a report export asynchronously and stores the CSV file.</summary>
 [AutomaticRetry(Attempts = 2)]
 public sealed class GenerateExportJob(
     IExportJobRepository exports,

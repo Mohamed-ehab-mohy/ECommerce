@@ -8,7 +8,7 @@ using ECommerce.UseCases.Reviews.Responses;
 namespace ECommerce.UseCases.Reviews.Handlers;
 
 /// <summary>
-/// Records or changes a customer's vote on a published review; one vote per customer per review (US-K-005).
+/// Records or changes a customer's vote on a published review; one vote per customer per review.
 /// </summary>
 public sealed class VoteReviewCommandHandler(
     IProductReviewRepository reviews,

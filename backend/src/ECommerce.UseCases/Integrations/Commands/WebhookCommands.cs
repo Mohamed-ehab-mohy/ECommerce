@@ -5,7 +5,7 @@ using ECommerce.UseCases.Integrations.Responses;
 
 namespace ECommerce.UseCases.Integrations.Commands;
 
-/// <summary>Registers a partner webhook endpoint and returns the signing secret once (US-M-004).</summary>
+/// <summary>Registers a partner webhook endpoint and returns the signing secret once.</summary>
 public sealed record CreateWebhookEndpointCommand(
     string Name,
     string Url,

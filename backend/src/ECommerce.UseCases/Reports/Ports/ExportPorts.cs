@@ -15,7 +15,7 @@ public interface IExportJobScheduler
     void Enqueue(Guid exportId);
 }
 
-/// <summary>Stores generated report files (T-DAT-017). Key is a safe relative path.</summary>
+/// <summary>Stores generated report files. Key is a safe relative path.</summary>
 public interface IExportFileStore
 {
     Task<string> PutAsync(string key, byte[] content, CancellationToken cancellationToken);

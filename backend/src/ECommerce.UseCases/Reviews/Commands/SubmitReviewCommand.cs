@@ -3,7 +3,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Commands;
 
-/// <summary>Submits a review for a verified purchase; queued for moderation (US-K-001).</summary>
+/// <summary>Submits a review for a verified purchase; queued for moderation.</summary>
 public sealed class SubmitReviewCommand(
     Guid productId,
     Guid customerId,

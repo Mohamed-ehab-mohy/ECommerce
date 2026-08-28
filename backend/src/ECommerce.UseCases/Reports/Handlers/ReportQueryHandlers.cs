@@ -5,7 +5,7 @@ using ECommerce.UseCases.Reports.Responses;
 
 namespace ECommerce.UseCases.Reports.Handlers;
 
-/// <summary>Executes the sales time-series report (US-L-001, T-DAT-017).</summary>
+/// <summary>Executes the sales time-series report.</summary>
 public sealed class SalesReportQueryHandler(
     IReportingQueryService reporting,
     IValidator<SalesReportQuery> validator,
@@ -40,7 +40,7 @@ public sealed class SalesReportQueryHandler(
     }
 }
 
-/// <summary>Executes the inventory position report (US-L-002, T-DAT-017).</summary>
+/// <summary>Executes the inventory position report.</summary>
 public sealed class InventoryReportQueryHandler(
     IReportingQueryService reporting,
     TimeProvider timeProvider) : IRequestHandler<InventoryReportQuery, Result<InventoryReportResponse>>
@@ -75,7 +75,7 @@ public sealed class InventoryReportQueryHandler(
     }
 }
 
-/// <summary>Executes the finance report matching the payment ledger (US-L-006, T-DAT-017).</summary>
+/// <summary>Executes the finance report matching the payment ledger.</summary>
 public sealed class FinanceReportQueryHandler(
     IReportingQueryService reporting,
     IValidator<FinanceReportQuery> validator,
@@ -100,7 +100,7 @@ public sealed class FinanceReportQueryHandler(
     }
 }
 
-/// <summary>Executes the promotion performance report (US-L-004, T-DAT-017).</summary>
+/// <summary>Executes the promotion performance report.</summary>
 public sealed class PromotionReportQueryHandler(
     IReportingQueryService reporting,
     IValidator<PromotionReportQuery> validator,
@@ -131,7 +131,7 @@ public sealed class PromotionReportQueryHandler(
     }
 }
 
-/// <summary>Executes the fulfillment SLA report (US-L-005, T-DAT-017).</summary>
+/// <summary>Executes the fulfillment SLA report.</summary>
 public sealed class FulfillmentReportQueryHandler(
     IReportingQueryService reporting,
     IValidator<FulfillmentReportQuery> validator,

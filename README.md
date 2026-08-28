@@ -2,7 +2,6 @@
 
 <div align="center">
   <img src="https://github.com/Mohamed-ehab-mohy/ECommerce/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
-  <img src="https://img.shields.io/badge/Coverage-92%25-success.svg" alt="Coverage" />
   <img src="https://img.shields.io/badge/Architecture-Clean-success" alt="Clean Architecture" />
 </div>
 
@@ -19,7 +18,7 @@
 
 ## Executive Summary
 
-A production-grade, highly scalable **Multi-Tenant SaaS E-Commerce Backend** built with **.NET 10**. This repository represents a complete microservices-ready monolithic architecture, engineered to demonstrate advanced enterprise-level software design patterns. The system is highly decoupled, fault-tolerant, and designed to handle high-throughput concurrent operations without data corruption or state inconsistency across thousands of isolated tenants.
+A **Multi-Tenant SaaS E-Commerce Backend** built on **.NET 10**. This repository is a microservices-ready monolithic architecture that applies a consistent set of software design patterns: Clean Architecture, Domain-Driven Design, CQRS, and event-driven messaging. It is decoupled and designed for concurrent operations with tenant-isolated data, but it is a reference architecture rather than a fully hardened production system.
 
 ## Table of Contents
 - [Architecture & Applied Design Patterns](#architecture--applied-design-patterns)
@@ -36,7 +35,7 @@ A production-grade, highly scalable **Multi-Tenant SaaS E-Commerce Backend** bui
 
 This system strictly adheres to the following architectural principles and patterns to ensure high maintainability, testability, and scalability:
 
-- **Multi-Tenancy (SaaS Ready):** Designed as a Shared Database, Shared Schema architecture. Every core entity implements a `TenantId` discriminator. Entity Framework Core Global Query Filters are applied automatically by the `ITenantService` to guarantee strict data isolation across different tenants seamlessly.
+- **Multi-Tenancy (SaaS Ready):** Designed as a Shared Database, Shared Schema architecture. Every core entity implements a `TenantId` discriminator. Entity Framework Core Global Query Filters are applied automatically by the `ITenantService` to guarantee strict data isolation across different tenants.
 - **Clean Architecture (Onion Architecture):** Strict separation of concerns divided into Domain, Use Cases (Application), Infrastructure, and API Presentation layers. Dependencies point inwards.
 - **Domain-Driven Design (DDD):** Rich, encapsulated domain models utilizing Aggregate Roots, Value Objects, Entities, and Domain Events to represent complex business logic.
 - **CQRS (Command Query Responsibility Segregation):** Mediated via MediatR. Write operations (Commands) are fully separated from Read operations (Queries), allowing for independent scaling and optimization.
@@ -126,7 +125,7 @@ erDiagram
 
 ## Comprehensive Feature Set
 
-### 1. SaaS & Platform Management (New)
+### 1. SaaS & Platform Management
 - **Tenant-Based Rate Limiting:** Prevents the "Noisy Neighbor" problem by enforcing API quotas based on the tenant's subscription plan.
 - **Automated Billing & Webhooks:** Integrated with Stripe Webhooks to automatically handle subscription upgrades, downgrades, and cancellations (`customer.subscription.updated`).
 - **Trial Management:** Automated background jobs via Hangfire that scan for expired trials and automatically suspend inactive tenants.
@@ -140,35 +139,35 @@ erDiagram
 - **Rate Limiting:** Global and endpoint-specific rate limiting to prevent Brute-Force and DDoS attacks using ASP.NET Core RateLimiter.
 - **Content-Security-Policy (CSP):** Hardened middleware rejecting inline scripts, cross-origin framing, and enforcing secure resource loading.
 
-### 2. Catalog, Search & Localization
+### 3. Catalog, Search & Localization
 - Comprehensive management of Products, Brands, Categories, and Variants.
 - **Localization:** Native support for Product Translations allowing multi-language product names and descriptions.
 - **REST & GraphQL:** Dual API exposure. REST for standard management, and GraphQL for highly flexible, client-driven product queries, filtering, and pagination.
 - **Caching Strategy:** Redis-backed caching for frequently accessed catalog read-models.
 
-### 3. Shopping Cart, Wishlist & Checkout Workflow
+### 4. Shopping Cart, Wishlist & Checkout Workflow
 - **Persistent Distributed Cart:** User shopping carts are stored in Redis for low-latency read/write access.
 - **Wishlist:** Users can save products for later via the Wishlists module.
 - **Complex Checkout Pipeline:** An orchestrated flow that handles validation, stock reservation, price calculation, payment execution, and order generation atomically.
 
-### 4. Digital Wallets, Payments & Promotions
+### 5. Digital Wallets, Payments & Promotions
 - **Wallet System:** Users possess internal digital wallets allowing deposits, withdrawals, and direct transfers.
 - **External Payment Gateways:** Real integration with Stripe for processing credit card payments.
 - **Coupons & Promotions:** Advanced promotional engine for discounts and coupon codes.
 - **Concurrency Protection:** EF Core Concurrency Tokens ensure that simultaneous transactions cannot overdraw a wallet or corrupt the ledger.
 
-### 5. Inventory & Warehouse Management
+### 6. Inventory & Warehouse Management
 - Real-time stock tracking per product variant.
 - **Distributed Locking:** Redis locks ensure that if two users attempt to buy the last item simultaneously, only one succeeds.
 - Stock replenishment and low-stock alerts.
 
-### 6. Order Management, Shipping & Notifications
+### 7. Order Management, Shipping & Notifications
 - Comprehensive order state machine (Pending -> Payment Verified -> Processing -> Shipped -> Delivered).
 - **Shipping Integrations:** Integrations with Aramex and DHL for real-time shipment handling.
 - **Notifications Engine:** Integration with SendGrid (Email) and Twilio (SMS) for customer notifications on order state changes.
 - **SignalR Integration:** WebSockets push live order status updates directly to the frontend clients without requiring polling.
 
-### 7. Background Processing & Scheduling
+### 8. Background Processing & Scheduling
 - **Hangfire Jobs:** Recurring and fire-and-forget jobs for tasks such as cleaning up abandoned carts, generating daily sales reports, and sending asynchronous email notifications.
 - **Outbox Sweeper:** A hosted background service that polls the `OutboxMessages` table and publishes pending events to RabbitMQ.
 
@@ -176,7 +175,7 @@ erDiagram
 
 ## Roadmap & Upcoming Features
 
-While the backend infrastructure is extremely robust, the following components are scheduled for future implementation to complete the ecosystem:
+The following components are scheduled for future implementation to complete the ecosystem:
 
 - **CMS (Content Management System):** Backend module for managing Home Page Banners, dynamic layouts, and static pages (About Us, Terms & Conditions).
 
@@ -184,11 +183,11 @@ While the backend infrastructure is extremely robust, the following components a
 
 ## CI/CD Pipeline & Quality Gates
 
-The repository features a fully automated, multi-stage GitHub Actions pipeline designed to enforce extreme code quality and system stability:
+The repository features an automated, multi-stage GitHub Actions pipeline that enforces code quality and stability:
 
 1. **Format Check:** Enforces strict code formatting via `dotnet format`.
 2. **Static Code Analysis (Secret Scanning):** GitLeaks integration prevents accidental committing of sensitive API keys or credentials.
-3. **Unit Tests:** High coverage of domain logic and use-case handlers using mocked dependencies.
+3. **Unit Tests:** Core domain logic and use-case handlers, tested with mocked dependencies.
 4. **Architecture Tests:** Validates that Clean Architecture rules are not violated (e.g., Domain layer referencing Infrastructure).
 5. **Integration Tests:** Utilizes Testcontainers to spin up real instances of PostgreSQL and Redis to test database interactions and API endpoints.
 6. **Load & Performance Testing:** Uses k6 to execute smoke load tests against the API within the pipeline to prevent performance regressions.
@@ -197,7 +196,7 @@ The repository features a fully automated, multi-stage GitHub Actions pipeline d
 
 ## Local Development Environment
 
-The system is configured for a frictionless developer experience using Docker Compose.
+The system is configured for local development using Docker Compose.
 
 ### Requirements
 - Docker Desktop

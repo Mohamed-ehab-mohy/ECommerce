@@ -2,7 +2,7 @@ namespace ECommerce.Domain.Integrations;
 
 /// <summary>
 /// Outbound webhook event catalog (docs/08 §8.2). Partner endpoints subscribe to these types
-/// and receive signed deliveries (US-M-004, T-DAT-018).
+/// and receive signed deliveries.
 /// </summary>
 public static class WebhookEventTypes
 {

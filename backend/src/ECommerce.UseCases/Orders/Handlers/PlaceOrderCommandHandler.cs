@@ -72,7 +72,7 @@ public sealed class PlaceOrderCommandHandler(
             return CheckoutErrors.InvalidState;
         }
 
-        var payment = await payments.GetByIdAsync(checkout.PaymentId.Value, cancellationToken);
+        var payment = await payments.GetByIdForUpdateAsync(checkout.PaymentId.Value, cancellationToken);
         if (payment is null)
         {
             return PaymentErrors.PaymentNotFound;
@@ -163,7 +163,7 @@ public sealed class PlaceOrderCommandHandler(
             return attachResult.Error;
         }
 
-        // Capturing the authorized payment is the "paid" moment (US-I-001): it emits
+        // Capturing the authorized payment is the "paid" moment: it emits
         // PaymentCaptured, which triggers invoice issuance.
         var captureResult = payment.Capture(payment.Amount, utcNow);
         if (captureResult.IsFailure)

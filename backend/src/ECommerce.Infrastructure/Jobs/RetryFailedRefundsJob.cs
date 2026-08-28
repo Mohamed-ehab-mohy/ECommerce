@@ -10,7 +10,7 @@ namespace ECommerce.Infrastructure.Jobs;
 
 /// <summary>
 /// Retries a failed refund execution through the originating provider (UC-I-004). The refund aggregate
-/// enforces the attempt budget; the execute handler is idempotent by refund id (QAS-04).
+/// enforces the attempt budget; the execute handler is idempotent by refund id.
 /// </summary>
 [AutomaticRetry(Attempts = 0)]
 public sealed class RetryFailedRefundsJob(

@@ -4,7 +4,7 @@ using ECommerce.UseCases.Reports.Responses;
 
 namespace ECommerce.Infrastructure.Reports;
 
-/// <summary>Renders report rows to RFC-4180-style CSV (T-DAT-017, US-L-007).</summary>
+/// <summary>Renders report rows to RFC-4180-style CSV.</summary>
 public static class CsvReportRenderer
 {
     public static string RenderSales(IReadOnlyList<SalesPoint> points)

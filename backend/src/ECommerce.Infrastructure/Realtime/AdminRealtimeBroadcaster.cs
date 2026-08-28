@@ -6,7 +6,7 @@ namespace ECommerce.Infrastructure.Realtime;
 /// <summary>
 /// Fans out operational events to the <c>admins</c> group on <c>adminHub</c>: <c>StockAlerts</c>
 /// and <c>ReconciliationDrift</c>. <c>LiveOrderMetrics</c> is pushed by the periodic
-/// <c>LiveOpsMetricsJob</c> (US-N-003, FR-12).
+/// <c>LiveOpsMetricsJob</c>.
 /// </summary>
 public sealed class AdminRealtimeBroadcaster(
     IRealtimeEventForwarder forwarder,

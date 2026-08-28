@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Reports;
 
-/// <summary>Enqueues an export job into Hangfire (T-DAT-017).</summary>
+/// <summary>Enqueues an export job into Hangfire.</summary>
 public sealed class HangfireExportJobScheduler(
     IBackgroundJobClient? backgroundJobClient,
     ILogger<HangfireExportJobScheduler> logger) : IExportJobScheduler

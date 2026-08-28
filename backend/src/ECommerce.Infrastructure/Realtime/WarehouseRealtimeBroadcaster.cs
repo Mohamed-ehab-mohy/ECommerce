@@ -6,7 +6,7 @@ namespace ECommerce.Infrastructure.Realtime;
 /// <summary>
 /// Fans out fulfillment and stock events to the owning warehouse group (<c>wh:{id}</c>) on
 /// <c>warehouseHub</c>: <c>NewFulfillmentTask</c>, <c>TaskStatusChanged</c> and <c>StockAlert</c>
-/// (US-N-002, US-N-004, FR-12).
+///.
 /// </summary>
 public sealed class WarehouseRealtimeBroadcaster(
     IRealtimeEventForwarder forwarder,

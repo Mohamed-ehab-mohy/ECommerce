@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Integrations;
 
-/// <summary>POSTs a signed payload to a partner endpoint with the X-* delivery headers (T-DAT-018).</summary>
+/// <summary>POSTs a signed payload to a partner endpoint with the X-* delivery headers.</summary>
 public sealed class HttpWebhookDeliverer(
     IHttpClientFactory httpClientFactory,
     ILogger<HttpWebhookDeliverer> logger) : IWebhookHttpDeliverer

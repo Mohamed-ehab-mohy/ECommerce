@@ -33,10 +33,9 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             Status = StatusCodes.Status500InternalServerError,
             Title = "An unexpected error occurred.",
-            Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+            Detail = "The server encountered an internal error. Please try again later or contact support."
         };
-
-        problem.Detail = exception.Message;
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken);

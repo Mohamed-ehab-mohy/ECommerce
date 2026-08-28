@@ -4,7 +4,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Commands;
 
-/// <summary>Approves a pending review for publication (US-K-002).</summary>
+/// <summary>Approves a pending review for publication.</summary>
 public sealed class PublishReviewCommand(
     Guid reviewId,
     Guid? moderatorId) : IRequest<Result<ReviewModerationResponse>>, IRequirePermission

@@ -18,7 +18,7 @@ public sealed record ProductImportRow(
     string? Status,
     string Locale);
 
-/// <summary>Starts an async bulk product import batch (US-B-007, BR-1207, FR-02-007).</summary>
+/// <summary>Starts an async bulk product import batch.</summary>
 public sealed record StartProductImportCommand(IReadOnlyList<ProductImportRow> Rows)
     : IRequest<Result<ProductImportStartedResponse>>, IRequirePermission
 {

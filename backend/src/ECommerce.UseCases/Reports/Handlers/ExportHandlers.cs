@@ -7,10 +7,10 @@ using ECommerce.UseCases.Reports.Responses;
 
 namespace ECommerce.UseCases.Reports.Handlers;
 
-/// <summary>Serialized report filters re-read by the async export job (T-DAT-017).</summary>
+/// <summary>Serialized report filters re-read by the async export job.</summary>
 public sealed record ExportFilters(DateTime? From, DateTime? To, string? Granularity, string? Currency);
 
-/// <summary>Persists an export job and enqueues generation (US-L-007, T-DAT-017).</summary>
+/// <summary>Persists an export job and enqueues generation.</summary>
 public sealed class CreateExportCommandHandler(
     IExportJobRepository exports,
     IExportJobScheduler scheduler,
@@ -48,7 +48,7 @@ public sealed class CreateExportCommandHandler(
     }
 }
 
-/// <summary>Returns the export status; the controller streams the file when Completed (US-L-007).</summary>
+/// <summary>Returns the export status; the controller streams the file when Completed.</summary>
 public sealed class GetExportQueryHandler(
     IExportJobRepository exports,
     IValidator<GetExportQuery> validator) : IRequestHandler<GetExportQuery, Result<ExportStatusResponse>>

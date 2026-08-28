@@ -3,7 +3,7 @@ using Hangfire;
 
 namespace ECommerce.Infrastructure.Jobs;
 
-/// <summary>Recurring job that enforces promotion schedules (activation/pause) (US-E-007).</summary>
+/// <summary>Recurring job that enforces promotion schedules (activation/pause).</summary>
 [AutomaticRetry(Attempts = 5)]
 public sealed class PromotionScheduleEnforcerJob(PromotionScheduleEnforcer enforcer)
 {

@@ -7,7 +7,7 @@ namespace ECommerce.Infrastructure.Search;
 
 /// <summary>
 /// Recomputes the product rating aggregate into the search read model whenever a review is
-/// published or removed, keeping cached ratings fresh (FRS-K-003, US-K-003).
+/// published or removed, keeping cached ratings fresh (FRS-K-003).
 /// </summary>
 public sealed class ReviewRatingSynchronizer(ECommerceDbContext dbContext)
     : IEventHandler<ReviewPublished>,

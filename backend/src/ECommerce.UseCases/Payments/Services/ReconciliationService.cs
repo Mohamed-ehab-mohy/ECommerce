@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 namespace ECommerce.UseCases.Payments.Services;
 
 /// <summary>
-/// Snapshot provider-backed payments into the reconciliation ledger (T-DAT-010) and runs the
+/// Snapshot provider-backed payments into the reconciliation ledger and runs the
 /// nightly reconciliation feed: provider transactions are compared against the platform ledger,
 /// matching records are marked Matched, mismatches are flagged as Drift, and provider-side
-/// transactions without a platform record are surfaced (T-DAT-015, US-I-005/007).
+/// transactions without a platform record are surfaced.
 /// </summary>
 public sealed class ReconciliationService(
     IPaymentRepository payments,

@@ -6,7 +6,7 @@ namespace ECommerce.API.Hubs;
 
 /// <summary>
 /// Pushes <c>OrderStatusChanged</c> and <c>OrderTimelineUpdated</c> to the authenticated customer's
-/// <c>u:{userId}</c> group (US-N-001).
+/// <c>u:{userId}</c> group.
 /// </summary>
 [Authorize]
 public sealed class OrderHub(IRealtimeEventStore store) : RealtimeHubBase(store)

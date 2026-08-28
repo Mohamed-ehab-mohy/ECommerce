@@ -4,7 +4,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Queries;
 
-/// <summary>Returns the moderation queue of pending reviews (US-K-002).</summary>
+/// <summary>Returns the moderation queue of pending reviews.</summary>
 public sealed class GetModerationQueueQuery(
     int page,
     int pageSize) : IRequest<Result<ModerationQueueResponse>>, IRequirePermission

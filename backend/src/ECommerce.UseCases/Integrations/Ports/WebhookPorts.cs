@@ -37,7 +37,7 @@ public interface IWebhookSigner
 
 public sealed record WebhookDeliveryResult(bool Success, int? StatusCode, string? Error);
 
-/// <summary>POSTs a signed payload to a partner endpoint (T-DAT-018).</summary>
+/// <summary>POSTs a signed payload to a partner endpoint.</summary>
 public interface IWebhookHttpDeliverer
 {
     Task<WebhookDeliveryResult> PostAsync(

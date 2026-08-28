@@ -179,8 +179,7 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
 
                     var tenantIdAccess = System.Linq.Expressions.Expression.Property(parameter, "TenantId");
                     var currentTenant = System.Linq.Expressions.Expression.Property(null, typeof(TenantScope), "Current");
-                    var isNull = System.Linq.Expressions.Expression.Equal(currentTenant, System.Linq.Expressions.Expression.Constant(null, typeof(Guid?)));
-                    filter = System.Linq.Expressions.Expression.OrElse(isNull, System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant));
+                    filter = System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant);
                 }
 
                 if (isSoftDeletable)

@@ -14,7 +14,7 @@ namespace ECommerce.UseCases.Payments.Handlers;
 
 /// <summary>
 /// Executes an approved refund idempotently through the originating provider. The provider key is the
-/// refund id, so concurrent or repeated execution never produces a duplicate provider refund (QAS-04).
+/// refund id, so concurrent or repeated execution never produces a duplicate provider refund.
 /// On success the payment is marked refunded (triggering credit notes), returned items are restocked
 /// atomically, and on failure the refund is flagged for the retry job.
 /// </summary>
@@ -48,7 +48,7 @@ public sealed class ExecuteRefundCommandHandler(
             return RefundErrors.RefundNotFound;
         }
 
-        // Idempotent replay: an already-completed refund returns the stored response (QAS-04).
+        // Idempotent replay: an already-completed refund returns the stored response.
         if (refund.Status == RefundStatus.Completed)
         {
             return RefundResponse.From(refund, 0m);

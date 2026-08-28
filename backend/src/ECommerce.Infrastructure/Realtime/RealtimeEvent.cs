@@ -1,7 +1,7 @@
 namespace ECommerce.Infrastructure.Realtime;
 
 /// <summary>
-/// Persisted real-time event used for reconnect replay (T-DAT-016). One row per delivered
+/// Persisted real-time event used for reconnect replay. One row per delivered
 /// envelope, keyed by the target group (e.g. <c>u:{userId}</c>, <c>wh:{warehouseId}</c>, <c>admins</c>).
 /// </summary>
 public sealed class RealtimeEvent

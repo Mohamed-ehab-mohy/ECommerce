@@ -11,7 +11,7 @@ namespace ECommerce.API.Controllers;
 [Route("api/v1/webhook-endpoints")]
 public sealed class WebhookEndpointsController(ISender sender) : ControllerBase
 {
-    /// <summary>Registers a webhook endpoint; returns the signing secret once (integrations.write, US-M-004).</summary>
+    /// <summary>Registers a webhook endpoint; returns the signing secret once (integrations.write).</summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateWebhookEndpointRequest request, CancellationToken cancellationToken)
     {
@@ -48,7 +48,7 @@ public sealed class WebhookEndpointsController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
-    /// <summary>Returns the delivery log for an endpoint (integrations.read, T-DAT-018).</summary>
+    /// <summary>Returns the delivery log for an endpoint (integrations.read).</summary>
     [HttpGet("{endpointId:guid}/deliveries")]
     public async Task<IActionResult> Deliveries(
         Guid endpointId,

@@ -12,7 +12,7 @@ public enum PromotionState
 }
 
 /// <summary>
-/// Promotion campaign aggregate (US-E-002). Eligibility combines scope (countries/currencies),
+/// Promotion campaign aggregate. Eligibility combines scope (countries/currencies),
 /// schedule and conditions; only <see cref="PromotionState.Active"/> promotions within their schedule apply.
 /// </summary>
 public sealed class Promotion : BaseEntity<Guid>
@@ -168,7 +168,7 @@ public sealed class Promotion : BaseEntity<Guid>
         UpdatedAt = utcNow;
     }
 
-    /// <summary>Deterministic eligibility: state, schedule, scope and conditions (US-E-002).</summary>
+    /// <summary>Deterministic eligibility: state, schedule, scope and conditions.</summary>
     public bool IsEligible(PricingContext context, DateTime utcNow) =>
         State != PromotionState.Active
             ? false

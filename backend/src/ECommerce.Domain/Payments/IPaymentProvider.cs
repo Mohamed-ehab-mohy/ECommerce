@@ -58,7 +58,7 @@ public interface IPaymentProvider
 
     /// <summary>
     /// Executes a refund through the provider. The provider must treat <paramref name="request.IdempotencyKey"/>
-    /// (the refund id) as idempotent: replaying the same key returns the original result (FRS-G-008, QAS-04).
+    /// (the refund id) as idempotent: replaying the same key returns the original result (FRS-G-008).
     /// </summary>
     Task<PaymentRefundResult> RefundAsync(
         PaymentRefundRequest request,
@@ -66,7 +66,7 @@ public interface IPaymentProvider
 
     /// <summary>
     /// Returns the provider-side transactions (authorize/capture/refund) within the given window
-    /// for nightly reconciliation (T-DAT-015).
+    /// for nightly reconciliation.
     /// </summary>
     Task<IReadOnlyList<ProviderTransaction>> ListTransactionsAsync(
         DateTime fromUtc,

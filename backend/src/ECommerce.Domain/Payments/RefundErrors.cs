@@ -8,7 +8,7 @@ public static class RefundErrors
         "The refund was not found.",
         ErrorType.NotFound);
 
-    /// <summary>Refund amount must not exceed the paid amount minus already refunded amounts (BR-1606, RF-1).</summary>
+    /// <summary>Refund amount must not exceed the paid amount minus already refunded amounts.</summary>
     public static readonly Error ExceedsRefundable = new(
         "ERR_PAY_003",
         "The refund amount exceeds the refundable amount for this payment.",

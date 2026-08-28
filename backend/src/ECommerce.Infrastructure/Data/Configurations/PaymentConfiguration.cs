@@ -69,6 +69,10 @@ public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(payment => payment.UpdatedAt).HasColumnName("updated_at");
         builder.Property(payment => payment.IsDeleted).HasColumnName("is_deleted");
 
+        builder.Property(payment => payment.Version)
+            .IsRowVersion()
+            .HasColumnName("version");
+
         builder.Ignore(payment => payment.DomainEvents);
 
         builder.HasMany(payment => payment.Attempts)

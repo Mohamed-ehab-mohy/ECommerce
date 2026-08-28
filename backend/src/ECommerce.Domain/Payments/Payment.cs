@@ -46,12 +46,15 @@ public sealed class Payment : BaseEntity<Guid>
 
     public int Attempt { get; private set; }
 
-    /// <summary>Earliest time a retry of a declined payment is allowed (cooldown, US-G-004).</summary>
+    /// <summary>Earliest time a retry of a declined payment is allowed (cooldown).</summary>
     public DateTime? RetryAfterUtc { get; private set; }
+
+    /// <summary>Concurrency token used to prevent concurrent capture/refund races.</summary>
+    public byte[]? Version { get; private set; }
 
     public IReadOnlyCollection<PaymentAttempt> Attempts => _attempts;
 
-    /// <summary>Append-only payment ledger (US-G-007); entries are never updated or deleted.</summary>
+    /// <summary>Append-only payment ledger; entries are never updated or deleted.</summary>
     public IReadOnlyCollection<PaymentLedgerEntry> Ledger => _ledger;
 
     public static Payment Create(
@@ -129,7 +132,7 @@ public sealed class Payment : BaseEntity<Guid>
         return PaymentErrors.CaptureConflict;
     }
 
-    /// <summary>Checks whether a declined payment may be retried now (bounded + cooldown, US-G-004).</summary>
+    /// <summary>Checks whether a declined payment may be retried now (bounded + cooldown).</summary>
     public Result CanRetry(DateTime utcNow) =>
         Status is not (PaymentStatus.Failed or PaymentStatus.RetryPending)
             ? PaymentErrors.CaptureConflict
@@ -243,7 +246,7 @@ public sealed class Payment : BaseEntity<Guid>
         UpdatedAt = utcNow;
     }
 
-    /// <summary>Appends an immutable ledger entry for a payment transition (US-G-007).</summary>
+    /// <summary>Appends an immutable ledger entry for a payment transition.</summary>
     private void RecordLedger(
         string eventType,
         string status,

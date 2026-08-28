@@ -11,7 +11,7 @@ using ECommerce.UseCases.Reviews.Responses;
 namespace ECommerce.UseCases.Reviews.Handlers;
 
 /// <summary>
-/// Submits a review for a product the customer actually purchased (US-K-001). One review per
+/// Submits a review for a product the customer actually purchased. One review per
 /// customer per product; reviews queue for moderation with a Verified Purchase flag.
 /// </summary>
 public sealed class SubmitReviewCommandHandler(

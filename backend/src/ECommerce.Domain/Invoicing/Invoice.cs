@@ -4,7 +4,7 @@ using ECommerce.Domain.Events;
 namespace ECommerce.Domain.Invoicing;
 
 /// <summary>
-/// Financial invoice issued when a payment is captured (FR-09-001). Immutable copy of the order
+/// Financial invoice issued when a payment is captured. Immutable copy of the order
 /// pricing at issuance; credit notes only ever reduce the outstanding balance via
 /// <see cref="ApplyCreditNote"/>.
 /// </summary>

@@ -4,7 +4,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Commands;
 
-/// <summary>Removes a published review for compliance/abuse; re-aggregates the rating (US-K-004).</summary>
+/// <summary>Removes a published review for compliance/abuse; re-aggregates the rating.</summary>
 public sealed class RemoveReviewCommand(
     Guid reviewId,
     Guid? moderatorId,

@@ -29,7 +29,7 @@ public sealed record WebhookEnvelope(
 
 /// <summary>
 /// Orchestrates webhook dispatch and delivery: persists a pending delivery per subscribed endpoint,
-/// POSTs signed payloads, and applies the retry/suspend policy (T-DAT-018, FR-13-004).
+/// POSTs signed payloads, and applies the retry/suspend policy.
 /// </summary>
 public sealed class WebhookDeliveryService(
     IWebhookEndpointRepository endpoints,

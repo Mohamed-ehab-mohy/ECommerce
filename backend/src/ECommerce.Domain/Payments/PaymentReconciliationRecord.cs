@@ -16,7 +16,7 @@ public enum ReconciliationStatus
 }
 
 /// <summary>
-/// Provider-vs-platform reconciliation snapshot (T-DAT-010). One row per payment expected from the provider;
+/// Provider-vs-platform reconciliation snapshot. One row per payment expected from the provider;
 /// the S12 nightly job fills <see cref="ProviderStatus"/> and marks Matched/Drift/Unmatched.
 /// </summary>
 public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
@@ -82,7 +82,7 @@ public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
         return record;
     }
 
-    /// <summary>Marks a provider/platform mismatch; drift is detectable via the status flag (T-DAT-010).</summary>
+    /// <summary>Marks a provider/platform mismatch; drift is detectable via the status flag.</summary>
     public void MarkDrift(string detail, DateTime utcNow)
     {
         Status = ReconciliationStatus.Drift;
@@ -106,7 +106,7 @@ public sealed class PaymentReconciliationRecord : BaseEntity<Guid>
         UpdatedAt = utcNow;
     }
 
-    /// <summary>Marks a provider transaction that has no matching platform record (T-DAT-015).</summary>
+    /// <summary>Marks a provider transaction that has no matching platform record.</summary>
     public void MarkUnmatched(string detail, DateTime utcNow)
     {
         Status = ReconciliationStatus.Unmatched;

@@ -8,7 +8,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Handlers;
 
-/// <summary>Approves a pending review; the rating aggregate recomputes on publication (US-K-002/003).</summary>
+/// <summary>Approves a pending review; the rating aggregate recomputes on publication.</summary>
 public sealed class PublishReviewCommandHandler(
     IProductReviewRepository reviews,
     IUnitOfWork unitOfWork,

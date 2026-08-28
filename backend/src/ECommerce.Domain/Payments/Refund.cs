@@ -6,7 +6,7 @@ namespace ECommerce.Domain.Payments;
 /// <summary>
 /// Refund request aggregate (FRS-I-004, UC-I-004). Created in <see cref="RefundStatus.Requested"/> and driven
 /// through approval and idempotent provider execution. The refund id doubles as the provider idempotency key,
-/// so replaying execution never creates a duplicate provider refund (QAS-04).
+/// so replaying execution never creates a duplicate provider refund.
 /// </summary>
 public sealed class Refund : BaseEntity<Guid>
 {

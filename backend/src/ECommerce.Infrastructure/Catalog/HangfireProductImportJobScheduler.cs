@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ECommerce.Infrastructure.Catalog;
 
-/// <summary>Enqueues a product import batch for the processing job (FR-02-007).</summary>
+/// <summary>Enqueues a product import batch for the processing job.</summary>
 public sealed class HangfireProductImportJobScheduler(
     IBackgroundJobClient? backgroundJobClient,
     ILogger<HangfireProductImportJobScheduler> logger) : IProductImportJobScheduler

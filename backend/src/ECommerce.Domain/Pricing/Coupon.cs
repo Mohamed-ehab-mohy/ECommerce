@@ -4,7 +4,7 @@ using ECommerce.Domain.Events;
 namespace ECommerce.Domain.Pricing;
 
 /// <summary>
-/// Coupon aggregate (US-E-003). The redemption counter is incremented atomically by the repository
+/// Coupon aggregate. The redemption counter is incremented atomically by the repository
 /// (<c>UPDATE ... WHERE used_count &lt; total_uses</c>); <see cref="TryRedeem"/> enforces the domain invariant.
 /// </summary>
 public sealed class Coupon : BaseEntity<Guid>

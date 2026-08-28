@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace ECommerce.Infrastructure.Storage;
 
 /// <summary>
-/// Local filesystem object store for generated documents (T-DAT-014). Configure the base
+/// Local filesystem object store for generated documents. Configure the base
 /// directory with <c>Storage:BasePath</c> (default: <c>./storage</c>).
 /// </summary>
 public sealed class LocalFileDocumentStore(

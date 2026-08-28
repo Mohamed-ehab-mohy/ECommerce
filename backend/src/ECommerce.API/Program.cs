@@ -14,6 +14,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,12 +90,22 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
-    KnownIPNetworks = { },
-    KnownProxies = { }
-});
+    ForwardedForHeaderName = "X-Forwarded-For",
+    ForwardedProtoHeaderName = "X-Forwarded-Proto"
+};
+
+foreach (var proxy in builder.Configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? Array.Empty<string>())
+{
+    if (IPAddress.TryParse(proxy, out var proxyAddress))
+    {
+        forwardedHeadersOptions.KnownProxies.Add(proxyAddress);
+    }
+}
+
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (!builder.Environment.IsDevelopment())
 {

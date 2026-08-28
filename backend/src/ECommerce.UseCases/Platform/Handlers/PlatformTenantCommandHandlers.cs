@@ -23,8 +23,6 @@ internal sealed class PlatformTenantCommandHandlers(
         }
 
         tenant.Suspend();
-        // Note: I will add Suspend() to Tenant.cs next
-
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

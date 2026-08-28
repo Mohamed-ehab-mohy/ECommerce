@@ -8,7 +8,7 @@ namespace ECommerce.Infrastructure.Jobs;
 
 /// <summary>
 /// Periodically pushes <c>LiveOrderMetrics</c> (order rate, active stock alerts, reconciliation
-/// drift) to the <c>admins</c> group on <c>adminHub</c> (US-N-003, FR-12).
+/// drift) to the <c>admins</c> group on <c>adminHub</c>.
 /// </summary>
 public sealed class LiveOpsMetricsJob(
     ECommerceDbContext dbContext,

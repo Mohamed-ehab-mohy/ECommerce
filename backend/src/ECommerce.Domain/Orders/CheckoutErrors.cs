@@ -18,6 +18,11 @@ public static class CheckoutErrors
         "The checkout state does not allow this operation.",
         ErrorType.Conflict);
 
+    public static readonly Error CheckoutUnauthorized = new(
+        "ERR_CHK_005",
+        "You are not authorized to access this checkout.",
+        ErrorType.Unauthorized);
+
     public static readonly Error CartEmpty = new(
         "ERR_CHK_003",
         "The cart is empty. Add items before checking out.",

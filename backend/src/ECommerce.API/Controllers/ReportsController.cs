@@ -10,7 +10,7 @@ namespace ECommerce.API.Controllers;
 [Route("api/v1/reports")]
 public sealed class ReportsController(ISender sender) : ControllerBase
 {
-    /// <summary>Sales time-series report (reports.read, US-L-001).</summary>
+    /// <summary>Sales time-series report (reports.read).</summary>
     [HttpGet("sales")]
     public async Task<IActionResult> Sales(
         [FromQuery] DateTime? from,
@@ -28,7 +28,7 @@ public sealed class ReportsController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
-    /// <summary>Inventory position report (reports.read, US-L-002).</summary>
+    /// <summary>Inventory position report (reports.read).</summary>
     [HttpGet("inventory")]
     public async Task<IActionResult> Inventory(CancellationToken cancellationToken)
     {
@@ -39,7 +39,7 @@ public sealed class ReportsController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
-    /// <summary>Finance report matching the payment ledger (reports.read, US-L-006).</summary>
+    /// <summary>Finance report matching the payment ledger (reports.read).</summary>
     [HttpGet("finance")]
     public async Task<IActionResult> Finance(
         [FromQuery] DateTime? from,
@@ -55,7 +55,7 @@ public sealed class ReportsController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
-    /// <summary>Promotion performance report (reports.read, US-L-004).</summary>
+    /// <summary>Promotion performance report (reports.read).</summary>
     [HttpGet("promotions")]
     public async Task<IActionResult> Promotions(
         [FromQuery] DateTime? from,
@@ -71,7 +71,7 @@ public sealed class ReportsController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
-    /// <summary>Fulfillment SLA report (reports.read, US-L-005).</summary>
+    /// <summary>Fulfillment SLA report (reports.read).</summary>
     [HttpGet("fulfillment")]
     public async Task<IActionResult> Fulfillment(
         [FromQuery] DateTime? from,

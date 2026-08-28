@@ -5,7 +5,7 @@ namespace ECommerce.Infrastructure.Realtime;
 
 /// <summary>
 /// Fans out order lifecycle events to the owning customer's group (<c>u:{userId}</c>) on
-/// <c>orderHub</c>: <c>OrderStatusChanged</c> and <c>OrderTimelineUpdated</c> (US-N-001, FR-12).
+/// <c>orderHub</c>: <c>OrderStatusChanged</c> and <c>OrderTimelineUpdated</c>.
 /// </summary>
 public sealed class OrderRealtimeBroadcaster(
     IRealtimeEventForwarder forwarder,

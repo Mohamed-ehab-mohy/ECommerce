@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace ECommerce.Infrastructure.Reports;
 
 /// <summary>
-/// Local filesystem store for generated report exports (T-DAT-017). Configure the base directory
+/// Local filesystem store for generated report exports. Configure the base directory
 /// with <c>Storage:BasePath</c> (default: <c>./storage</c>); files live under <c>exports/</c>.
 /// </summary>
 public sealed class LocalExportFileStore(

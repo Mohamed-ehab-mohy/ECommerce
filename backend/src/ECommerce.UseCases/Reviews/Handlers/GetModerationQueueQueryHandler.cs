@@ -5,7 +5,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Handlers;
 
-/// <summary>Returns the moderation queue of pending reviews (US-K-002).</summary>
+/// <summary>Returns the moderation queue of pending reviews.</summary>
 public sealed class GetModerationQueueQueryHandler(
     IProductReviewRepository reviews,
     IValidator<GetModerationQueueQuery> validator) : IRequestHandler<GetModerationQueueQuery, Result<ModerationQueueResponse>>

@@ -6,7 +6,7 @@ public sealed class PaymentProviderOptions
 
     public string DefaultProvider { get; set; } = "mock";
 
-    /// <summary>Backup PSP key used when the primary provider's circuit is open (US-G-003).</summary>
+    /// <summary>Backup PSP key used when the primary provider's circuit is open.</summary>
     public string FailoverProvider { get; set; } = string.Empty;
 
     public CircuitBreakerOptions CircuitBreaker { get; set; } = new();

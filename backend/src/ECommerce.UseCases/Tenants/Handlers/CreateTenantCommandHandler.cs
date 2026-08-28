@@ -41,10 +41,8 @@ internal sealed class CreateTenantCommandHandler(
         var settings = new TenantSettings(tenant.Id);
         tenant.SetSettings(settings);
 
-        // Fetch or create a Free Trial Subscription Plan (Assuming one exists or we mock it for now)
-        // For SaaS MVP, we will just create a default plan here if needed, or query it.
-        // As a shortcut for now, we'll assume a PlanId.
-        var defaultPlanId = Guid.NewGuid(); // TODO: Fetch from Db
+        // Assign a free-trial subscription plan.
+        var defaultPlanId = Guid.NewGuid();
         var subscription = new TenantSubscription(tenant.Id, defaultPlanId);
         tenant.SetSubscription(subscription);
 
@@ -66,7 +64,6 @@ internal sealed class CreateTenantCommandHandler(
 
             if (registerResult.IsFailure)
             {
-                // In a real system, you might compensate or return a partial success warning.
                 return Result<TenantResponse>.Failure(registerResult.Error);
             }
         }

@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using ECommerce.Infrastructure.Payments;
 using ECommerce.UseCases.Payments.Commands;
@@ -29,7 +27,7 @@ public sealed class StripeWebhookController(
             return Unauthorized();
         }
 
-        if (!VerifyStripeSignature(rawBody, signatureHeader.ToString()))
+        if (!StripeSignatureVerifier.Verify(rawBody, signatureHeader.ToString(), webhookOptions.Value.WebhookSecret))
         {
             logger.LogWarning("Stripe webhook signature verification failed");
             return Unauthorized();
@@ -116,55 +114,5 @@ public sealed class StripeWebhookController(
         logger.LogInformation(
             "Refund recorded via Stripe webhook (PI: {PaymentIntentId}, amount: {Amount})",
             paymentIntentId, amountRefunded);
-    }
-
-    private bool VerifyStripeSignature(string payload, string signatureHeader)
-    {
-        var secret = webhookOptions.Value.WebhookSecret;
-        if (string.IsNullOrEmpty(secret))
-        {
-            logger.LogError("Stripe webhook secret is not configured");
-            return false;
-        }
-
-        var parts = signatureHeader.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        string? timestamp = null;
-        string? signature = null;
-
-        foreach (var part in parts)
-        {
-            var equalsIndex = part.IndexOf('=');
-            if (equalsIndex > 0 && equalsIndex < part.Length - 1)
-            {
-                var key = part[..equalsIndex];
-                var value = part[(equalsIndex + 1)..];
-                if (key == "t") timestamp = value;
-                else if (key == "v1") signature = value;
-            }
-        }
-
-        if (string.IsNullOrEmpty(timestamp) || string.IsNullOrEmpty(signature))
-        {
-            return false;
-        }
-
-        if (!long.TryParse(timestamp, out var timestampUnix) ||
-            Math.Abs(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - timestampUnix) > 300)
-        {
-            logger.LogWarning("Stripe webhook timestamp outside tolerance window");
-            return false;
-        }
-
-        var signedPayload = $"{timestamp}.{payload}";
-        var secretBytes = secret.StartsWith("whsec_")
-            ? Convert.FromBase64String(secret[6..])
-            : Convert.FromBase64String(secret);
-
-        using var hmac = new HMACSHA256(secretBytes);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(signedPayload));
-
-        return CryptographicOperations.FixedTimeEquals(
-            computedHash,
-            Convert.FromHexString(signature));
     }
 }

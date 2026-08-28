@@ -10,10 +10,10 @@ namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/v1/guest-checkout")]
-[AllowAnonymous]
 public sealed class GuestCheckoutController(ISender sender) : ControllerBase
 {
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> Initiate(
         GuestInitiateCheckoutRequest request,
         CancellationToken cancellationToken)
@@ -54,6 +54,7 @@ public sealed class GuestCheckoutController(ISender sender) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCheckoutQuery(id), cancellationToken);
@@ -64,6 +65,7 @@ public sealed class GuestCheckoutController(ISender sender) : ControllerBase
     }
 
     [HttpPost("{checkoutId:guid}/place")]
+    [AllowAnonymous]
     public async Task<IActionResult> Place(
         Guid checkoutId,
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
@@ -79,6 +81,7 @@ public sealed class GuestCheckoutController(ISender sender) : ControllerBase
     }
 
     [HttpGet("orders")]
+    [Authorize]
     public async Task<IActionResult> GetOrdersByEmail(
         [FromQuery] string email,
         CancellationToken cancellationToken)

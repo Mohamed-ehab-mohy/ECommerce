@@ -3,7 +3,7 @@ using ECommerce.UseCases.Checkout.Ports;
 namespace ECommerce.Infrastructure.Orders;
 
 /// <summary>
-/// Resolves tax rates from a configurable static ruleset (US-I-003 fallback rules, FR-09-003).
+/// Resolves tax rates from a configurable static ruleset (fallback rules).
 /// Configuration key: <c>Tax:Rates:&lt;countryCode&gt;</c> holds the percentage (e.g. 14 = 14%).
 /// Any country not present falls back to the built-in default rate.
 /// </summary>

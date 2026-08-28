@@ -8,7 +8,7 @@ using ECommerce.UseCases.Orders.Ports;
 namespace ECommerce.UseCases.Integrations.Services;
 
 /// <summary>
-/// Bridges domain events to signed webhook deliveries (US-M-004). Maps each event to the catalog
+/// Bridges domain events to signed webhook deliveries. Maps each event to the catalog
 /// payload (docs/08 §8.2) and hands it to the delivery service.
 /// </summary>
 public sealed class WebhookEventDispatcher(

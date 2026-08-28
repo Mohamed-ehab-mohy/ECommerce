@@ -2,7 +2,7 @@ using ECommerce.Domain.Payments;
 
 namespace ECommerce.UseCases.Payments.Responses;
 
-/// <summary>A single drift flagged by a reconciliation run (T-DAT-015).</summary>
+/// <summary>A single drift flagged by a reconciliation run.</summary>
 public sealed record ReconciliationDriftResponse(
     Guid RecordId,
     Guid PaymentId,
@@ -10,7 +10,7 @@ public sealed record ReconciliationDriftResponse(
     ReconciliationStatus Status,
     string Detail);
 
-/// <summary>Summary of a reconciliation run (provider vs platform) (US-I-005, US-I-007, T-DAT-015).</summary>
+/// <summary>Summary of a reconciliation run (provider vs platform).</summary>
 public sealed record ReconciliationRunResponse(
     int MatchedCount,
     int DriftCount,

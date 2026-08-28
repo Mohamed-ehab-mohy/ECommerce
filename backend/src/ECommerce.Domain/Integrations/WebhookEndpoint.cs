@@ -3,7 +3,7 @@ using ECommerce.Domain.Common;
 namespace ECommerce.Domain.Integrations;
 
 /// <summary>
-/// A partner webhook endpoint (US-M-004, T-DAT-018). Holds the HMAC signing secret and the
+/// A partner webhook endpoint. Holds the HMAC signing secret and the
 /// subscribed event types; deliveries are recorded separately in <see cref="WebhookDelivery"/>.
 /// </summary>
 public sealed class WebhookEndpoint : BaseEntity<Guid>
@@ -26,7 +26,7 @@ public sealed class WebhookEndpoint : BaseEntity<Guid>
 
     public bool IsActive { get; private set; }
 
-    /// <summary>While set and in the future the endpoint is temporarily suspended (T-DAT-018).</summary>
+    /// <summary>While set and in the future the endpoint is temporarily suspended.</summary>
     public DateTime? SuspendedUntilUtc { get; private set; }
 
     public DateTime? SecretRotatedAtUtc { get; private set; }

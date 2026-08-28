@@ -4,7 +4,7 @@ using ECommerce.Domain.Events;
 namespace ECommerce.Domain.Invoicing;
 
 /// <summary>
-/// Credit note referencing an invoice and (when available) the refund that triggered it (FR-09-002).
+/// Credit note referencing an invoice and (when available) the refund that triggered it.
 /// </summary>
 public sealed class CreditNote : BaseEntity<Guid>
 {

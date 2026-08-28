@@ -3,7 +3,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Commands;
 
-/// <summary>Records (or changes) a customer's helpful/not-helpful vote on a published review (US-K-005).</summary>
+/// <summary>Records (or changes) a customer's helpful/not-helpful vote on a published review.</summary>
 public sealed class VoteReviewCommand(
     Guid reviewId,
     Guid customerId,

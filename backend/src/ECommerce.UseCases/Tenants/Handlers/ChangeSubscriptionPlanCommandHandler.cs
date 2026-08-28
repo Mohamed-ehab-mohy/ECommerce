@@ -26,9 +26,7 @@ internal sealed class ChangeSubscriptionPlanCommandHandler(
         if (plan == null || !plan.IsActive)
             return Result<Guid>.Failure(new Error("Subscription.PlanNotFound", "The requested plan does not exist or is inactive."));
 
-        // In a real SaaS, this is where we'd call Stripe/Payment Gateway to update the subscription
-        // and handle prorations. For now, we simulate the database update directly.
-
+        // The plan change is persisted locally; billing through a payment gateway is not part of this flow.
         tenant.Subscription.ChangePlan(plan.Id);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

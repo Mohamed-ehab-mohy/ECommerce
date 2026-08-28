@@ -9,7 +9,7 @@ namespace ECommerce.UseCases.Catalog.Handlers;
 
 /// <summary>
 /// Starts an async bulk product import: persists the batch, enqueues the processing job, and
-/// returns the import id (US-B-007, BR-1207, FR-02-007).
+/// returns the import id.
 /// </summary>
 public sealed class StartProductImportCommandHandler(
     IProductImportRepository imports,

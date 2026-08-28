@@ -8,7 +8,7 @@ using ECommerce.UseCases.Reviews.Responses;
 
 namespace ECommerce.UseCases.Reviews.Handlers;
 
-/// <summary>Removes a published review for compliance/abuse; the rating re-aggregates (US-K-004).</summary>
+/// <summary>Removes a published review for compliance/abuse; the rating re-aggregates.</summary>
 public sealed class RemoveReviewCommandHandler(
     IProductReviewRepository reviews,
     IUnitOfWork unitOfWork,

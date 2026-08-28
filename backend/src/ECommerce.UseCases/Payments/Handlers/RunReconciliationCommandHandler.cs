@@ -8,7 +8,7 @@ namespace ECommerce.UseCases.Payments.Handlers;
 /// <summary>
 /// Runs the nightly reconciliation feed on demand: snapshots unreconciled payments, compares each
 /// pending record against the originating provider's transactions, flags drift, and writes the
-/// financial audit trail (US-I-005, US-I-007, T-DAT-015).
+/// financial audit trail.
 /// </summary>
 public sealed class RunReconciliationCommandHandler(ReconciliationService service)
     : IRequestHandler<RunReconciliationCommand, Result<ReconciliationRunResponse>>

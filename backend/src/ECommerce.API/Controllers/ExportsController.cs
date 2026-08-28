@@ -11,7 +11,7 @@ namespace ECommerce.API.Controllers;
 [Route("api/v1/exports")]
 public sealed class ExportsController(ISender sender, IExportFileStore fileStore) : ControllerBase
 {
-    /// <summary>Starts an async report export (reports.read, US-L-007).</summary>
+    /// <summary>Starts an async report export (reports.read).</summary>
     [HttpPost]
     public async Task<IActionResult> Start([FromBody] CreateExportRequest request, CancellationToken cancellationToken)
     {
