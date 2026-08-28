@@ -163,6 +163,11 @@ public static class DependencyInjection
 
         services.AddDataProtection().SetApplicationName("ECommerce");
 
+        var authIpLimit = configuration.GetValue("RateLimiting:AuthIpPermitLimit", 10);
+        var userLimit = configuration.GetValue("RateLimiting:UserPermitLimit", 120);
+        var ipLimit = configuration.GetValue("RateLimiting:IpPermitLimit", 300);
+        var tenantLimit = configuration.GetValue("RateLimiting:TenantPermitLimit", 600);
+
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = 429;
@@ -209,7 +214,7 @@ public static class DependencyInjection
                         $"auth-ip:{clientIp}",
                         _ => new SlidingWindowRateLimiterOptions
                         {
-                            PermitLimit = 10,
+                            PermitLimit = authIpLimit,
                             Window = TimeSpan.FromMinutes(1),
                             SegmentsPerWindow = 6,
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -230,7 +235,7 @@ public static class DependencyInjection
                             $"user:{userId}",
                             _ => new SlidingWindowRateLimiterOptions
                             {
-                                PermitLimit = 120,
+                                PermitLimit = userLimit,
                                 Window = TimeSpan.FromMinutes(1),
                                 SegmentsPerWindow = 4,
                                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -246,7 +251,7 @@ public static class DependencyInjection
                         $"ip:{clientIp}",
                         _ => new SlidingWindowRateLimiterOptions
                         {
-                            PermitLimit = 300,
+                            PermitLimit = ipLimit,
                             Window = TimeSpan.FromMinutes(1),
                             SegmentsPerWindow = 4,
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -266,7 +271,7 @@ public static class DependencyInjection
                             $"tenant:{tenantId.Value}",
                             _ => new SlidingWindowRateLimiterOptions
                             {
-                                PermitLimit = 600,
+                                PermitLimit = tenantLimit,
                                 Window = TimeSpan.FromMinutes(1),
                                 SegmentsPerWindow = 6,
                                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,

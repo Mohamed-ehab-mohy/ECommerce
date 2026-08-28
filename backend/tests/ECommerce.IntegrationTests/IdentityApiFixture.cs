@@ -58,7 +58,11 @@ public sealed class IdentityApiFixture : IAsyncLifetime
                         ["ConnectionStrings:Redis"] = redisConnectionString,
                         ["ConnectionStrings:RabbitMq"] = "",
                         ["Hangfire:Disabled"] = "true",
-                        ["Telemetry:Disabled"] = "true"
+                        ["Telemetry:Disabled"] = "true",
+                        ["RateLimiting:AuthIpPermitLimit"] = "100000",
+                        ["RateLimiting:UserPermitLimit"] = "100000",
+                        ["RateLimiting:IpPermitLimit"] = "100000",
+                        ["RateLimiting:TenantPermitLimit"] = "100000"
                     });
                 });
 
