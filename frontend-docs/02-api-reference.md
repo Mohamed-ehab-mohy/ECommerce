@@ -110,13 +110,31 @@ All errors (except a few noted exceptions) use **RFC 7807 Problem Details** with
 }
 ```
 
-**OAuth (partner tokens)** — `POST /api/v1/auth/oauth/token` (form-urlencoded `grant_type`, `client_id`, `client_secret`):
+**OAuth 2.0 (partner tokens)** — `/api/v1/auth/oauth` all endpoints are `form-urlencoded`, use the OAuth error format (`error` / `error_description`), **not** ProblemDetails.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/auth/oauth/.well-known/openid-configuration` | OpenID Connect discovery document |
+| POST | `/auth/oauth/authorize` | Issue a short-lived, single-use **authorization code** for an already-authenticated user (`[Authorize]` + Bearer token) |
+| POST | `/auth/oauth/token` | Exchange for an access token (`grant_type` = `authorization_code`, `client_credentials` or `password`) |
+| POST | `/auth/oauth/revoke` | Revoke an access token (blocklisted in Redis until expiry) |
+
+**POST /auth/oauth/authorize** (form fields: `client_id`, `redirect_uri`, `scope`?, `code_challenge`?, `code_challenge_method`? = `S256`)
 
 ```json
-{ "access_token": "string", "token_type": "Bearer", "expires_in": 3600, "scope": "string" }
+{ "code": "string", "redirect_uri": "https://client.example/cb", "scope": "orders.read" }
 ```
 
-- This controller uses OAuth error format (`error` / `error_description`), **not** ProblemDetails.
+**POST /auth/oauth/token** — fields vary by grant:
+- `grant_type=authorization_code` → `code`, `client_id`, `client_secret`, `redirect_uri`, `code_verifier` (required when PKCE used), `scope`?
+- `grant_type=client_credentials` → `client_id`, `client_secret`, `scope`?
+- `grant_type=password` → `client_id`, `client_secret`, `username`, `password`, `scope`?
+
+```json
+{ "access_token": "string", "token_type": "Bearer", "expires_in": 3600, "scope": "orders.read" }
+```
+
+Supported scopes: `openid`, `profile`, `email`, `orders.read`, `orders.write`, `catalog.read`.
 
 ---
 
@@ -253,8 +271,7 @@ Search (adds facets):
 - `GET /api/v1/currencies/rates?baseCurrency=USD` → 200 `{ "baseCurrency": "USD", "rates": [{ "fromCurrency": "USD", "toCurrency": "EUR", "rate": 0.85, "updatedAt": "datetime" }] }`
 - `GET /api/v1/currencies/convert?amount=100&from=USD&to=EUR` → 200 `{ "originalAmount": 100.0, "fromCurrency": "USD", "toCurrency": "EUR", "convertedAmount": 85.0 }`
 - `GET /api/v1/recommendations/for-me?limit=` (`[Authorize]`) → 200 `[{ "productId": "guid", "sku": "string", "name": "string", "price": 10.0, "score": 0.9, "reason": "string" }]` (also `/bought-together/{productId}` and `/trending`)
-- `POST /api/v1/content/banners` → 201 `BannerResponse`
-- `GET /api/v1/flags` → 200 `[{ "key": "string", "description": "string", "enabled": true }]` · `GET /api/v1/flags/{key}` → 200 · `PUT /api/v1/flags/{key}` → 204
+- `POST /api/v1/flags` → 200 `[{ "key": "string", "description": "string", "enabled": true }]` · `GET /api/v1/flags/{key}` → 200 · `PUT /api/v1/flags/{key}` → 204
 
 ### Product imports — `/api/v1/imports` (`[Authorize]`)
 
@@ -694,6 +711,85 @@ Payment error codes: `ERR_RES_001` (404), `ERR_PAY_001` Declined (402), `ERR_PAY
 
 ---
 
+## CMS (Content) — `/api/v1/content`
+
+Storefront-facing reads are public and **output-cached** (banners 60s; pages/layouts by slug 300s). Management endpoints require `[Authorize]` plus the corresponding `content.banner.*` / `content.page.*` / `content.layout.*` permission.
+
+### Public (storefront) — output cached
+
+| Method | Path | Success |
+|---|---|---|
+| GET | `/content/banners?page=&pageSize=` | 200 `PagedBannersResponse` |
+| GET | `/content/pages/{slug}` | 200 `PageResponse` |
+| GET | `/content/layouts/{slug}` | 200 `CmsLayoutResponse` |
+
+`BannerResponse`:
+
+```json
+{ "id": "guid", "title": "Flash Sale", "imageUrl": "https://...", "targetUrl": "/sale|null", "displayOrder": 1, "isActive": true }
+```
+
+`PageResponse`:
+
+```json
+{ "id": "guid", "title": "About Us", "slug": "about-us", "htmlContent": "<h1>...</h1>", "metaTitle": "string|null", "metaDescription": "string|null", "isPublished": true }
+```
+
+`CmsLayoutResponse` (with sections):
+
+```json
+{
+  "id": "guid", "name": "Homepage", "slug": "homepage", "isActive": true,
+  "sections": [
+    { "id": "guid", "title": "Hero", "type": 0, "displayOrder": 0, "configJson": "{\"headline\":\"Welcome\"}|null", "isActive": true }
+  ]
+}
+```
+
+> `type` is a numeric enum: `0` Hero, `1` BannerCarousel, `2` FeaturedProducts, `3` RichText. `configJson` is a raw JSON string (per-section typed config).
+
+### Admin (management) — `[Authorize]` + permission
+
+**Banners `content.banner.*`** — as shown, plus list/get:
+
+| Method | Path (admin prefix) | Success |
+|---|---|---|
+| GET | `/content/admin/banners?page=&pageSize=` | 200 `PagedBannersResponse` |
+| GET | `/content/admin/banners/{bannerId}` | 200 `BannerResponse` |
+| POST | `/content/admin/banners` | 201 `BannerResponse` |
+| PATCH | `/content/admin/banners/{bannerId}` | 204 |
+| DELETE | `/content/admin/banners/{bannerId}` | 204 |
+
+Create/update body (`BannerRequest`): `{ "title", "imageUrl", "targetUrl"?|null, "displayOrder", "isActive" }`
+
+**Pages `content.page.*`:**
+
+| Method | Path (admin prefix) | Success |
+|---|---|---|
+| GET | `/content/admin/pages?page=&pageSize=` | 200 `PagedPagesResponse` |
+| GET | `/content/admin/pages/{pageId}` | 200 `PageResponse` |
+| POST | `/content/admin/pages` | 201 `PageResponse` |
+| PATCH | `/content/admin/pages/{pageId}` | 204 |
+| DELETE | `/content/admin/pages/{pageId}` | 204 |
+
+Create/update body (`PageRequest`): `{ "title", "slug", "htmlContent", "metaTitle"?|null, "metaDescription"?|null, "isPublished" }` — `slug` must be unique per tenant (409 on conflict).
+
+**Layouts `content.layout.*`:**
+
+| Method | Path (admin prefix) | Success |
+|---|---|---|
+| GET | `/content/admin/layouts?page=&pageSize=` | 200 `PagedCmsLayoutsResponse` |
+| GET | `/content/admin/layouts/{layoutId}` | 200 `CmsLayoutResponse` |
+| POST | `/content/admin/layouts` | 201 `CmsLayoutResponse` |
+| PATCH | `/content/admin/layouts/{layoutId}` | 204 |
+| DELETE | `/content/admin/layouts/{layoutId}` | 204 |
+
+Create/update body (`LayoutRequest`): `{ "name", "slug", "isActive", "sections": [ { "title", "type", "displayOrder", "configJson"?|null, "isActive" } ] }` — sections fully replace on update.
+
+Content error codes: `Content.BannerNotFound`/`PageNotFound`/`LayoutNotFound` (404), `Content.PageSlugAlreadyExists`/`LayoutSlugAlreadyExists` (409); missing permission → 403 with `permission` in ProblemDetails.
+
+---
+
 ## Stripe webhooks (public)
 
 - `POST /api/v1/webhooks/stripe` — header `Stripe-Signature` required. 401 on invalid. Always **200 empty body** on success.
@@ -703,7 +799,7 @@ Payment error codes: `ERR_RES_001` (404), `ERR_PAY_001` Declined (402), `ERR_PAY
 
 ## Important Global Notes
 
-1. **Enums-as-numbers:** `Product.status`, `Warehouse.status`, `Invoice.status`, `Payment.status`, and `Reconciliation drift.status` serialize as **integers**. Most other statuses are strings (see each section).
+1. **Enums-as-numbers:** `Product.status`, `Warehouse.status`, `Invoice.status`, `Payment.status`, `Reconciliation drift.status`, and CMS layout section `type` serialize as **integers**. Most other statuses are strings (see each section).
 2. **Idempotency-Key:** required on `POST /payments/*/authorize`, `POST /wallets/deposit`, `POST /wallets/convert-points`; optional on checkout place and refund create. Missing on required endpoints → 400.
 3. **401 on default:** unauthenticated requests to `[Authorize]` endpoints produce 401 (often empty body / no ProblemDetails).
 4. **Media endpoints:** invoice PDF and export download return binary files, not JSON.

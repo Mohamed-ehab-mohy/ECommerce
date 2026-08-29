@@ -100,6 +100,11 @@ erDiagram
     
     ORDER ||--o{ SHIPMENT : split_into
     ORDER ||--o{ FULFILLMENT_TASK : generates
+    
+    TENANT ||--o{ BANNER : manages
+    TENANT ||--o{ PAGE : manages
+    TENANT ||--o{ CMS_LAYOUT : manages
+    CMS_LAYOUT ||--o{ CMS_LAYOUT_SECTION : contains
 ```
 
 ---
@@ -111,6 +116,7 @@ erDiagram
 - **ORM:** Entity Framework Core (Code-First Migrations)
 - **Primary Database:** PostgreSQL (Relational Data)
 - **Caching & Locks:** Redis (Distributed Caching, Session State, Distributed Locking)
+- **HTTP Output Caching:** ASP.NET Core response caching on storefront-facing endpoints with a tenant-aware vary-by policy
 - **Message Broker:** RabbitMQ (Asynchronous Messaging)
 - **Service Bus Wrapper:** MassTransit
 - **Background Jobs:** Hangfire (Persistent Scheduled Tasks)
@@ -134,6 +140,7 @@ erDiagram
 ### 2. Identity, Security & Access Management
 - **Multi-Tenancy:** Secure data isolation using Entity Framework Core Global Query Filters bound to `TenantId`.
 - **JWT Bearer Authentication:** Secure stateless authentication.
+- **OAuth 2.0 (Authorization Code + PKCE):** OAuth clients obtain short-lived, single-use authorization codes bound to the authenticated user and exchange them at the token endpoint with a `code_verifier` (plus `client_credentials` and `password` grants), with support for token revocation and OpenID Connect discovery.
 - **Role-Based Access Control (RBAC):** Claims-based authorization policies for separating Customers and Administrators.
 - **Password Security:** Password hashing utilizing BCrypt (adaptive work factor 12).
 - **Multi-Dimensional Rate Limiting:** Every request is evaluated against multiple chained layers using ASP.NET Core`s `PartitionedRateLimiter.CreateChained` — strict per-IP brute-force protection on `/api/v1/auth/*` (10/min), per-user quotas (120/min), per-IP quotas (300/min), and per-tenant "noisy neighbor" quotas (600/min). Exceeding any single layer returns `429 Too Many Requests`, protecting against brute force, per-user abuse, per-IP abuse, and cross-tenant resource starvation simultaneously.
@@ -171,13 +178,13 @@ erDiagram
 - **Hangfire Jobs:** Recurring and fire-and-forget jobs for tasks such as cleaning up abandoned carts, generating daily sales reports, and sending asynchronous email notifications.
 - **Outbox Sweeper:** A hosted background service that polls the `OutboxMessages` table and publishes pending events to RabbitMQ.
 
----
-
-## Roadmap & Upcoming Features
-
-The following components are scheduled for future implementation to complete the ecosystem:
-
-- **CMS (Content Management System):** Backend module for managing Home Page Banners, dynamic layouts, and static pages (About Us, Terms & Conditions).
+### 9. Content Management System (CMS)
+- **Home Page Banners:** Toggle, reorder, activate, and soft-delete banners rendered on the storefront homepage.
+- **Dynamic Layouts:** Database-backed layout definitions composed of ordered sections (Hero, Banner Carousel, Featured Products, Rich Text) with JSON configuration, letting the storefront front page be templated at runtime without redeploys.
+- **Static Pages:** Manage About Us, Terms & Conditions, and similar pages with rich HTML content, SEO meta fields, and published/draft state.
+- **Tenant-Scoped & Audit-Logged:** All content entities are tenant-isolated via the shared-schema `TenantId` filter, and every create/update/deactivate writes a tamper-evident audit-trail entry.
+- **Permission-Gated Admin API:** Management operations are protected by `content.banner.*`, `content.page.*`, and `content.layout.*` permissions (granted to Admin/SuperAdmin).
+- **Output-Cached Public API:** Storefront reads (`GET /content/banners`, `GET /content/pages/{slug}`, `GET /content/layouts/{slug}`) are served from the HTTP output cache.
 
 ---
 
@@ -189,7 +196,7 @@ The repository features an automated, multi-stage GitHub Actions pipeline that e
 2. **Static Code Analysis (Secret Scanning):** GitLeaks integration prevents accidental committing of sensitive API keys or credentials.
 3. **Unit Tests:** Core domain logic and use-case handlers, tested with mocked dependencies.
 4. **Architecture Tests:** Validates that Clean Architecture rules are not violated (e.g., Domain layer referencing Infrastructure).
-5. **Integration Tests:** Utilizes Testcontainers to spin up real instances of PostgreSQL and Redis to test database interactions and API endpoints.
+5. **Integration Tests:** Utilizes Testcontainers to spin up real instances of PostgreSQL, Redis, and RabbitMQ to test database interactions, caching, and API endpoints.
 6. **Load & Performance Testing:** Uses k6 to execute smoke load tests against the API within the pipeline to prevent performance regressions.
 
 ---
