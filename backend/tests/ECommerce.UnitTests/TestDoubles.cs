@@ -1539,3 +1539,69 @@ internal sealed class FakeNotificationQueue : INotificationQueue
         return Task.CompletedTask;
     }
 }
+
+internal sealed class FakeOAuthClientValidator : IOAuthClientValidator
+{
+    public OAuthClientValidationResult? Client { get; set; }
+
+    public OAuthClientValidationResult? SecretValidation { get; set; }
+
+    public int ValidateAsyncCalls { get; private set; }
+
+    public Task<OAuthClientValidationResult?> ValidateAsync(string clientId, string clientSecret, CancellationToken cancellationToken = default)
+    {
+        ValidateAsyncCalls++;
+        return Task.FromResult(SecretValidation);
+    }
+
+    public Task<OAuthClientValidationResult?> GetClientAsync(string clientId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Client);
+
+    public static OAuthClientValidationResult Confidential(
+        string clientId,
+        IReadOnlyList<string>? scopes = null,
+        IReadOnlyList<string>? grantTypes = null,
+        IReadOnlyList<string>? redirectUris = null,
+        IReadOnlyList<string>? secrets = null) =>
+        new(
+            IsValid: true,
+            AllowedScopes: scopes ?? ["openid", "catalog.read"],
+            AllowedGrantTypes: grantTypes ?? ["authorization_code", "client_credentials", "password"],
+            RedirectUris: redirectUris ?? ["https://app.example.com/cb"],
+            DisplayName: $"Client {clientId}",
+            RequiresSecret: true);
+
+    public static OAuthClientValidationResult Public(
+        string clientId,
+        IReadOnlyList<string>? scopes = null,
+        IReadOnlyList<string>? grantTypes = null,
+        IReadOnlyList<string>? redirectUris = null) =>
+        new(
+            IsValid: true,
+            AllowedScopes: scopes ?? ["openid", "catalog.read"],
+            AllowedGrantTypes: grantTypes ?? ["authorization_code"],
+            RedirectUris: redirectUris ?? ["https://app.example.com/cb"],
+            DisplayName: $"Client {clientId}",
+            RequiresSecret: false);
+}
+
+internal sealed class FakeAuthorizationCodeStore : IAuthorizationCodeStore
+{
+    public List<AuthorizationCodeRecord> Records { get; } = [];
+
+    public Dictionary<string, int> ConsumeCallsByCode { get; } = [];
+
+    public Task<string> CreateAsync(AuthorizationCodeRecord record, TimeSpan ttl, CancellationToken cancellationToken)
+    {
+        var code = $"code-{Records.Count + 1}";
+        Records.Add(record with { Code = code });
+        return Task.FromResult(code);
+    }
+
+    public Task<AuthorizationCodeRecord?> ConsumeAsync(string code, CancellationToken cancellationToken)
+    {
+        ConsumeCallsByCode[code] = ConsumeCallsByCode.GetValueOrDefault(code) + 1;
+        var record = Records.FirstOrDefault(item => item.Code == code);
+        return Task.FromResult(record);
+    }
+}

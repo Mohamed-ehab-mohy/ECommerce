@@ -821,6 +821,161 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Equal("Forbidden", problem!.Title);
     }
 
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_Happy_Path_Exchanges_For_Access_Token()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"oauthcode_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var code = await ObtainAuthorizationCodeAsync(accessToken);
+
+        var exchange = await ExchangeCodeAsync(code, null);
+        Assert.Equal(HttpStatusCode.OK, exchange.StatusCode);
+        var body = await ReadJsonAsync(exchange);
+        Assert.False(string.IsNullOrWhiteSpace(body.GetProperty("access_token").GetString()));
+        Assert.Equal("Bearer", body.GetProperty("token_type").GetString());
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_Is_Single_Use()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"oauthsingle_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var code = await ObtainAuthorizationCodeAsync(accessToken);
+
+        var first = await ExchangeCodeAsync(code, null);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+        var second = await ExchangeCodeAsync(code, null);
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_With_Pkce_Valid_Verifier_Exchanges()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"oauthpkce_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        const string verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+        var code = await ObtainAuthorizationCodeAsync(accessToken, S256Challenge(verifier));
+
+        var exchange = await ExchangeCodeAsync(code, verifier);
+        Assert.Equal(HttpStatusCode.OK, exchange.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_With_Wrong_Pkce_Verifier_Is_Rejected()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"oauthpkcebad_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        const string verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+        var code = await ObtainAuthorizationCodeAsync(accessToken, S256Challenge(verifier));
+
+        var exchange = await ExchangeCodeAsync(code, "a-completely-wrong-verifier");
+        Assert.Equal(HttpStatusCode.BadRequest, exchange.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_Rejects_Disallowed_Redirect_Uri()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"oauthredir_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/authorize")
+        {
+            Content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string?, string?>("client_id", "ecommerce-web"),
+                new KeyValuePair<string?, string?>("redirect_uri", "https://evil.example.com/cb"),
+                new KeyValuePair<string?, string?>("scope", "openid profile")
+            })
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Authorization_Code_Endpoint_Requires_Authentication()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/authorize")
+        {
+            Content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string?, string?>("client_id", "ecommerce-web"),
+                new KeyValuePair<string?, string?>("redirect_uri", "http://localhost:3000/callback"),
+                new KeyValuePair<string?, string?>("scope", "openid")
+            })
+        };
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    private async Task<string> ObtainAuthorizationCodeAsync(string accessToken, string? codeChallenge = null)
+    {
+        var form = new List<KeyValuePair<string?, string?>>
+        {
+            new("client_id", "ecommerce-web"),
+            new("redirect_uri", "http://localhost:3000/callback"),
+            new("scope", "openid profile")
+        };
+        if (codeChallenge is not null)
+        {
+            form.Add(new KeyValuePair<string?, string?>("code_challenge", codeChallenge));
+            form.Add(new KeyValuePair<string?, string?>("code_challenge_method", "S256"));
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/authorize")
+        {
+            Content = new FormUrlEncodedContent(form)
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _fixture.Client.SendAsync(request);
+
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var body = await ReadBodyAsync(response);
+            Assert.Fail($"authorize returned {response.StatusCode}: {body}");
+        }
+
+        return (await ReadJsonAsync(response)).GetProperty("code").GetString()!;
+    }
+
+    private Task<HttpResponseMessage> ExchangeCodeAsync(string code, string? codeVerifier)
+    {
+        var form = new List<KeyValuePair<string?, string?>>
+        {
+            new("grant_type", "authorization_code"),
+            new("code", code),
+            new("client_id", "ecommerce-web"),
+            new("client_secret", "dev-secret-change-in-prod"),
+            new("redirect_uri", "http://localhost:3000/callback")
+        };
+        if (codeVerifier is not null)
+        {
+            form.Add(new KeyValuePair<string?, string?>("code_verifier", codeVerifier));
+        }
+
+        return _fixture.Client.PostAsync("/api/v1/auth/oauth/token", new FormUrlEncodedContent(form));
+    }
+
+    private static string S256Challenge(string verifier)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.ASCII.GetBytes(verifier));
+        return Convert.ToBase64String(hash).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    }
+
     private IssuedAccessToken MintTokenForTenant(Guid tenantId)
     {
         using var scope = _fixture.Services.CreateAsyncScope();

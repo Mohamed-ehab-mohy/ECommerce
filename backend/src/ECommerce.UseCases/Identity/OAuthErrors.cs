@@ -27,4 +27,19 @@ public static class OAuthErrors
         "ERR_OAUTH_005",
         "Invalid username or password.",
         ErrorType.Unauthorized);
+
+    public static readonly Error InvalidRedirectUri = new(
+        "ERR_OAUTH_006",
+        "The provided redirect_uri is not registered for this client.",
+        ErrorType.BadRequest);
+
+    public static readonly Error InvalidCodeChallenge = new(
+        "ERR_OAUTH_007",
+        "Invalid or unsupported code challenge.",
+        ErrorType.BadRequest);
+
+    public static readonly Error InvalidPkceVerifier = new(
+        "ERR_OAUTH_008",
+        "PKCE verification failed.",
+        ErrorType.BadRequest);
 }

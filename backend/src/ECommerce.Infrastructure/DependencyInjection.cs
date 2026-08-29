@@ -165,6 +165,7 @@ public static class DependencyInjection
         services.AddSingleton<ILoginAttemptThrottler, InMemoryLoginAttemptThrottler>();
         services.AddSingleton<ISocialLoginProvider, StubSocialLoginProvider>();
         services.AddScoped<IOAuthClientValidator, OAuthClientValidatorAdapter>();
+        services.AddScoped<IAuthorizationCodeStore, RedisAuthorizationCodeStore>();
         services.AddScoped<IAuditEntryRepository, AuditEntryRepository>();
         services.AddScoped<IInboxMessageRepository, InboxMessageRepository>();
         services.AddScoped<IFeatureFlagRepository, FeatureFlagRepository>();
