@@ -157,11 +157,10 @@ app.UseExceptionHandler();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
-app.UseRateLimiter();
-app.UseAuthorization();
-
 app.UseResponseCaching();
 app.UseOutputCache();
+app.UseRateLimiter();
+app.UseAuthorization();
 
 var hangfireDisabled = builder.Configuration.GetValue("Hangfire:Disabled", false);
 
