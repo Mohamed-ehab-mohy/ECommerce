@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Dapper;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.ReadModels;
 using ECommerce.UseCases.Recommendations;
 using Microsoft.Extensions.Logging;
@@ -18,13 +19,14 @@ public sealed class CollaborativeFilteringRecommendationService(
         try
         {
             using var connection = connectionFactory.CreateConnection();
-            var userProducts = await GetUserPurchasedProductIdsAsync(connection, userId);
+            var tenantId = TenantScope.Current;
+            var userProducts = await GetUserPurchasedProductIdsAsync(connection, userId, tenantId);
             if (userProducts.Count == 0)
             {
-                return await GetTrendingProductsAsync(limit, cancellationToken);
+                return await GetTrendingProductsAsync(connection, limit, cancellationToken);
             }
 
-            var coOccurrence = await BuildCoOccurrenceMatrixAsync(connection, userProducts);
+            var coOccurrence = await BuildCoOccurrenceMatrixAsync(connection, userProducts, tenantId);
             var scores = ComputeScores(userProducts, coOccurrence);
 
             var candidates = scores
@@ -35,8 +37,8 @@ public sealed class CollaborativeFilteringRecommendationService(
                 .ToList();
 
             return candidates.Count == 0
-                ? await GetTrendingProductsAsync(limit, cancellationToken)
-                : await HydrateProductsAsync(connection, candidates);
+                ? await GetTrendingProductsAsync(connection, limit, cancellationToken)
+                : await HydrateProductsAsync(connection, candidates, tenantId);
         }
         catch (Exception ex)
         {
@@ -53,6 +55,7 @@ public sealed class CollaborativeFilteringRecommendationService(
         try
         {
             using var connection = connectionFactory.CreateConnection();
+            var tenantId = TenantScope.Current;
             var sql = """
                 SELECT DISTINCT p2.product_id AS ProductId, COUNT(*) AS CoCount
                 FROM order_items oi1
@@ -60,13 +63,15 @@ public sealed class CollaborativeFilteringRecommendationService(
                 JOIN order_items oi2 ON oi2.order_id = o1.id AND oi2.product_id != oi1.product_id
                 JOIN products p2 ON oi2.product_id = p2.id
                 WHERE oi1.product_id = @ProductId
+                  AND o1.tenant_id = @TenantId
+                  AND p2.tenant_id = @TenantId
                 GROUP BY p2.product_id
                 ORDER BY CoCount DESC
                 LIMIT @Limit
                 """;
 
-            var candidates = (await connection.QueryAsync<CoOccurrenceResult>(sql, new { ProductId = productId, Limit = limit })).ToList();
-            return await HydrateProductsAsync(connection, candidates.Select(c => (c.ProductId, (double)c.CoCount)).ToList());
+            var candidates = (await connection.QueryAsync<CoOccurrenceResult>(sql, new { ProductId = productId, TenantId = tenantId, Limit = limit })).ToList();
+            return await HydrateProductsAsync(connection, candidates.Select(c => (c.ProductId, (double)c.CoCount)).ToList(), tenantId);
         }
         catch (Exception ex)
         {
@@ -82,19 +87,7 @@ public sealed class CollaborativeFilteringRecommendationService(
         try
         {
             using var connection = connectionFactory.CreateConnection();
-            var sql = """
-                SELECT oi.product_id AS ProductId, COUNT(DISTINCT o.id) AS CoCount
-                FROM order_items oi
-                JOIN orders o ON oi.order_id = o.id
-                WHERE o.created_at >= @SinceDate
-                GROUP BY oi.product_id
-                ORDER BY CoCount DESC
-                LIMIT @Limit
-                """;
-
-            var sinceDate = DateTime.UtcNow.AddDays(-30);
-            var candidates = (await connection.QueryAsync<CoOccurrenceResult>(sql, new { SinceDate = sinceDate, Limit = limit })).ToList();
-            return await HydrateProductsAsync(connection, candidates.Select(c => (c.ProductId, (double)c.CoCount)).ToList());
+            return await GetTrendingProductsAsync(connection, limit, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -103,24 +96,49 @@ public sealed class CollaborativeFilteringRecommendationService(
         }
     }
 
+    private static async Task<IReadOnlyList<ProductRecommendation>> GetTrendingProductsAsync(
+        System.Data.IDbConnection connection,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var tenantId = TenantScope.Current;
+        var sql = """
+            SELECT oi.product_id AS ProductId, COUNT(DISTINCT o.id) AS CoCount
+            FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.created_at >= @SinceDate
+              AND o.tenant_id = @TenantId
+            GROUP BY oi.product_id
+            ORDER BY CoCount DESC
+            LIMIT @Limit
+            """;
+
+        var sinceDate = DateTime.UtcNow.AddDays(-30);
+        var candidates = (await connection.QueryAsync<CoOccurrenceResult>(sql, new { SinceDate = sinceDate, TenantId = tenantId, Limit = limit })).ToList();
+        return await HydrateProductsAsync(connection, candidates.Select(c => (c.ProductId, (double)c.CoCount)).ToList(), tenantId);
+    }
+
     private static async Task<HashSet<Guid>> GetUserPurchasedProductIdsAsync(
         System.Data.IDbConnection connection,
-        Guid userId)
+        Guid userId,
+        Guid? tenantId)
     {
         var sql = """
             SELECT DISTINCT oi.product_id
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id
             WHERE o.customer_id = @UserId AND o.is_deleted = false
+              AND o.tenant_id = @TenantId
             """;
 
-        var ids = await connection.QueryAsync<Guid>(sql, new { UserId = userId });
+        var ids = await connection.QueryAsync<Guid>(sql, new { UserId = userId, TenantId = tenantId });
         return ids.ToHashSet();
     }
 
     private static async Task<ConcurrentDictionary<Guid, int>> BuildCoOccurrenceMatrixAsync(
         System.Data.IDbConnection connection,
-        HashSet<Guid> userProducts)
+        HashSet<Guid> userProducts,
+        Guid? tenantId)
     {
         var productArray = userProducts.ToArray();
         var coOccurrence = new ConcurrentDictionary<Guid, int>();
@@ -131,10 +149,11 @@ public sealed class CollaborativeFilteringRecommendationService(
             JOIN orders o ON oi1.order_id = o.id
             JOIN order_items oi2 ON oi2.order_id = o.id AND oi2.product_id != oi1.product_id
             WHERE oi1.product_id = ANY(@ProductIds)
+              AND o.tenant_id = @TenantId
             GROUP BY oi2.product_id
             """;
 
-        var results = await connection.QueryAsync<CoOccurrenceResult>(sql, new { ProductIds = productArray });
+        var results = await connection.QueryAsync<CoOccurrenceResult>(sql, new { ProductIds = productArray, TenantId = tenantId });
         foreach (var result in results)
         {
             coOccurrence.AddOrUpdate(result.ProductId, result.CoCount, (_, existing) => existing + result.CoCount);
@@ -166,9 +185,10 @@ public sealed class CollaborativeFilteringRecommendationService(
         return scores;
     }
 
-    private async Task<IReadOnlyList<ProductRecommendation>> HydrateProductsAsync(
+    private static async Task<IReadOnlyList<ProductRecommendation>> HydrateProductsAsync(
         System.Data.IDbConnection connection,
-        List<(Guid ProductId, double Score)> candidates)
+        List<(Guid ProductId, double Score)> candidates,
+        Guid? tenantId)
     {
         if (candidates.Count == 0)
         {
@@ -183,9 +203,10 @@ public sealed class CollaborativeFilteringRecommendationService(
             FROM products p
             JOIN product_translations pt ON pt.product_id = p.id AND pt.locale = 'en'
             WHERE p.id = ANY(@Ids) AND p.is_deleted = false
+              AND p.tenant_id = @TenantId
             """;
 
-        var productMap = (await connection.QueryAsync<ProductInfo>(sql, new { Ids = productIds }))
+        var productMap = (await connection.QueryAsync<ProductInfo>(sql, new { Ids = productIds, TenantId = tenantId }))
             .ToDictionary(p => p.Id);
 
         var results = new List<ProductRecommendation>();

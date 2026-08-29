@@ -23,6 +23,11 @@ public sealed class JwtAccessTokenIssuer(JwtOptions options, JwtRsaKeyProvider k
         jwtClaims.AddRange(claims.Roles.Select(role => new Claim("roles", role)));
         jwtClaims.AddRange(claims.Permissions.Select(permission => new Claim("perms", permission)));
 
+        if (claims.TenantId is { } tenantId)
+        {
+            jwtClaims.Add(new Claim("tenant_id", tenantId.ToString()));
+        }
+
         var credentials = new SigningCredentials(
             new RsaSecurityKey(keyProvider.Key),
             SecurityAlgorithms.RsaSha256);

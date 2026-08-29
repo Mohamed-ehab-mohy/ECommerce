@@ -57,7 +57,8 @@ public sealed class PasswordTokenHandler(
             customer.Email,
             roles,
             permissions,
-            Guid.NewGuid().ToString());
+            Guid.NewGuid().ToString(),
+            customer.TenantId);
 
         var issued = accessTokenIssuer.Issue(claims);
         var expiresInSeconds = (int)(issued.ExpiresAtUtc - timeProvider.GetUtcNow().UtcDateTime).TotalSeconds;

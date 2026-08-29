@@ -29,7 +29,8 @@ public sealed class TokenPairFactory(IAccessTokenIssuer accessTokenIssuer, AuthS
             customer.Email,
             roles,
             permissions,
-            Guid.NewGuid().ToString()));
+            Guid.NewGuid().ToString(),
+            customer.TenantId));
 
         var expiresInSeconds = (int)(issuedAccessToken.ExpiresAtUtc - utcNow).TotalSeconds;
 

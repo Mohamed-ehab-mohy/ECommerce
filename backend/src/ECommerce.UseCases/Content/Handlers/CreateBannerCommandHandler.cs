@@ -1,17 +1,20 @@
 using ECommerce.Domain.Content;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Content.Commands;
 using ECommerce.UseCases.Content.Ports;
 using ECommerce.UseCases.Content.Responses;
 
 namespace ECommerce.UseCases.Content.Handlers;
 
-internal sealed class CreateBannerCommandHandler(IContentRepository contentRepository)
+internal sealed class CreateBannerCommandHandler(IContentRepository contentRepository, ITenantService tenantService)
     : IRequestHandler<CreateBannerCommand, Result<BannerResponse>>
 {
     public async Task<Result<BannerResponse>> Handle(CreateBannerCommand request, CancellationToken cancellationToken)
     {
+        var tenantId = tenantService.GetCurrentTenantId();
+
         var banner = Banner.Create(
-            request.TenantId,
+            tenantId,
             request.Title,
             request.ImageUrl,
             request.TargetUrl,

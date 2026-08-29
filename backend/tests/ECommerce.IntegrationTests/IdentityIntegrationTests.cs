@@ -803,6 +803,37 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
     }
 
+    [SkippableFact]
+    public async Task Authenticated_User_With_Conflicting_Tenant_Header_Gets_403()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var tenantId = Guid.NewGuid();
+        var accessToken = MintTokenForTenant(tenantId).Value;
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        request.Headers.Add("X-Tenant-Id", Guid.NewGuid().ToString());
+        var response = await _fixture.Client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(WebJson);
+        Assert.NotNull(problem);
+        Assert.Equal("Forbidden", problem!.Title);
+    }
+
+    private IssuedAccessToken MintTokenForTenant(Guid tenantId)
+    {
+        using var scope = _fixture.Services.CreateAsyncScope();
+        var issuer = scope.ServiceProvider.GetRequiredService<IAccessTokenIssuer>();
+        return issuer.Issue(new AccessTokenClaims(
+            Guid.NewGuid(),
+            "tenant@example.com",
+            new[] { IdentityRoles.Customer },
+            Array.Empty<string>(),
+            Guid.NewGuid().ToString(),
+            tenantId));
+    }
+
     private static string DescribeChainBreak(IReadOnlyList<AuditEntry> entries)
     {
         string? previousHash = null;

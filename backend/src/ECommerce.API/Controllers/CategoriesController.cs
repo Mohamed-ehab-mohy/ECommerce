@@ -12,7 +12,7 @@ namespace ECommerce.API.Controllers;
 public sealed class CategoriesController(ISender sender) : ControllerBase
 {
     [HttpGet]
-    [OutputCache(Duration = 900)]
+    [OutputCache(PolicyName = "TenantAware", Duration = 900)]
     public async Task<IActionResult> GetTree(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCategoryTreeQuery(), cancellationToken);

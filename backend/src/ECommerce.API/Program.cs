@@ -40,6 +40,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddOutputCache(options =>
 {
     options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(1);
+    options.AddPolicy("TenantAware", TenantAwareOutputCachePolicy.Instance);
 });
 
 builder.Services.AddStackExchangeRedisOutputCache(options =>
@@ -114,14 +115,10 @@ if (!builder.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<CorrelationIdMiddleware>();
-app.UseMiddleware<TenantMiddleware>();
 
 app.UseSerilogRequestLogging();
 
 app.UseSecurityHeaders();
-
-app.UseResponseCaching();
-app.UseOutputCache();
 
 app.UseMiddleware<ApiVersionMiddleware>();
 
@@ -154,13 +151,17 @@ app.MapPrometheusScrapingEndpoint();
 app.MapGet("/", () => "ECommerce API");
 
 app.UseCors("AllowConfiguredOrigins");
-app.UseRateLimiter();
 
 app.UseExceptionHandler();
 
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<TenantMiddleware>();
+app.UseRateLimiter();
 app.UseAuthorization();
+
+app.UseResponseCaching();
+app.UseOutputCache();
 
 var hangfireDisabled = builder.Configuration.GetValue("Hangfire:Disabled", false);
 

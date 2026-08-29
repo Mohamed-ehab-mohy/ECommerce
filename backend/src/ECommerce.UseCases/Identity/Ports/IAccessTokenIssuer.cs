@@ -5,7 +5,8 @@ public sealed record AccessTokenClaims(
     string Email,
     IReadOnlyList<string> Roles,
     IReadOnlyList<string> Permissions,
-    string TokenId);
+    string TokenId,
+    Guid? TenantId = null);
 
 public sealed record IssuedAccessToken(string Value, DateTimeOffset ExpiresAtUtc);
 

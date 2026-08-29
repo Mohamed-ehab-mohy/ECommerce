@@ -1,5 +1,6 @@
 using ECommerce.Domain.Catalog;
 using ECommerce.UseCases.Catalog.Ports;
+using ECommerce.UseCases.Common;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
@@ -8,22 +9,28 @@ namespace ECommerce.Infrastructure.Catalog;
 public sealed class CachedProductRepository(
     ProductRepository inner,
     IConnectionMultiplexer redis,
+    ITenantService tenantService,
     ILogger<CachedProductRepository> logger) : IProductRepository
 {
-    private const string SinglePrefix = "product:";
-    private const string ListPrefix = "product:list:";
-    private const string CountKey = "product:count";
     private const string ListKeysSet = "product:list-keys";
-
     private static readonly TimeSpan SingleTtl = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan ListTtl = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan CountTtl = TimeSpan.FromSeconds(60);
 
     private readonly IDatabase _cache = redis.GetDatabase();
 
+    private string ScopePrefix =>
+        tenantService.GetCurrentTenantId() is { } tenantId
+            ? $"t:{tenantId}:"
+            : "t:null:";
+
+    private static string SinglePrefix => "product:";
+    private static string ListPrefix => "product:list:";
+    private static string CountKey => "product:count";
+
     public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var key = new RedisKey($"{SinglePrefix}{id}");
+        var key = new RedisKey($"{ScopePrefix}{SinglePrefix}{id}");
         try
         {
             var cached = await _cache.StringGetAsync(key);
@@ -48,7 +55,7 @@ public sealed class CachedProductRepository(
 
     public async Task<Product?> GetActiveByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var key = new RedisKey($"{SinglePrefix}{id}");
+        var key = new RedisKey($"{ScopePrefix}{SinglePrefix}{id}");
         try
         {
             var cached = await _cache.StringGetAsync(key);
@@ -86,7 +93,7 @@ public sealed class CachedProductRepository(
 
         foreach (var id in ids)
         {
-            var key = new RedisKey($"{SinglePrefix}{id}");
+            var key = new RedisKey($"{ScopePrefix}{SinglePrefix}{id}");
             try
             {
                 var cached = await _cache.StringGetAsync(key);
@@ -109,7 +116,7 @@ public sealed class CachedProductRepository(
             var dbProducts = await inner.GetByIdsAsync(misses, cancellationToken);
             foreach (var product in dbProducts)
             {
-                var key = new RedisKey($"{SinglePrefix}{product.Id}");
+                var key = new RedisKey($"{ScopePrefix}{SinglePrefix}{product.Id}");
                 await SetSingleAsync(key, product);
                 results.Add(product);
             }
@@ -140,7 +147,7 @@ public sealed class CachedProductRepository(
         int pageSize,
         CancellationToken cancellationToken)
     {
-        var key = new RedisKey($"{ListPrefix}{page}:{pageSize}");
+        var key = new RedisKey($"{ScopePrefix}{ListPrefix}{page}:{pageSize}");
         try
         {
             var cached = await _cache.StringGetAsync(key);
@@ -173,7 +180,7 @@ public sealed class CachedProductRepository(
     {
         try
         {
-            var cached = await _cache.StringGetAsync(CountKey);
+            var cached = await _cache.StringGetAsync($"{ScopePrefix}{CountKey}");
             if (!cached.IsNullOrEmpty && int.TryParse(cached.ToString(), out var cachedCount))
             {
                 return cachedCount;
@@ -188,7 +195,7 @@ public sealed class CachedProductRepository(
 
         try
         {
-            await _cache.StringSetAsync(CountKey, count.ToString(), CountTtl);
+            await _cache.StringSetAsync($"{ScopePrefix}{CountKey}", count.ToString(), CountTtl);
         }
         catch (Exception exception)
         {
@@ -204,7 +211,7 @@ public sealed class CachedProductRepository(
     {
         try
         {
-            await _cache.KeyDeleteAsync(new RedisKey($"{SinglePrefix}{productId}"));
+            await _cache.KeyDeleteAsync(new RedisKey($"{ScopePrefix}{SinglePrefix}{productId}"));
         }
         catch (Exception exception)
         {

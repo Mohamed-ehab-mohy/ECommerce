@@ -45,7 +45,8 @@ public sealed class ImpersonateUserHandler(
             target.Email,
             roles,
             permissions,
-            Guid.NewGuid().ToString()));
+            Guid.NewGuid().ToString(),
+            target.TenantId));
 
         var familyId = Guid.NewGuid();
         var rawToken = RefreshTokens.Create();
