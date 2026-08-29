@@ -105,7 +105,16 @@ public static class DependencyInjection
                 .AddInterceptors(new DomainEventsInterceptor(), new TenantAwareSaveChangesInterceptor(), new SoftDeleteInterceptor()));
         }
 
-        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var options = ConfigurationOptions.Parse(redisConnectionString);
+            options.AbortOnConnectFail = false;
+            options.ConnectRetry = 10;
+            options.ConnectTimeout = 10_000;
+            options.SyncTimeout = 10_000;
+            options.AsyncTimeout = 10_000;
+            return ConnectionMultiplexer.Connect(options);
+        });
 
 #pragma warning disable EXTEXP0018 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         services.AddHybridCache();

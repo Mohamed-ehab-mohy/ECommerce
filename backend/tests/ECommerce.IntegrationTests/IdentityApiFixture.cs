@@ -76,7 +76,7 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
                     services.RemoveAll<IConnectionMultiplexer>();
                     services.AddSingleton<IConnectionMultiplexer>(_ =>
-                        ConnectionMultiplexer.Connect(redisConnectionString));
+                        CreateRedisMultiplexer(redisConnectionString));
 
                     var dataSourceBuilder = new NpgsqlDataSourceBuilder(postgresConnectionString);
                     dataSourceBuilder.EnableDynamicJson();
@@ -102,6 +102,17 @@ public sealed class IdentityApiFixture : IAsyncLifetime
 
         EmailSender = emailSender;
         Client = _factory.CreateClient();
+    }
+
+    private static IConnectionMultiplexer CreateRedisMultiplexer(string connectionString)
+    {
+        var options = ConfigurationOptions.Parse(connectionString);
+        options.AbortOnConnectFail = false;
+        options.ConnectRetry = 10;
+        options.ConnectTimeout = 10_000;
+        options.SyncTimeout = 10_000;
+        options.AsyncTimeout = 10_000;
+        return ConnectionMultiplexer.Connect(options);
     }
 
     public async Task ProcessOutboxAsync()
