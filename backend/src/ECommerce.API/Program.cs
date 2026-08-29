@@ -10,6 +10,7 @@ using Grpc.Core.Interceptors;
 using Hangfire;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.OutputCaching;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -40,7 +41,14 @@ builder.Services.AddHealthChecks()
 builder.Services.AddOutputCache(options =>
 {
     options.DefaultExpirationTimeSpan = TimeSpan.FromMinutes(1);
-    options.AddPolicy("TenantAware", TenantAwareOutputCachePolicy.Instance);
+    options.AddBasePolicy(builder => builder
+        .VaryByValue(context =>
+        {
+            var tenantId = context.Items["TenantId"] is Guid tenantIdGuid
+                ? tenantIdGuid.ToString()
+                : "null";
+            return new KeyValuePair<string, string>("tenant", tenantId);
+        }));
 });
 
 builder.Services.AddStackExchangeRedisOutputCache(options =>
