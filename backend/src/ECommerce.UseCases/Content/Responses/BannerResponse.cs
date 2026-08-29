@@ -7,3 +7,9 @@ public sealed record BannerResponse(
     string? TargetUrl,
     int DisplayOrder,
     bool IsActive);
+
+public sealed record PagedBannersResponse(
+    IReadOnlyList<BannerResponse> Items,
+    int Page,
+    int PageSize,
+    int TotalCount);

@@ -3,6 +3,7 @@ using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.Checkout;
 using ECommerce.Domain.Common;
+using ECommerce.Domain.Content;
 using ECommerce.Domain.Flags;
 using ECommerce.Domain.Fulfillment;
 using ECommerce.Domain.Identity;
@@ -51,6 +52,14 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
     public DbSet<Brand> Brands => Set<Brand>();
 
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+
+    public DbSet<Banner> Banners => Set<Banner>();
+
+    public DbSet<Page> Pages => Set<Page>();
+
+    public DbSet<CmsLayout> CmsLayouts => Set<CmsLayout>();
+
+    public DbSet<CmsLayoutSection> CmsLayoutSections => Set<CmsLayoutSection>();
 
     public DbSet<StockItem> StockItems => Set<StockItem>();
 

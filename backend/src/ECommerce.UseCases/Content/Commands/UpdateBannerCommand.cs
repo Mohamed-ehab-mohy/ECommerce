@@ -1,16 +1,15 @@
 using ECommerce.Shared.Authorization;
 using ECommerce.UseCases.Common;
-using ECommerce.UseCases.Content.Responses;
 
 namespace ECommerce.UseCases.Content.Commands;
 
-public sealed record CreateBannerCommand(
-    Guid? TenantId,
+public sealed record UpdateBannerCommand(
+    Guid BannerId,
     string Title,
     string ImageUrl,
     string? TargetUrl,
     int DisplayOrder,
-    bool IsActive) : IRequest<Result<BannerResponse>>, IRequirePermission
+    bool IsActive) : IRequest<Result>, IRequirePermission
 {
     public string Permission => Permissions.ContentBannerWrite;
 }

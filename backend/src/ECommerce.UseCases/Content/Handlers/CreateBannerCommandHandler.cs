@@ -1,4 +1,6 @@
+using ECommerce.Domain.Audit;
 using ECommerce.Domain.Content;
+using ECommerce.UseCases.Audit.Ports;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Content.Commands;
 using ECommerce.UseCases.Content.Ports;
@@ -6,32 +8,38 @@ using ECommerce.UseCases.Content.Responses;
 
 namespace ECommerce.UseCases.Content.Handlers;
 
-internal sealed class CreateBannerCommandHandler(IContentRepository contentRepository, ITenantService tenantService)
-    : IRequestHandler<CreateBannerCommand, Result<BannerResponse>>
+public sealed class CreateBannerCommandHandler(
+    IContentRepository content,
+    IUnitOfWork unitOfWork,
+    ITenantService tenantService,
+    IValidator<CreateBannerCommand> validator,
+    IAuditLogWriter auditLogWriter) : IRequestHandler<CreateBannerCommand, Result<BannerResponse>>
 {
     public async Task<Result<BannerResponse>> Handle(CreateBannerCommand request, CancellationToken cancellationToken)
     {
-        var tenantId = tenantService.GetCurrentTenantId();
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return validation.ToResult<BannerResponse>();
+        }
 
         var banner = Banner.Create(
-            tenantId,
-            request.Title,
-            request.ImageUrl,
-            request.TargetUrl,
+            tenantService.GetCurrentTenantId(),
+            request.Title.Trim(),
+            request.ImageUrl.Trim(),
+            request.TargetUrl?.Trim(),
             request.DisplayOrder,
             request.IsActive);
 
-        await contentRepository.AddBannerAsync(banner, cancellationToken);
-        await contentRepository.SaveChangesAsync(cancellationToken);
+        await auditLogWriter.WriteAsync(new AuditOperation(
+            AuditActions.BannerCreated,
+            "Banner",
+            banner.Id.ToString(),
+            After: new { banner.Title, banner.ImageUrl, banner.TargetUrl, banner.DisplayOrder, banner.IsActive }), cancellationToken);
 
-        var response = new BannerResponse(
-            banner.Id,
-            banner.Title,
-            banner.ImageUrl,
-            banner.TargetUrl,
-            banner.DisplayOrder,
-            banner.IsActive);
+        content.AddBanner(banner);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result<BannerResponse>.Success(response);
+        return Result<BannerResponse>.Success(GetBannerQueryHandler.ToResponse(banner));
     }
 }

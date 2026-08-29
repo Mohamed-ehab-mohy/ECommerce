@@ -32,6 +32,15 @@ public static class Permissions
     public const string ReportsRead = "reports.read";
     public const string IntegrationsRead = "integrations.read";
     public const string IntegrationsWrite = "integrations.write";
+    public const string ContentBannerRead = "content.banner.read";
+    public const string ContentBannerWrite = "content.banner.write";
+    public const string ContentBannerDelete = "content.banner.delete";
+    public const string ContentPageRead = "content.page.read";
+    public const string ContentPageWrite = "content.page.write";
+    public const string ContentPageDelete = "content.page.delete";
+    public const string ContentLayoutRead = "content.layout.read";
+    public const string ContentLayoutWrite = "content.layout.write";
+    public const string ContentLayoutDelete = "content.layout.delete";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -64,6 +73,15 @@ public static class Permissions
         ReviewsModerate,
         ReportsRead,
         IntegrationsRead,
-        IntegrationsWrite
+        IntegrationsWrite,
+        ContentBannerRead,
+        ContentBannerWrite,
+        ContentBannerDelete,
+        ContentPageRead,
+        ContentPageWrite,
+        ContentPageDelete,
+        ContentLayoutRead,
+        ContentLayoutWrite,
+        ContentLayoutDelete
     ];
 }

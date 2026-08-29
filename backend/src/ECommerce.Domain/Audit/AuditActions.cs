@@ -42,4 +42,13 @@ public static class AuditActions
     public const string AccountClosed = "identity.account.closed";
     public const string AccountErased = "identity.account.erased";
     public const string ImpersonationStarted = "identity.impersonation.started";
+    public const string BannerCreated = "content.banner.created";
+    public const string BannerUpdated = "content.banner.updated";
+    public const string BannerDeactivated = "content.banner.deactivated";
+    public const string PageCreated = "content.page.created";
+    public const string PageUpdated = "content.page.updated";
+    public const string PageDeactivated = "content.page.deactivated";
+    public const string CmsLayoutCreated = "content.layout.created";
+    public const string CmsLayoutUpdated = "content.layout.updated";
+    public const string CmsLayoutDeactivated = "content.layout.deactivated";
 }
