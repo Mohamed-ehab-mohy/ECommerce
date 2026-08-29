@@ -764,6 +764,45 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Assert.Contains(items, item => item.GetProperty("entityId").GetString() == userId.ToString());
     }
 
+    [SkippableFact]
+    public async Task OAuth_Revoke_Adds_Access_Token_To_Blocklist_And_Rejects_Subsequent_Requests()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+        var (_, email) = await RegisterAndVerifyAsync($"revoke_{Guid.NewGuid():N}@example.com");
+        var accessToken = (await LoginAsync(email, "device-1")).GetProperty("accessToken").GetString()!;
+
+        var before = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
+        before.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var beforeResponse = await _fixture.Client.SendAsync(before);
+        Assert.Equal(HttpStatusCode.OK, beforeResponse.StatusCode);
+
+        var revoke = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string?, string?>("token", accessToken)
+        }));
+        Assert.Equal(HttpStatusCode.OK, revoke.StatusCode);
+
+        var after = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
+        after.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var afterResponse = await _fixture.Client.SendAsync(after);
+        Assert.Equal(HttpStatusCode.Unauthorized, afterResponse.StatusCode);
+    }
+
+    [SkippableFact]
+    public async Task OAuth_Revoke_Rejects_Missing_Or_Invalid_Token()
+    {
+        Skip.IfNot(Docker.IsAvailable, "Docker is not available");
+
+        var missing = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(Array.Empty<KeyValuePair<string?, string?>>()));
+        Assert.Equal(HttpStatusCode.BadRequest, missing.StatusCode);
+
+        var invalid = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string?, string?>("token", "not-a-jwt")
+        }));
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+    }
+
     private static string DescribeChainBreak(IReadOnlyList<AuditEntry> entries)
     {
         string? previousHash = null;

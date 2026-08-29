@@ -1,14 +1,17 @@
+using System.IdentityModel.Tokens.Jwt;
 using ECommerce.API.Common;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases.Identity;
 using ECommerce.UseCases.Identity.Commands;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/v1/auth/oauth")]
 public sealed class OAuthController(
-    ISender sender) : ControllerBase
+    ISender sender,
+    IDistributedCache cache) : ControllerBase
 {
     /// <summary>Issue an access token via client_credentials or password grant.</summary>
     [HttpPost("token")]
@@ -29,11 +32,54 @@ public sealed class OAuthController(
         };
     }
 
-    /// <summary>Revoke an issued access token.</summary>
+    /// <summary>Revoke an issued access token by adding its id (jti) to a Redis blocklist until expiry.</summary>
     [HttpPost("revoke")]
-    public IActionResult Revoke([FromForm] OAuthRevokeRequest request)
+    public async Task<IActionResult> Revoke([FromForm] OAuthRevokeRequest request, CancellationToken cancellationToken)
     {
-        return NoContent();
+        if (string.IsNullOrWhiteSpace(request.Token))
+        {
+            return BadRequest(new { error = "invalid_request", error_description = "token is required." });
+        }
+
+        var handler = new JwtSecurityTokenHandler();
+
+        if (!handler.CanReadToken(request.Token))
+        {
+            return BadRequest(new { error = "invalid_request", error_description = "The provided token could not be parsed." });
+        }
+
+        JwtSecurityToken jwt;
+        try
+        {
+            jwt = handler.ReadJwtToken(request.Token);
+        }
+        catch (Exception)
+        {
+            return BadRequest(new { error = "invalid_request", error_description = "The provided token could not be parsed." });
+        }
+
+        var jti = jwt.Id
+            ?? jwt.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+        if (string.IsNullOrWhiteSpace(jti))
+        {
+            return Ok();
+        }
+
+        var expiry = jwt.ValidTo;
+        var ttl = expiry <= DateTime.UtcNow
+            ? TimeSpan.FromMinutes(1)
+            : expiry - DateTime.UtcNow;
+
+        if (ttl > TimeSpan.Zero)
+        {
+            await cache.SetStringAsync($"jwt:revoked:{jti}", "1", new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = ttl
+            }, cancellationToken);
+        }
+
+        return Ok();
     }
 
     [HttpGet(".well-known/openid-configuration")]

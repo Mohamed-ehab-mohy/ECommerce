@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
 using ECommerce.API.Audit;
 using ECommerce.API.Common;
@@ -20,6 +21,7 @@ using ECommerce.UseCases.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -149,6 +151,24 @@ public static class DependencyInjection
                     ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new RsaSecurityKey(keyProvider.Key),
                     ClockSkew = TimeSpan.FromSeconds(30)
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async tokenContext =>
+                    {
+                        var jti = tokenContext.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                        if (string.IsNullOrWhiteSpace(jti))
+                        {
+                            return;
+                        }
+
+                        var cache = tokenContext.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
+                        var revoked = await cache.GetStringAsync($"jwt:revoked:{jti}", tokenContext.HttpContext.RequestAborted);
+                        if (revoked is not null)
+                        {
+                            tokenContext.Fail("Token has been revoked.");
+                        }
+                    }
                 };
             });
 
