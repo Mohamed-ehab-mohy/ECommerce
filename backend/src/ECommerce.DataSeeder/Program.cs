@@ -18,6 +18,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ECommerce.DataSeeder;
 
+internal static class SeedRoleIds
+{
+    public static readonly Guid Customer = new("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid Staff = new("22222222-2222-2222-2222-222222222222");
+    public static readonly Guid Finance = new("33333333-3333-3333-3333-333333333333");
+    public static readonly Guid Admin = new("44444444-4444-4444-4444-444444444444");
+    public static readonly Guid SuperAdmin = new("55555555-5555-5555-5555-555555555555");
+}
+
 internal class Program
 {
     internal static async Task Main(string[] args)
@@ -84,10 +93,19 @@ internal class Program
             // Set TenantScope so EF Core Global Query Filter works
             TenantScope.Current = tenant.Id;
 
-            // Seed Roles
+            // Seed Roles using consistent IDs (matching migration 20260802182717_AddRolesAndPermissions)
+            // We use Role.Create then assign the ID since the constructor is private
             var adminRole = Role.Create($"Admin_{tenant.Id}", "Administrator role with full access", utcNow);
+            adminRole.Id = SeedRoleIds.Admin;
+
             var customerRole = Role.Create($"Customer_{tenant.Id}", "Default customer role", utcNow);
-            await context.Roles.AddRangeAsync(adminRole, customerRole);
+            customerRole.Id = SeedRoleIds.Customer;
+
+            adminRole.AddPermissions(new[] { "catalog.product.write", "catalog.product.delete", "roles.read", "roles.write", "roles.permissions.write", "customers.read", "audit.read" }, utcNow);
+            customerRole.AddPermissions(new[] { "customers.read" }, utcNow);
+
+            context.Roles.Add(adminRole);
+            context.Roles.Add(customerRole);
             await context.SaveChangesAsync();
 
             // Seed Customers (Users)

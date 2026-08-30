@@ -30,6 +30,9 @@ public sealed class Role : BaseEntity<Guid>
         };
     }
 
+    // Allow setting Id from outside (e.g., DataSeeder)
+    public void SetId(Guid id) => Id = id;
+
     public void Update(string name, string? description, DateTime utcNow)
     {
         Name = name;
