@@ -29,5 +29,16 @@ jobs:
       - name: Deploy API
         run: |
           echo "Deploying to production server..."
+          # Pull the latest image (tagged by the workflow that created it)
+          echo "New image: ${{ github.event.head_commit.id }}"
+          # In a real deployment, you would:
+          # - docker pull ghcr.io/Mohamed-ehab-mohy/ecommerce-api:${{ github.sha }}
+          # - kubectl rollout restart deployment/ecommerce-api (or equivalent)
+          # - or deploy to Azure Web App, ECS, etc.
+          echo "Deployment successful."
+
+      - name: Deploy API
+        run: |
+          echo "Deploying to production server..."
           # Insert deployment script (e.g. docker pull, helm upgrade, or Azure Web App deploy)
           echo "Deployment successful."

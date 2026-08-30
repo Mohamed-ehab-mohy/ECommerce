@@ -1,3 +1,5 @@
+using ECommerce.Domain.Orders;
+using ECommerce.UseCases.Checkout.Ports;
 using ECommerce.UseCases.Fulfillment.Shipping;
 
 namespace ECommerce.UseCases.Fulfillment.Shipping;

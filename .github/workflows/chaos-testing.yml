@@ -75,14 +75,14 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore backend
 
       - name: Build
-        run: dotnet build backend/--no-restore -c Release
+        run: dotnet build backend --no-restore -c Release
 
       - name: Apply migrations
         run: |
-          dotnet run --project src/ECommerce.API --no-build -c Release -- --migrate-only &
+          dotnet run --project backend/src/ECommerce.API --no-build -c Release -- --migrate-only &
           sleep 30
         env:
           ConnectionStrings__Postgres: "Host=localhost;Port=5432;Database=ecommerce;Username=ecommerce;Password=ecommerce_dev_pw"
@@ -92,7 +92,7 @@ jobs:
 
       - name: Start API
         run: |
-          dotnet run --project src/ECommerce.API --no-build -c Release &
+          dotnet run --project backend/src/ECommerce.API --no-build -c Release &
           sleep 15
           curl -sf http://localhost:5000/api/v1/health/ready || exit 1
         env:
@@ -116,7 +116,7 @@ jobs:
             --vus ${{ github.event.inputs.vus }} \
             --duration ${{ github.event.inputs.duration_seconds }}s \
             --out json=perf-results.json \
-            perf/k6/s1-checkout-baseline.js &
+            backend/perf/k6/s1-checkout-baseline.js &
           K6_PID=$!
           echo "K6_PID=${K6_PID}" >> $GITHUB_ENV
           sleep 10

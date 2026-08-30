@@ -71,6 +71,7 @@ public sealed class OAuthController(
     }
 
     /// <summary>Revoke an issued access token by adding its id (jti) to a Redis blocklist until expiry.</summary>
+    [Authorize]
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromForm] OAuthRevokeRequest request, CancellationToken cancellationToken)
     {

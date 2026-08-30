@@ -200,7 +200,7 @@ services:
   stripe-cli:
     image: stripe/stripe-cli:latest
     container_name: ecommerce-stripe-cli
-    command: "listen --forward-to http://api:8080/api/v1/stripe-webhook"
+    command: "listen --forward-to http://api:8080/api/v1/webhooks/stripe"
     environment:
       - STRIPE_API_KEY=${STRIPE_API_KEY}
     networks:

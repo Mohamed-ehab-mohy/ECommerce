@@ -776,10 +776,15 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         var beforeResponse = await _fixture.Client.SendAsync(before);
         Assert.Equal(HttpStatusCode.OK, beforeResponse.StatusCode);
 
-        var revoke = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(new[]
-        {
-            new KeyValuePair<string?, string?>("token", accessToken)
-        }));
+var revokeMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/revoke")
+            {
+                Content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string?, string?>("token", accessToken)
+                })
+            };
+        revokeMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var revoke = await _fixture.Client.SendAsync(revokeMsg);
         Assert.Equal(HttpStatusCode.OK, revoke.StatusCode);
 
         var after = new HttpRequestMessage(HttpMethod.Get, "/api/v1/me");
@@ -794,13 +799,13 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
         var missing = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(Array.Empty<KeyValuePair<string?, string?>>()));
-        Assert.Equal(HttpStatusCode.BadRequest, missing.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
 
         var invalid = await _fixture.Client.PostAsync("/api/v1/auth/oauth/revoke", new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string?, string?>("token", "not-a-jwt")
         }));
-        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, invalid.StatusCode);
     }
 
     [SkippableFact]

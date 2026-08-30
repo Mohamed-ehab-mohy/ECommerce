@@ -24,10 +24,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        run: dotnet build backend/-c Release
+        run: dotnet build backend -c Release
 
       - name: Test
-        run: dotnet test backend/-c Release --no-build
+        run: dotnet test backend -c Release --no-build
 
       - name: Publish API
         run: dotnet publish backend/src/ECommerce.API/ECommerce.API.csproj -c Release -o publish --no-build
@@ -52,7 +52,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: backend
+          file: Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

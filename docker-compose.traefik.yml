@@ -23,8 +23,8 @@ services:
 
   ecommerce-api:
     build: 
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
       # Match all incoming domains (both your main platform and custom tenant domains)
