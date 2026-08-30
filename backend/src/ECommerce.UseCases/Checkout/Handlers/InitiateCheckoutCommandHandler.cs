@@ -28,6 +28,7 @@ public sealed class InitiateCheckoutCommandHandler(
     StockAvailabilityVerifier availabilityVerifier,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
+    ICurrentUser currentUser,
     IValidator<InitiateCheckoutCommand> validator) : IRequestHandler<InitiateCheckoutCommand, Result<CheckoutResponse>>
 {
     private const string DefaultCustomerSegment = "General";
@@ -49,6 +50,11 @@ public sealed class InitiateCheckoutCommandHandler(
         if (cart is null)
         {
             return CartErrors.CartNotFound;
+        }
+
+        if (!CartBelongsToCaller(cart))
+        {
+            return CheckoutErrors.CartNotOwned;
         }
 
         if (cart.Items.Count == 0)
@@ -192,6 +198,13 @@ public sealed class InitiateCheckoutCommandHandler(
         }
 
         return (coupon, null);
+    }
+
+    private bool CartBelongsToCaller(CartAggregate cart)
+    {
+        return currentUser.IsAuthenticated && currentUser.UserId is { } userId
+            ? cart.OwnerKey == $"user:{userId}"
+            : string.IsNullOrEmpty(cart.OwnerKey) || cart.OwnerKey.StartsWith("anon:", StringComparison.Ordinal);
     }
 
     private static AddressSnapshot ToSnapshot(AddressInput address) =>

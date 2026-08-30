@@ -2,6 +2,7 @@ using ECommerce.API.Common;
 using ECommerce.UseCases.Catalog.Queries;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Partners;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerce.API.Controllers;
 
@@ -38,6 +39,7 @@ public sealed class PartnersController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
+    [Authorize]
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateAccount(
         [FromBody] CreatePartnerAccountRequest request,
@@ -52,6 +54,7 @@ public sealed class PartnersController(ISender sender) : ControllerBase
             : Created($"/api/v1/partner/accounts/{result.Value.Id}", result.Value);
     }
 
+    [Authorize]
     [HttpPost("accounts/{partnerId:guid}/api-keys")]
     public async Task<IActionResult> CreateApiKey(
         Guid partnerId,
@@ -67,6 +70,7 @@ public sealed class PartnersController(ISender sender) : ControllerBase
             : Created($"/api/v1/partner/api-keys/{result.Value.Id}", result.Value);
     }
 
+    [Authorize]
     [HttpGet("accounts/{partnerId:guid}/api-keys")]
     public async Task<IActionResult> ListApiKeys(
         Guid partnerId,
@@ -81,6 +85,7 @@ public sealed class PartnersController(ISender sender) : ControllerBase
             : Ok(result.Value);
     }
 
+    [Authorize]
     [HttpPost("api-keys/{apiKeyId:guid}/revoke")]
     public async Task<IActionResult> RevokeApiKey(
         Guid apiKeyId,

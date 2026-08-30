@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using ECommerce.API.Common;
 using ECommerce.Infrastructure.Identity;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity;
@@ -165,7 +166,13 @@ public sealed class OAuthController(
         }
 
         var result = await sender.Send(
-            new PasswordTokenCommand(request.ClientId, request.ClientSecret, request.Username ?? string.Empty, request.Password ?? string.Empty, request.Scope),
+            new PasswordTokenCommand(
+                request.ClientId,
+                request.ClientSecret,
+                request.Username ?? string.Empty,
+                request.Password ?? string.Empty,
+                request.Scope,
+                ClientIpResolver.Resolve(HttpContext)),
             cancellationToken);
 
         return !result.IsSuccess

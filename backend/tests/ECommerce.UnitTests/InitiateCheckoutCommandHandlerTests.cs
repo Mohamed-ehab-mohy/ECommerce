@@ -6,6 +6,7 @@ using ECommerce.UseCases.Cart.Commands;
 using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Handlers;
 using ECommerce.UseCases.Checkout.Services;
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Payments.Services;
 using CartAggregate = ECommerce.Domain.Cart.Cart;
 
@@ -38,7 +39,7 @@ public sealed class InitiateCheckoutCommandHandlerTests
     private static readonly AddressInput Address = new(
         "Ahmed Hassan", "0501234567", "1 Sheikh Zayed Rd", "Dubai", "Dubai", "AE", "00000");
 
-    private InitiateCheckoutCommandHandler CreateHandler()
+    private InitiateCheckoutCommandHandler CreateHandler(ICurrentUser? currentUser = null)
     {
         var paymentIntents = new PaymentIntentService(_paymentFactory, new FakePaymentProviderHealth(), TimeProvider.System);
         var totals = new CheckoutTotalsCalculator(new FakeShippingRateProvider(), new FakeTaxCalculator());
@@ -56,6 +57,7 @@ public sealed class InitiateCheckoutCommandHandlerTests
             availability,
             _unitOfWork,
             TimeProvider.System,
+            currentUser ?? new FakeCurrentUser(isAuthenticated: false),
             new InitiateCheckoutCommandValidator());
     }
 
@@ -123,6 +125,38 @@ public sealed class InitiateCheckoutCommandHandlerTests
         Assert.Equal(CartErrors.CartNotFound, result.Error);
         Assert.Empty(_checkouts.Checkouts);
         Assert.Empty(_payments.Payments);
+    }
+
+    [Fact]
+    public async Task Initiate_Authenticated_User_With_Another_Users_Cart_Returns_Unauthorized()
+    {
+        var otherUserCart = CartAggregate.Create($"user:{Guid.NewGuid()}", "USD", UtcNow.AddDays(30), UtcNow);
+        otherUserCart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 20.00m, 15.00m, 2, null, UtcNow);
+        _carts.Carts.Add(otherUserCart);
+
+        var me = Guid.NewGuid();
+        var command = CreateCommand(otherUserCart.Id) with { CustomerId = me };
+        var result = await CreateHandler(new FakeCurrentUser(userId: me)).Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(CheckoutErrors.CartNotOwned, result.Error);
+        Assert.Empty(_checkouts.Checkouts);
+        Assert.Empty(_payments.Payments);
+    }
+
+    [Fact]
+    public async Task Initiate_Authenticated_User_With_Own_Cart_Succeeds()
+    {
+        var me = Guid.NewGuid();
+        var cart = CartAggregate.Create($"user:{me}", "USD", UtcNow.AddDays(30), UtcNow);
+        cart.AddItem(Guid.NewGuid(), "SKU-1", "Widget", 20.00m, 15.00m, 2, null, UtcNow);
+        _carts.Carts.Add(cart);
+        _stock.Items.Add(CreateStockedItem("SKU-1", 10));
+
+        var command = CreateCommand(cart.Id) with { CustomerId = me };
+        var result = await CreateHandler(new FakeCurrentUser(userId: me)).Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
     }
 
     [Fact]

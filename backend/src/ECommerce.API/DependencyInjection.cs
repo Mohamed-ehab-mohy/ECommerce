@@ -122,7 +122,7 @@ public static class DependencyInjection
         services.AddAuthorization(options =>
         {
             options.AddPolicy("AuditRead", policy => policy
-                .RequireClaim("roles", IdentityRoles.Admin, IdentityRoles.SuperAdmin));
+                .RequireClaim("roles", IdentityRoles.SuperAdmin));
             options.AddPolicy("WebhookDeadLetterRead", policy => policy
                 .RequireClaim("perms", ECommerce.Shared.Authorization.Permissions.IntegrationsRead));
             options.AddPolicy("WebhookDeadLetterWrite", policy => policy

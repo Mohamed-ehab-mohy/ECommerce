@@ -1,3 +1,4 @@
+using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Identity.Commands;
 using ECommerce.UseCases.Identity.Ports;
 
@@ -8,6 +9,9 @@ public sealed class PasswordTokenHandler(
     IUserRepository users,
     IPasswordHasher passwordHasher,
     IAccessTokenIssuer accessTokenIssuer,
+    ILoginAttemptThrottler loginAttemptThrottler,
+    IUnitOfWork unitOfWork,
+    AuthSettings settings,
     TimeProvider timeProvider) : IRequestHandler<PasswordTokenCommand, Result<OAuthTokenResult>>
 {
     public async Task<Result<OAuthTokenResult>> Handle(PasswordTokenCommand request, CancellationToken cancellationToken)
@@ -28,16 +32,49 @@ public sealed class PasswordTokenHandler(
             return Result<OAuthTokenResult>.Failure(OAuthErrors.InvalidGrant);
         }
 
-        var customer = await users.GetByEmailAsync(request.Username.Trim().ToLowerInvariant(), cancellationToken);
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var clientIp = string.IsNullOrWhiteSpace(request.IpAddress) ? "unknown" : request.IpAddress.Trim();
+        var email = request.Username.Trim().ToLowerInvariant();
+
+        if (loginAttemptThrottler.IsBlocked(clientIp, utcNow, out var retryAfterSeconds))
+        {
+            return Result<OAuthTokenResult>.Failure(OAuthErrors.TooManyAttempts(retryAfterSeconds));
+        }
+
+        var customer = await users.GetByEmailAsync(email, cancellationToken);
         if (customer is null || !passwordHasher.Verify(request.Password, customer.PasswordHash))
         {
-            return Result<OAuthTokenResult>.Failure(OAuthErrors.InvalidCredentials);
+            loginAttemptThrottler.RecordFailure(clientIp, utcNow);
+
+            if (customer is not null)
+            {
+                customer.RecordFailedLogin(
+                    settings.MaxFailedLoginAttempts,
+                    TimeSpan.FromMinutes(settings.LockoutDurationMinutes),
+                    utcNow);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            return loginAttemptThrottler.IsBlocked(clientIp, utcNow, out retryAfterSeconds)
+                ? Result<OAuthTokenResult>.Failure(OAuthErrors.TooManyAttempts(retryAfterSeconds))
+                : customer is not null && customer.IsLockedOut(utcNow)
+                    ? Result<OAuthTokenResult>.Failure(OAuthErrors.AccountLocked(
+                        (int)customer.RemainingLockout(utcNow).TotalSeconds))
+                    : Result<OAuthTokenResult>.Failure(OAuthErrors.InvalidCredentials);
+        }
+
+        if (customer.IsLockedOut(utcNow))
+        {
+            return Result<OAuthTokenResult>.Failure(OAuthErrors.AccountLocked(
+                (int)customer.RemainingLockout(utcNow).TotalSeconds));
         }
 
         if (!customer.EmailVerified)
         {
             return Result<OAuthTokenResult>.Failure(OAuthErrors.InvalidGrant);
         }
+
+        loginAttemptThrottler.RecordSuccess(clientIp, utcNow);
 
         var requestedScopes = ParseScopes(request.Scope);
         var allowedScopes = requestedScopes

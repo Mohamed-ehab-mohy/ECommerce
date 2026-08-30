@@ -746,14 +746,14 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
     }
 
     [SkippableFact]
-    public async Task Audit_Logs_Endpoint_Returns_Entries_For_Admin()
+    public async Task Audit_Logs_Endpoint_Returns_Entries_For_SuperAdmin()
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
         var (userId, email) = await RegisterAndVerifyAsync($"auditadmin_{Guid.NewGuid():N}@example.com");
         await LoginAsync(email, "device-1");
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/audit-logs?action=identity.login");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", MintAdminToken());
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", MintSuperAdminToken());
         var response = await _fixture.Client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -1011,14 +1011,14 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         return "OK";
     }
 
-    private string MintAdminToken()
+    private string MintSuperAdminToken()
     {
         using var scope = _fixture.Services.CreateAsyncScope();
         var issuer = scope.ServiceProvider.GetRequiredService<IAccessTokenIssuer>();
         var issued = issuer.Issue(new AccessTokenClaims(
             Guid.NewGuid(),
-            "admin@example.com",
-            new[] { IdentityRoles.Admin },
+            "superadmin@example.com",
+            new[] { IdentityRoles.SuperAdmin },
             Array.Empty<string>(),
             Guid.NewGuid().ToString()));
         return issued.Value;

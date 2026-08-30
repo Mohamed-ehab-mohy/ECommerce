@@ -29,10 +29,11 @@ public sealed class GetOrdersByEmailQueryHandler(
 
         var matchingOrders = await orders.FindByEmailAsync(request.Email, cancellationToken);
 
-        // Only return orders that belong to the authenticated user. This prevents
-        // enumerating another customer's orders by guessing their email address.
+        // Only return orders that belong to the authenticated user. Looking up by email
+        // alone would let users enumerate another customer's orders; ownership is enforced
+        // by matching the order's customer id against the caller's identity.
         var response = matchingOrders
-            .Where(o => o.CustomerId == currentUser.UserId.Value || string.Equals(o.CustomerEmail, request.Email, StringComparison.OrdinalIgnoreCase))
+            .Where(o => o.CustomerId == currentUser.UserId.Value)
             .OrderByDescending(o => o.PlacedAt)
             .Select(OrderResponse.From)
             .ToList();

@@ -1,10 +1,15 @@
 using ECommerce.Domain.Partners;
+using ECommerce.Shared.Authorization;
+using ECommerce.UseCases.Common;
 
 namespace ECommerce.UseCases.Partners;
 
 public sealed record CreatePartnerApiKeyCommand(
     Guid PartnerId,
-    CreatePartnerApiKeyRequest Request) : IRequest<Result<PartnerApiKeyDto>>;
+    CreatePartnerApiKeyRequest Request) : IRequest<Result<PartnerApiKeyDto>>, IRequirePermission
+{
+    public string Permission => Permissions.PartnersWrite;
+}
 
 public sealed class CreatePartnerApiKeyHandler : IRequestHandler<CreatePartnerApiKeyCommand, Result<PartnerApiKeyDto>>
 {

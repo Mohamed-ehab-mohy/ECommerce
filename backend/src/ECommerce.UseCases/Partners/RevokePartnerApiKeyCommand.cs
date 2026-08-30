@@ -1,7 +1,13 @@
 
+using ECommerce.Shared.Authorization;
+using ECommerce.UseCases.Common;
+
 namespace ECommerce.UseCases.Partners;
 
-public sealed record RevokePartnerApiKeyCommand(Guid ApiKeyId) : IRequest<Result>;
+public sealed record RevokePartnerApiKeyCommand(Guid ApiKeyId) : IRequest<Result>, IRequirePermission
+{
+    public string Permission => Permissions.PartnersWrite;
+}
 
 public sealed class RevokePartnerApiKeyHandler : IRequestHandler<RevokePartnerApiKeyCommand, Result>
 {

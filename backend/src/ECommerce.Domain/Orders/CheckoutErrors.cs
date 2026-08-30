@@ -23,6 +23,11 @@ public static class CheckoutErrors
         "You are not authorized to access this checkout.",
         ErrorType.Unauthorized);
 
+    public static readonly Error CartNotOwned = new(
+        "ERR_CHK_006",
+        "The cart does not belong to the authenticated customer.",
+        ErrorType.Unauthorized);
+
     public static readonly Error CartEmpty = new(
         "ERR_CHK_003",
         "The cart is empty. Add items before checking out.",

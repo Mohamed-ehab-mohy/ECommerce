@@ -6,4 +6,5 @@ public sealed record PasswordTokenCommand(
     string ClientSecret,
     string Username,
     string Password,
-    string? Scope) : IRequest<Result<OAuthTokenResult>>;
+    string? Scope,
+    string IpAddress = "unknown") : IRequest<Result<OAuthTokenResult>>;

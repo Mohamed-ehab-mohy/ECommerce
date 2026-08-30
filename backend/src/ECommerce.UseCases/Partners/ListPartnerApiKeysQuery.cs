@@ -1,7 +1,13 @@
 
+using ECommerce.Shared.Authorization;
+using ECommerce.UseCases.Common;
+
 namespace ECommerce.UseCases.Partners;
 
-public sealed record ListPartnerApiKeysQuery(Guid PartnerId) : IRequest<Result<IReadOnlyList<PartnerApiKeyDto>>>;
+public sealed record ListPartnerApiKeysQuery(Guid PartnerId) : IRequest<Result<IReadOnlyList<PartnerApiKeyDto>>>, IRequirePermission
+{
+    public string Permission => Permissions.PartnersWrite;
+}
 
 public sealed class ListPartnerApiKeysHandler : IRequestHandler<ListPartnerApiKeysQuery, Result<IReadOnlyList<PartnerApiKeyDto>>>
 {

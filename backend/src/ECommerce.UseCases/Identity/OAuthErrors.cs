@@ -28,6 +28,18 @@ public static class OAuthErrors
         "Invalid username or password.",
         ErrorType.Unauthorized);
 
+    public static Error AccountLocked(int retryAfterSeconds) => new Error(
+        "ERR_OAUTH_006",
+        $"Account is temporarily locked. Try again in {retryAfterSeconds} seconds.",
+        ErrorType.TooManyRequests)
+        .With(new Dictionary<string, object?> { ["retry_after_seconds"] = retryAfterSeconds });
+
+    public static Error TooManyAttempts(int retryAfterSeconds) => new Error(
+        "ERR_OAUTH_007",
+        $"Too many failed attempts. Try again in {retryAfterSeconds} seconds.",
+        ErrorType.TooManyRequests)
+        .With(new Dictionary<string, object?> { ["retry_after_seconds"] = retryAfterSeconds });
+
     public static readonly Error InvalidRedirectUri = new(
         "ERR_OAUTH_006",
         "The provided redirect_uri is not registered for this client.",

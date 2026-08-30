@@ -1,11 +1,16 @@
 using ECommerce.Domain.Partners;
+using ECommerce.Shared.Authorization;
+using ECommerce.UseCases.Common;
 
 namespace ECommerce.UseCases.Partners;
 
 public sealed record CreatePartnerAccountCommand(
     string Name,
     string Email,
-    int RateLimitPerMinute) : IRequest<Result<PartnerAccountDto>>;
+    int RateLimitPerMinute) : IRequest<Result<PartnerAccountDto>>, IRequirePermission
+{
+    public string Permission => Permissions.PartnersWrite;
+}
 
 public sealed class CreatePartnerAccountHandler : IRequestHandler<CreatePartnerAccountCommand, Result<PartnerAccountDto>>
 {

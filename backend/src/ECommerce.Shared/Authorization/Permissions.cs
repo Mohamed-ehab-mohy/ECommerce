@@ -41,6 +41,11 @@ public static class Permissions
     public const string ContentLayoutRead = "content.layout.read";
     public const string ContentLayoutWrite = "content.layout.write";
     public const string ContentLayoutDelete = "content.layout.delete";
+    public const string CatalogCategoryWrite = "catalog.category.write";
+    public const string CatalogBrandWrite = "catalog.brand.write";
+    public const string PartnersWrite = "partners.write";
+    public const string WalletDeposit = "wallet.deposit";
+    public const string WalletConvertPoints = "wallet.convert.points";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -82,6 +87,11 @@ public static class Permissions
         ContentPageDelete,
         ContentLayoutRead,
         ContentLayoutWrite,
-        ContentLayoutDelete
+        ContentLayoutDelete,
+        CatalogCategoryWrite,
+        CatalogBrandWrite,
+        PartnersWrite,
+        WalletDeposit,
+        WalletConvertPoints
     ];
 }
