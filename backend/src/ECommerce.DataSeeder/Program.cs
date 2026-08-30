@@ -93,16 +93,22 @@ internal class Program
             // Set TenantScope so EF Core Global Query Filter works
             TenantScope.Current = tenant.Id;
 
-            // Seed Roles using consistent IDs (matching migration 20260802182717_AddRolesAndPermissions)
-            // We use Role.Create then assign the ID since the constructor is private
+            // Seed Roles using Role.Create (generates dynamic IDs)
+            // Then assign permissions using the Role's AssignPermissions method
             var adminRole = Role.Create($"Admin_{tenant.Id}", "Administrator role with full access", utcNow);
-            adminRole.Id = SeedRoleIds.Admin;
+            adminRole.AssignPermissions(new[]
+            {
+                "catalog.product.write",
+                "catalog.product.delete",
+                "roles.read",
+                "roles.write",
+                "roles.permissions.write",
+                "customers.read",
+                "audit.read"
+            }, utcNow);
 
             var customerRole = Role.Create($"Customer_{tenant.Id}", "Default customer role", utcNow);
-            customerRole.Id = SeedRoleIds.Customer;
-
-            adminRole.AddPermissions(new[] { "catalog.product.write", "catalog.product.delete", "roles.read", "roles.write", "roles.permissions.write", "customers.read", "audit.read" }, utcNow);
-            customerRole.AddPermissions(new[] { "customers.read" }, utcNow);
+            customerRole.AssignPermissions(new[] { "customers.read" }, utcNow);
 
             context.Roles.Add(adminRole);
             context.Roles.Add(customerRole);
