@@ -23,6 +23,7 @@ public sealed record CheckoutResponse(
     IReadOnlyList<PriceSnapshotItem> Lines,
     CheckoutTotalsResponse Totals,
     PaymentInitiationResponse Payment,
+    string CapabilityToken,
     DateTime ExpiresAt);
 
 public static class CheckoutResponseFactory
@@ -43,5 +44,6 @@ public static class CheckoutResponseFactory
                 checkout.PriceSnapshot.Totals.GrandTotal,
                 checkout.Currency),
             new PaymentInitiationResponse(payment.ClientToken, payment.ProviderKey, payment.Id),
+            checkout.CapabilityToken,
             checkout.ExpiresAt);
 }

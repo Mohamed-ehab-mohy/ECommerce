@@ -4,4 +4,5 @@ namespace ECommerce.UseCases.Orders.Commands;
 
 public sealed record PlaceOrderCommand(
     Guid CheckoutId,
-    string IdempotencyKey) : IRequest<Result<OrderResponse>>;
+    string IdempotencyKey,
+    string CapabilityToken) : IRequest<Result<OrderResponse>>;

@@ -25,6 +25,7 @@ public sealed class PlaceOrderCommandHandler(
     IProductRepository products,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
+    ICurrentUser currentUser,
     IValidator<PlaceOrderCommand> validator) : IRequestHandler<PlaceOrderCommand, Result<OrderResponse>>
 {
     public async Task<Result<OrderResponse>> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
@@ -55,6 +56,21 @@ public sealed class PlaceOrderCommandHandler(
         if (checkout is null)
         {
             return CheckoutErrors.CheckoutNotFound;
+        }
+
+        // Capability token: a "bearer" secret minted at checkout initiation and returned to the
+        // cart owner. Requiring it (constant-time comparison) prevents placing someone else's
+        // checkout by guessing/observing the checkout id (IDOR).
+        if (!FixedTimeEquals(request.CapabilityToken, checkout.CapabilityToken))
+        {
+            return CheckoutErrors.CheckoutUnauthorized;
+        }
+
+        // Registered checkouts additionally bind to the owning customer account.
+        if (checkout.CustomerId is { } buyerId
+            && (!currentUser.IsAuthenticated || currentUser.UserId != buyerId))
+        {
+            return CheckoutErrors.CheckoutUnauthorized;
         }
 
         if (checkout.IsExpired(utcNow))
@@ -215,5 +231,12 @@ public sealed class PlaceOrderCommandHandler(
 
         var replayedOrder = await orders.GetByIdAsync(concurrentKey.OrderId, cancellationToken);
         return replayedOrder is null ? OrderErrors.OrderNotFound : OrderResponse.From(replayedOrder);
+    }
+
+    private static bool FixedTimeEquals(string actual, string expected)
+    {
+        var actualBytes = System.Text.Encoding.UTF8.GetBytes(actual);
+        var expectedBytes = System.Text.Encoding.UTF8.GetBytes(expected);
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(actualBytes, expectedBytes);
     }
 }

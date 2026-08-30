@@ -63,6 +63,11 @@ public sealed class CheckoutConfiguration : IEntityTypeConfiguration<Checkout>
         builder.Property(checkout => checkout.PaymentId).HasColumnName("payment_id");
         builder.Property(checkout => checkout.PlacedAt).HasColumnName("placed_at");
 
+        builder.Property(checkout => checkout.CapabilityToken)
+            .HasMaxLength(64)
+            .IsRequired()
+            .HasColumnName("capability_token");
+
         builder.Property(checkout => checkout.CreatedAt).HasColumnName("created_at");
         builder.Property(checkout => checkout.UpdatedAt).HasColumnName("updated_at");
         builder.Property(checkout => checkout.IsDeleted).HasColumnName("is_deleted");

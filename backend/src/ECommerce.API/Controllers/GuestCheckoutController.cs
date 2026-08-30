@@ -69,10 +69,14 @@ public sealed class GuestCheckoutController(ISender sender) : ControllerBase
     public async Task<IActionResult> Place(
         Guid checkoutId,
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        [FromHeader(Name = "X-Checkout-Token")] string? capabilityToken,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
-            new PlaceOrderCommand(checkoutId, idempotencyKey ?? string.Empty),
+            new PlaceOrderCommand(
+                checkoutId,
+                idempotencyKey ?? string.Empty,
+                capabilityToken ?? string.Empty),
             cancellationToken);
 
         return result.IsFailure

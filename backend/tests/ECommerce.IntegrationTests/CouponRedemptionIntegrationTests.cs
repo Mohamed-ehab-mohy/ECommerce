@@ -230,6 +230,10 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
     {
         using var scope = TenantScope.Begin(TenantId);
         await using var context = CreateContext();
+        var checkout = await new CheckoutRepository(context).GetByIdAsync(checkoutId, CancellationToken.None);
+        var currentUser = checkout?.CustomerId is { } buyerId
+            ? new FakeCurrentUser(isAuthenticated: true, userId: buyerId)
+            : new FakeCurrentUser();
         var handler = new PlaceOrderCommandHandler(
             new CheckoutRepository(context),
             new PaymentRepository(context),
@@ -241,10 +245,11 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
             new ProductRepository(context),
             new UnitOfWork(context),
             TimeProvider.System,
+            currentUser,
             new PlaceOrderCommandValidator());
 
         return await handler.Handle(
-            new PlaceOrderCommand(checkoutId, idempotencyKey),
+            new PlaceOrderCommand(checkoutId, idempotencyKey, checkout!.CapabilityToken),
             CancellationToken.None);
     }
 

@@ -31,6 +31,8 @@ public sealed class PlaceOrderCommandHandlerTests
 
     private readonly FakeUnitOfWork _unitOfWork = new();
 
+    private readonly FakeCurrentUser _currentUser = new();
+
     private static readonly AddressSnapshot Address = new(
         "Ahmed Hassan", "0501234567", "1 Sheikh Zayed Rd", "Dubai", "Dubai", "AE", "00000");
 
@@ -50,9 +52,12 @@ public sealed class PlaceOrderCommandHandlerTests
             _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
+            _currentUser,
             new PlaceOrderCommandValidator());
 
-    private (CheckoutAggregate Checkout, Payment Payment) CreateAuthorizedCheckout(bool authorizePayment = true)
+    private (CheckoutAggregate Checkout, Payment Payment) CreateAuthorizedCheckout(
+        bool authorizePayment = true,
+        Guid? ownerId = null)
     {
         var payment = Payment.Create(
             null, "mock", "tok_mock_1", "tok_client_1", null, "USD", 39.90m, null, UtcNow);
@@ -64,7 +69,7 @@ public sealed class PlaceOrderCommandHandlerTests
 
         var checkout = CheckoutAggregate.Create(
             Guid.NewGuid(),
-            null,
+            ownerId,
             "ahmed@example.com",
             "USD",
             Snapshot,
@@ -81,15 +86,18 @@ public sealed class PlaceOrderCommandHandlerTests
         return (checkout, payment);
     }
 
+    private static PlaceOrderCommand CreateCommand(CheckoutAggregate checkout, string key = "order-key-1") =>
+        new(checkout.Id, key, checkout.CapabilityToken);
+
     private static PlaceOrderCommand CreateCommand(Guid checkoutId, string key = "order-key-1") =>
-        new(checkoutId, key);
+        new(checkoutId, key, "test-token");
 
     [Fact]
     public async Task Place_Success_Creates_Order_Allocates_Stock_And_Places_Checkout()
     {
         var (checkout, payment) = CreateAuthorizedCheckout();
 
-        var result = await CreateHandler().Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await CreateHandler().Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsSuccess, result.Error.Description);
         Assert.Equal(checkout.CartId, result.Value.CartId);
@@ -139,8 +147,8 @@ public sealed class PlaceOrderCommandHandlerTests
         var (checkout, _) = CreateAuthorizedCheckout();
 
         var handler = CreateHandler();
-        var first = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
-        var second = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var first = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
+        var second = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(first.IsSuccess);
         Assert.True(second.IsSuccess);
@@ -156,7 +164,7 @@ public sealed class PlaceOrderCommandHandlerTests
         var (checkoutA, _) = CreateAuthorizedCheckout();
 
         var handler = CreateHandler();
-        var first = await handler.Handle(CreateCommand(checkoutA.Id), CancellationToken.None);
+        var first = await handler.Handle(CreateCommand(checkoutA), CancellationToken.None);
         Assert.True(first.IsSuccess);
 
         var paymentB = Payment.Create(null, "mock", "tok_2", "tok_client_2", null, "USD", 39.90m, null, UtcNow);
@@ -168,7 +176,7 @@ public sealed class PlaceOrderCommandHandlerTests
         _payments.Add(paymentB);
         _checkouts.Add(checkoutB);
 
-        var second = await handler.Handle(CreateCommand(checkoutB.Id), CancellationToken.None);
+        var second = await handler.Handle(CreateCommand(checkoutB), CancellationToken.None);
 
         Assert.True(second.IsFailure);
         Assert.Equal(OrderErrors.IdempotencyKeyReuse, second.Error);
@@ -187,7 +195,7 @@ public sealed class PlaceOrderCommandHandlerTests
         _payments.Add(payment);
         _checkouts.Add(checkout);
 
-        var result = await CreateHandler().Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await CreateHandler().Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal(CheckoutErrors.CheckoutExpired, result.Error);
@@ -199,7 +207,7 @@ public sealed class PlaceOrderCommandHandlerTests
     {
         var (checkout, _) = CreateAuthorizedCheckout(authorizePayment: false);
 
-        var result = await CreateHandler().Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await CreateHandler().Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal(PaymentErrors.PaymentNotAuthorized, result.Error);
@@ -223,9 +231,10 @@ public sealed class PlaceOrderCommandHandlerTests
             _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
+            _currentUser,
             new PlaceOrderCommandValidator());
 
-        var result = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal("ERR_STK_001", result.Error.Code);
@@ -251,11 +260,80 @@ public sealed class PlaceOrderCommandHandlerTests
     }
 
     [Fact]
+    public async Task Place_Wrong_Capability_Token_Returns_Unauthorized()
+    {
+        var (checkout, _) = CreateAuthorizedCheckout();
+
+        var result = await CreateHandler().Handle(
+            new PlaceOrderCommand(checkout.Id, "order-key-1", "wrong-token"),
+            CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(CheckoutErrors.CheckoutUnauthorized, result.Error);
+        Assert.Equal(ErrorType.Unauthorized, result.Error.Type);
+        Assert.Empty(_orders.Orders);
+    }
+
+    [Fact]
+    public async Task Place_Registered_Checkout_Owned_By_Different_User_Returns_Unauthorized()
+    {
+        var buyerId = Guid.NewGuid();
+        var (checkout, _) = CreateAuthorizedCheckout(ownerId: buyerId);
+
+        var handler = new PlaceOrderCommandHandler(
+            _checkouts,
+            _payments,
+            _orders,
+            _idempotencyKeys,
+            _allocator,
+            _orderNumberGenerator,
+            _coupons,
+            _products,
+            _unitOfWork,
+            new FixedTimeProvider(UtcNow),
+            new FakeCurrentUser(userId: Guid.NewGuid()),
+            new PlaceOrderCommandValidator());
+
+        var result = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(CheckoutErrors.CheckoutUnauthorized, result.Error);
+        Assert.Empty(_orders.Orders);
+    }
+
+    [Fact]
+    public async Task Place_Registered_Checkout_With_Matching_User_Succeeds()
+    {
+        var buyerId = Guid.NewGuid();
+        var (checkout, _) = CreateAuthorizedCheckout(ownerId: buyerId);
+
+        var handler = new PlaceOrderCommandHandler(
+            _checkouts,
+            _payments,
+            _orders,
+            _idempotencyKeys,
+            _allocator,
+            _orderNumberGenerator,
+            _coupons,
+            _products,
+            _unitOfWork,
+            new FixedTimeProvider(UtcNow),
+            new FakeCurrentUser(userId: buyerId),
+            new PlaceOrderCommandValidator());
+
+        var result = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error.Description);
+        var order = Assert.Single(_orders.Orders);
+        Assert.Equal(buyerId, order.CustomerId);
+    }
+
+    [Fact]
     public async Task Place_Empty_Idempotency_Key_Fails_Validation()
     {
         var (checkout, _) = CreateAuthorizedCheckout();
 
-        var result = await CreateHandler().Handle(CreateCommand(checkout.Id, string.Empty), CancellationToken.None);
+        var result = await CreateHandler().Handle(CreateCommand(checkout, string.Empty), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Empty(_orders.Orders);
@@ -284,9 +362,10 @@ public sealed class PlaceOrderCommandHandlerTests
             _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
+            _currentUser,
             new PlaceOrderCommandValidator());
 
-        var result = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsSuccess, result.Error.Description);
         Assert.Equal(OrderStatus.Backordered.ToString(), result.Value.Status);
@@ -332,9 +411,10 @@ public sealed class PlaceOrderCommandHandlerTests
             _products,
             _unitOfWork,
             new FixedTimeProvider(UtcNow),
+            _currentUser,
             new PlaceOrderCommandValidator());
 
-        var result = await handler.Handle(CreateCommand(checkout.Id), CancellationToken.None);
+        var result = await handler.Handle(CreateCommand(checkout), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal("ERR_STK_001", result.Error.Code);

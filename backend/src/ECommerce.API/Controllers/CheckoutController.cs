@@ -3,13 +3,17 @@ using ECommerce.UseCases.Checkout.Commands;
 using ECommerce.UseCases.Checkout.Queries;
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Orders.Commands;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/v1/checkouts")]
+[Authorize]
 public sealed class CheckoutController(ISender sender, ICurrentUser currentUser) : ControllerBase
 {
+    private const string CapabilityTokenHeader = "X-Checkout-Token";
+
     [HttpPost]
     public async Task<IActionResult> Initiate(
         InitiateCheckoutRequest request,
@@ -64,10 +68,14 @@ public sealed class CheckoutController(ISender sender, ICurrentUser currentUser)
     public async Task<IActionResult> Place(
         Guid checkoutId,
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        [FromHeader(Name = "X-Checkout-Token")] string? capabilityToken,
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
-            new PlaceOrderCommand(checkoutId, idempotencyKey ?? string.Empty),
+            new PlaceOrderCommand(
+                checkoutId,
+                idempotencyKey ?? string.Empty,
+                capabilityToken ?? string.Empty),
             cancellationToken);
 
         return result.IsFailure

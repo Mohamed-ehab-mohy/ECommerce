@@ -1,6 +1,20 @@
 using ECommerce.UseCases.Identity.Ports;
+using ECommerce.UseCases.Common;
 
 namespace ECommerce.IntegrationTests;
+
+internal sealed class FakeCurrentUser(
+    bool isAuthenticated = false,
+    Guid? userId = null) : ICurrentUser
+{
+    public Guid? UserId { get; } = userId;
+
+    public bool IsAuthenticated { get; } = isAuthenticated;
+
+    public IReadOnlyList<string> Roles { get; } = [];
+
+    public IReadOnlyList<string> Permissions { get; } = [];
+}
 
 internal sealed class NonBreachedPasswordChecker : IPasswordBreachChecker
 {

@@ -13,6 +13,7 @@ public sealed class Checkout : BaseEntity<Guid>
         PriceSnapshot = PriceSnapshot.Empty;
         ShippingAddress = null!;
         BillingAddress = null!;
+        CapabilityToken = string.Empty;
     }
 
     public Guid CartId { get; private set; }
@@ -42,6 +43,8 @@ public sealed class Checkout : BaseEntity<Guid>
     public Guid? PaymentId { get; private set; }
 
     public DateTime? PlacedAt { get; private set; }
+
+    public string CapabilityToken { get; private set; }
 
     public static Checkout Create(
         Guid cartId,
@@ -73,6 +76,7 @@ public sealed class Checkout : BaseEntity<Guid>
             ShippingMethodId = shippingMethodId,
             Status = CheckoutStatus.Created,
             PaymentId = paymentId,
+            CapabilityToken = Guid.NewGuid().ToString("N"),
             ExpiresAt = expiresAtUtc,
             CreatedAt = utcNow,
             UpdatedAt = utcNow

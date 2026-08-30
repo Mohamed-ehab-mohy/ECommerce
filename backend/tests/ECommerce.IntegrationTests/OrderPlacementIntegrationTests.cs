@@ -198,10 +198,12 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
             new ProductRepository(context),
             new UnitOfWork(context),
             TimeProvider.System,
+            new FakeCurrentUser(),
             new PlaceOrderCommandValidator());
 
+        var checkout = await new CheckoutRepository(context).GetByIdAsync(checkoutId, CancellationToken.None);
         return await handler.Handle(
-            new PlaceOrderCommand(checkoutId, idempotencyKey),
+            new PlaceOrderCommand(checkoutId, idempotencyKey, checkout!.CapabilityToken),
             CancellationToken.None);
     }
 
