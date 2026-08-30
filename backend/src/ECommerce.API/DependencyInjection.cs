@@ -123,6 +123,10 @@ public static class DependencyInjection
         {
             options.AddPolicy("AuditRead", policy => policy
                 .RequireClaim("roles", IdentityRoles.Admin, IdentityRoles.SuperAdmin));
+            options.AddPolicy("WebhookDeadLetterRead", policy => policy
+                .RequireClaim("perms", ECommerce.Shared.Authorization.Permissions.IntegrationsRead));
+            options.AddPolicy("WebhookDeadLetterWrite", policy => policy
+                .RequireClaim("perms", ECommerce.Shared.Authorization.Permissions.IntegrationsWrite));
         });
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();

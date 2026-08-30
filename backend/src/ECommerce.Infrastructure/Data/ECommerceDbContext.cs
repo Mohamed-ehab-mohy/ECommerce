@@ -27,6 +27,13 @@ namespace ECommerce.Infrastructure.Data;
 
 public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> options) : DbContext(options)
 {
+    public Guid? CurrentTenant { get; } = TenantScope.Current;
+
+    public ECommerceDbContext(DbContextOptions<ECommerceDbContext> options, Guid? tenantId) : this(options)
+    {
+        CurrentTenant = tenantId ?? TenantScope.Current;
+    }
+
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -187,7 +194,9 @@ public sealed class ECommerceDbContext(DbContextOptions<ECommerceDbContext> opti
                         .HasDatabaseName($"ix_{entityType.GetTableName()}_tenant_id");
 
                     var tenantIdAccess = System.Linq.Expressions.Expression.Property(parameter, "TenantId");
-                    var currentTenant = System.Linq.Expressions.Expression.Property(null, typeof(TenantScope), "Current");
+                    var currentTenant = System.Linq.Expressions.Expression.Property(
+                        System.Linq.Expressions.Expression.Constant(this, typeof(ECommerceDbContext)),
+                        nameof(CurrentTenant));
                     filter = System.Linq.Expressions.Expression.Equal(tenantIdAccess, currentTenant);
                 }
 

@@ -31,6 +31,8 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
     private const string CouponCode = "QAS02";
     private const int TotalUses = 10;
 
+    private static readonly Guid TenantId = Guid.NewGuid();
+
     private readonly IntegrationFixture _fixture;
 
     public CouponRedemptionIntegrationTests(IntegrationFixture fixture)
@@ -49,7 +51,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         var (promotionId, couponId, checkoutIds) = await SeedAsync(attemptCount, utcNow);
 
         var tasks = checkoutIds
-            .Select((checkoutId, index) => PlaceAsync(checkoutId, $"key-qas02-{index}"))
+            .Select((checkoutId, index) => Task.Run(() => PlaceAsync(checkoutId, $"key-qas02-{index}")))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -60,8 +62,9 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         Assert.Equal(TotalUses, succeeded);
         Assert.Equal(attemptCount - TotalUses, exhausted);
 
-        await using (var verify = CreateContext())
+        using (TenantScope.Begin(TenantId))
         {
+            await using var verify = CreateContext();
             var coupon = await verify.Coupons.SingleAsync(candidate => candidate.Id == couponId);
             Assert.Equal(TotalUses, coupon.UsedCount);
 
@@ -88,7 +91,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
             singleCustomer: true);
 
         var tasks = checkoutIds
-            .Select((checkoutId, index) => PlaceAsync(checkoutId, $"key-qas02-cust-{index}"))
+            .Select((checkoutId, index) => Task.Run(() => PlaceAsync(checkoutId, $"key-qas02-cust-{index}")))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -97,9 +100,12 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         Assert.Equal(TotalUses - 1, tasks.Count(
             task => task.Result.IsFailure && task.Result.Error.Code == "COUPON_EXHAUSTED"));
 
-        await using var verify = CreateContext();
-        Assert.Equal(1, await verify.CouponUsages.CountAsync(usage => usage.CouponId == couponId));
-        Assert.Equal(1, (await verify.Coupons.SingleAsync(candidate => candidate.Id == couponId)).UsedCount);
+        using (TenantScope.Begin(TenantId))
+        {
+            await using var verify = CreateContext();
+            Assert.Equal(1, await verify.CouponUsages.CountAsync(usage => usage.CouponId == couponId));
+            Assert.Equal(1, (await verify.Coupons.SingleAsync(candidate => candidate.Id == couponId)).UsedCount);
+        }
     }
 
     private async Task<(Guid PromotionId, Guid CouponId, IReadOnlyList<Guid> CheckoutIds)> SeedAsync(
@@ -109,6 +115,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         bool singleCustomer = false)
     {
         await IntegrationFixture.EnsureDatabaseReadyAsync();
+        using var outer = TenantScope.Begin(TenantId);
         await using var setup = CreateContext();
         await setup.Database.ExecuteSqlRawAsync("""
             TRUNCATE TABLE
@@ -185,6 +192,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
         DateTime utcNow,
         int index)
     {
+        using var scope = TenantScope.Begin(TenantId);
         await using var context = CreateContext();
 
         var payment = Payment.Create(
@@ -220,6 +228,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
 
     private async Task<Result<OrderResponse>> PlaceAsync(Guid checkoutId, string idempotencyKey)
     {
+        using var scope = TenantScope.Begin(TenantId);
         await using var context = CreateContext();
         var handler = new PlaceOrderCommandHandler(
             new CheckoutRepository(context),
@@ -247,6 +256,7 @@ public sealed class CouponRedemptionIntegrationTests : IClassFixture<Integration
             .UseNpgsql(dataSourceBuilder.Build())
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
+            .AddInterceptors(new TenantAwareSaveChangesInterceptor())
             .Options;
         return new ECommerceDbContext(options);
     }

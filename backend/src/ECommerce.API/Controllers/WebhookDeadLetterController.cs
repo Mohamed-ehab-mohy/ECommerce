@@ -1,8 +1,10 @@
 using ECommerce.UseCases.Common;
 using ECommerce.UseCases.Integrations.Ports;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerce.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/webhooks/dead-letter")]
 public sealed class WebhookDeadLetterController(
@@ -11,6 +13,7 @@ public sealed class WebhookDeadLetterController(
     IUnitOfWork unitOfWork) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = "WebhookDeadLetterRead")]
     public async Task<IActionResult> List(
         [FromQuery] int limit = 50,
         [FromQuery] int offset = 0,
@@ -30,6 +33,7 @@ public sealed class WebhookDeadLetterController(
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = "WebhookDeadLetterRead")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var entry = await deadLetterRepository.GetByIdAsync(id, cancellationToken);
@@ -40,6 +44,7 @@ public sealed class WebhookDeadLetterController(
     }
 
     [HttpPost("{id:guid}/replay")]
+    [Authorize(Policy = "WebhookDeadLetterWrite")]
     public async Task<IActionResult> Replay(Guid id, CancellationToken cancellationToken)
     {
         var entry = await deadLetterRepository.GetByIdAsync(id, cancellationToken);
@@ -52,6 +57,7 @@ public sealed class WebhookDeadLetterController(
     }
 
     [HttpGet("stats")]
+    [Authorize(Policy = "WebhookDeadLetterRead")]
     public async Task<IActionResult> GetStats(CancellationToken cancellationToken)
     {
         var total = await deadLetterRepository.CountAsync(null, cancellationToken);

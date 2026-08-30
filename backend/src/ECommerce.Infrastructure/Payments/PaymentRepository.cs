@@ -1,4 +1,5 @@
 using ECommerce.Domain.Payments;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Payments.Ports;
 
@@ -12,9 +13,17 @@ public sealed class PaymentRepository(ECommerceDbContext dbContext) : IPaymentRe
             .Include(payment => payment.Ledger)
             .SingleOrDefaultAsync(payment => payment.Id == id, cancellationToken);
 
-    public Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken) =>
-        dbContext.Set<Payment>()
-            .FromSqlInterpolated($"""SELECT * FROM "payments" WHERE "id" = {id} FOR UPDATE""")
+    public Task<Payment?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var tenantId = dbContext.CurrentTenant;
+        return tenantId is null
+            ? Task.FromResult<Payment?>(null)
+            : GetByIdForUpdateAsyncCore(id, tenantId.Value, cancellationToken);
+    }
+
+    private async Task<Payment?> GetByIdForUpdateAsyncCore(Guid id, Guid tenantId, CancellationToken cancellationToken) =>
+        await dbContext.Set<Payment>()
+            .FromSqlInterpolated($"""SELECT * FROM "payments" WHERE "id" = {id} AND "tenant_id" = {tenantId} FOR UPDATE""")
             .Include(payment => payment.Attempts)
             .Include(payment => payment.Ledger)
             .SingleOrDefaultAsync(cancellationToken);

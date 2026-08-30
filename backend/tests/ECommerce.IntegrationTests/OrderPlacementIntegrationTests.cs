@@ -24,6 +24,8 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
 {
     private const string Sku = "QAS-05";
 
+    private static readonly Guid TenantId = Guid.NewGuid();
+
     private readonly IntegrationFixture _fixture;
 
     public OrderPlacementIntegrationTests(IntegrationFixture fixture)
@@ -36,6 +38,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        using var scope = TenantScope.Begin(TenantId);
         var checkoutId = await SeedAuthorizedCheckoutAsync();
 
         var first = await PlaceAsync(checkoutId, "key-duplicate");
@@ -74,6 +77,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
     {
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
+        using var scope = TenantScope.Begin(TenantId);
         var checkoutId = await SeedAuthorizedCheckoutAsync();
 
         var first = await PlaceAsync(checkoutId, "key-one");
@@ -94,10 +98,11 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
         const int attempts = 10;
+        using var scope = TenantScope.Begin(TenantId);
         var checkoutId = await SeedAuthorizedCheckoutAsync();
 
         var tasks = Enumerable.Range(0, attempts)
-            .Select(_ => PlaceAsync(checkoutId, "key-concurrent"))
+            .Select(_ => Task.Run(() => PlaceAsync(checkoutId, "key-concurrent")))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -180,6 +185,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
 
     private async Task<Result<OrderResponse>> PlaceAsync(Guid checkoutId, string idempotencyKey)
     {
+        using var scope = TenantScope.Begin(TenantId);
         await using var context = CreateContext();
         var handler = new PlaceOrderCommandHandler(
             new CheckoutRepository(context),
@@ -207,6 +213,7 @@ public sealed class OrderPlacementIntegrationTests : IClassFixture<IntegrationFi
             .UseNpgsql(dataSourceBuilder.Build())
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
+            .AddInterceptors(new TenantAwareSaveChangesInterceptor())
             .Options;
         return new ECommerceDbContext(options);
     }

@@ -1,4 +1,5 @@
 using ECommerce.Domain.Inventory;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Inventory.Ports;
 
@@ -112,15 +113,19 @@ public sealed class StockAllocator(
         string sku,
         CancellationToken cancellationToken)
     {
-        var items = await dbContext.StockItems
-            .FromSqlInterpolated($"""
-                SELECT si.* FROM "stock_items" AS si
-                JOIN "warehouses" AS w ON w."id" = si."warehouse_id"
-                WHERE si."sku" = {sku} AND si."is_deleted" = FALSE AND w."is_deleted" = FALSE
-                ORDER BY w."code"
-                FOR UPDATE OF si
-                """)
-            .ToListAsync(cancellationToken);
+        var tenantId = dbContext.CurrentTenant;
+        var items = tenantId is null
+            ? new List<StockItem>()
+            : await dbContext.StockItems
+                .FromSqlInterpolated($"""
+                    SELECT si.* FROM "stock_items" AS si
+                    JOIN "warehouses" AS w ON w."id" = si."warehouse_id"
+                    WHERE si."tenant_id" = {tenantId}
+                      AND si."sku" = {sku} AND si."is_deleted" = FALSE AND w."is_deleted" = FALSE
+                    ORDER BY w."code"
+                    FOR UPDATE OF si
+                    """)
+                .ToListAsync(cancellationToken);
 
         return items;
     }

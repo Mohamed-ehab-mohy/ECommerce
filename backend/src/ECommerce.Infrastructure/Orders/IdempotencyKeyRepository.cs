@@ -1,4 +1,5 @@
 using ECommerce.Domain.Orders;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Orders.Ports;
 using Npgsql;
@@ -15,15 +16,22 @@ public sealed class IdempotencyKeyRepository(ECommerceDbContext dbContext) : IId
         IdempotencyKey idempotencyKey,
         CancellationToken cancellationToken)
     {
+        // The idempotency key must be stored scoped to the current tenant so that the
+        // tenant-scoped reads (GetByKeyAsync) can find it again for replay. Raw SQL bypasses
+        // TenantAwareSaveChangesInterceptor, so stamp tenant_id explicitly.
+        var tenantId = dbContext.CurrentTenant
+            ?? throw new InvalidOperationException("A tenant scope is required to persist an idempotency key.");
+
         var inserted = await dbContext.Database.ExecuteSqlRawAsync(
             """
-            INSERT INTO idempotency_keys (id, key, checkout_id, order_id, created_at, updated_at, is_deleted)
-            VALUES (@id, @key, @checkout_id, @order_id, @created_at, @updated_at, FALSE)
+            INSERT INTO idempotency_keys (id, tenant_id, key, checkout_id, order_id, created_at, updated_at, is_deleted)
+            VALUES (@id, @tenant_id, @key, @checkout_id, @order_id, @created_at, @updated_at, FALSE)
             ON CONFLICT (key) DO NOTHING
             """,
             new object[]
             {
                 new NpgsqlParameter("@id", idempotencyKey.Id),
+                new NpgsqlParameter("@tenant_id", tenantId),
                 new NpgsqlParameter("@key", idempotencyKey.Key),
                 new NpgsqlParameter("@checkout_id", idempotencyKey.CheckoutId),
                 new NpgsqlParameter("@order_id", idempotencyKey.OrderId),

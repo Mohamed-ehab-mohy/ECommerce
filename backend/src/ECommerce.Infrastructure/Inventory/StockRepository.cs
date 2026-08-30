@@ -1,4 +1,5 @@
 using ECommerce.Domain.Inventory;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Inventory.Ports;
 
@@ -26,16 +27,20 @@ public sealed class StockRepository(ECommerceDbContext dbContext) : IStockReposi
         Guid toWarehouseId,
         CancellationToken cancellationToken)
     {
-        var items = await dbContext.StockItems
-            .FromSqlInterpolated($"""
-                SELECT si.* FROM "stock_items" AS si
-                WHERE si."sku" = {sku}
-                  AND si."warehouse_id" IN ({fromWarehouseId}, {toWarehouseId})
-                  AND si."is_deleted" = FALSE
-                ORDER BY si."warehouse_id"
-                FOR UPDATE OF si
-                """)
-            .ToListAsync(cancellationToken);
+        var tenantId = dbContext.CurrentTenant;
+        var items = tenantId is null
+            ? new List<StockItem>()
+            : await dbContext.StockItems
+                .FromSqlInterpolated($"""
+                    SELECT si.* FROM "stock_items" AS si
+                    WHERE si."tenant_id" = {tenantId}
+                      AND si."sku" = {sku}
+                      AND si."warehouse_id" IN ({fromWarehouseId}, {toWarehouseId})
+                      AND si."is_deleted" = FALSE
+                    ORDER BY si."warehouse_id"
+                    FOR UPDATE OF si
+                    """)
+                .ToListAsync(cancellationToken);
 
         return items;
     }

@@ -1,4 +1,5 @@
 using ECommerce.Domain.Inventory;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Inventory;
 using ECommerce.Infrastructure.Outbox;
@@ -15,6 +16,8 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
     private const int AvailableUnits = 10;
     private const int ConcurrentRequests = 25;
 
+    private static readonly Guid TenantId = Guid.NewGuid();
+
     private readonly IntegrationFixture _fixture;
 
     public StockAllocationIntegrationTests(IntegrationFixture fixture)
@@ -28,8 +31,9 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
         Skip.IfNot(Docker.IsAvailable, "Docker is not available");
 
         await IntegrationFixture.EnsureDatabaseReadyAsync();
-        await using (var setup = CreateContext())
+        using (TenantScope.Begin(TenantId))
         {
+            await using var setup = CreateContext();
             var utcNow = DateTime.UtcNow;
             var warehouse = Warehouse.Create("W-QAS", "QAS Warehouse", "Test", "UTC", WarehouseStatus.Active, utcNow);
             setup.Add(warehouse);
@@ -42,7 +46,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
         }
 
         var tasks = Enumerable.Range(0, ConcurrentRequests)
-            .Select(_ => AllocateOneAsync())
+            .Select(_ => Task.Run(AllocateOneAsync))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -53,8 +57,9 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
         Assert.Equal(AvailableUnits, succeeded);
         Assert.Equal(ConcurrentRequests - AvailableUnits, failed);
 
-        await using (var verify = CreateContext())
+        using (TenantScope.Begin(TenantId))
         {
+            await using var verify = CreateContext();
             var item = await verify.StockItems.SingleAsync(stockItem => stockItem.Sku == Sku);
             Assert.Equal(AvailableUnits, item.OnHand);
             Assert.Equal(AvailableUnits, item.Allocated);
@@ -67,6 +72,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
     private async Task<StockAllocationResult> AllocateOneAsync()
     {
         var utcNow = DateTime.UtcNow;
+        using var scope = TenantScope.Begin(TenantId);
         await using var context = CreateContext();
         await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -97,6 +103,7 @@ public sealed class StockAllocationIntegrationTests : IClassFixture<IntegrationF
             .UseNpgsql(_fixture.PostgresConnectionString)
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
             .AddInterceptors(new DomainEventsInterceptor())
+            .AddInterceptors(new TenantAwareSaveChangesInterceptor())
             .Options;
         return new ECommerceDbContext(options);
     }

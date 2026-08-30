@@ -1,3 +1,4 @@
+using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ECommerce.Infrastructure.Common;
@@ -20,7 +21,7 @@ public sealed class TenantAwareSaveChangesInterceptor : SaveChangesInterceptor
 
     private static void SetTenantIds(DbContext? context)
     {
-        if (context is null || TenantScope.Current is not { } tenantId)
+        if (context is not ECommerceDbContext ecommerceContext || ecommerceContext.CurrentTenant is not { } tenantId)
             return;
 
         foreach (var entry in context.ChangeTracker.Entries()

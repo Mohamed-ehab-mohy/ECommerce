@@ -1,4 +1,5 @@
 using ECommerce.Domain.Pricing;
+using ECommerce.Infrastructure.Common;
 using ECommerce.Infrastructure.Data;
 using ECommerce.UseCases.Promotions.Ports;
 
@@ -32,10 +33,15 @@ public sealed class CouponRepository(ECommerceDbContext dbContext) : ICouponRepo
         DateTime utcNow,
         CancellationToken cancellationToken)
     {
+        if (dbContext.CurrentTenant is not { } tenantId)
+        {
+            return CouponRedemptionResult.Exhausted;
+        }
+
         var updated = await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
             UPDATE coupons
             SET used_count = used_count + 1, updated_at = {utcNow}
-            WHERE id = {couponId}
+            WHERE id = {couponId} AND tenant_id = {tenantId}
               AND used_count < total_uses
               AND (per_customer_limit IS NULL OR
                    (SELECT COUNT(*) FROM coupon_usages u WHERE u.coupon_id = {couponId} AND u.customer_id = {customerId})
