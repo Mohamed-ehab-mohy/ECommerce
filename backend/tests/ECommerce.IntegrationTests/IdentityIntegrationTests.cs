@@ -776,13 +776,13 @@ public sealed class IdentityIntegrationTests : IClassFixture<IdentityApiFixture>
         var beforeResponse = await _fixture.Client.SendAsync(before);
         Assert.Equal(HttpStatusCode.OK, beforeResponse.StatusCode);
 
-var revokeMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/revoke")
-            {
-                Content = new FormUrlEncodedContent(new[]
-                {
+        var revokeMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/oauth/revoke")
+        {
+            Content = new FormUrlEncodedContent(new[]
+                        {
                     new KeyValuePair<string?, string?>("token", accessToken)
                 })
-            };
+        };
         revokeMsg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         var revoke = await _fixture.Client.SendAsync(revokeMsg);
         Assert.Equal(HttpStatusCode.OK, revoke.StatusCode);
